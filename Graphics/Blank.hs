@@ -12,8 +12,8 @@ import Data.Aeson.TH (deriveJSON)
 
 data Canvas = Canvas (MVar String)
 
-data Command = NoOp -- | ...
-$(deriveJSON Prelude.id ''Command)
+data JsCommand = NoOp -- | ...
+$(deriveJSON Prelude.id ''JsCommand)
 
 blankCanvas :: Int -> (Canvas -> IO ()) -> IO ()
 blankCanvas port actions = do
@@ -104,4 +104,4 @@ restore = Restore
 save = Save
 stroke = Stroke
 transform (a,b,c,d,e,f) = Transform a b c d e f
->>>>>>> Adding first cut at the DSL.
+
