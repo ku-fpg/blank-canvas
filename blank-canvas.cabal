@@ -52,6 +52,7 @@ Executable blank-canvas
         aeson,
         base,
         scotty,
+        transformers,
         wai-extra,
         wai-middleware-static
 

@@ -2,7 +2,8 @@
 
 module Graphics.Blank where
 
-import Control.Concurrent
+import Control.Concurrent.MVar
+import Control.Monad.IO.Class (liftIO)
 import Web.Scotty
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
@@ -12,7 +13,10 @@ import Data.Aeson.TH (deriveJSON)
 
 data Canvas = Canvas (MVar String)
 
-data JsCommand = NoOp -- | ...
+type Dimensions = (Int, Int)
+
+type Point = (Int, Int)
+data JsCommand = NoOp | DrawLine Point Point -- | ...
 $(deriveJSON Prelude.id ''JsCommand)
 
 blankCanvas :: Int -> (Canvas -> IO ()) -> IO ()
@@ -24,16 +28,22 @@ blankCanvas port actions = do
    res <- takeMVar var
    writeFile "OUTPUT" res
 
+   dims <- newMVar (100 :: Int, 100 :: Int)
+
    scotty port $ do
         middleware logStdoutDev
         middleware $ staticRoot "static"
 
         get "/" $ file "static/index.html"
 
-        get "/poll" $ json [NoOp]
+        post "/setDims" $ do
+            req <- jsonData
+            liftIO $ modifyMVar_ (dims :: MVar (Int,Int)) (const (return req))
+            json ()
 
-        get "/" $ text "foobar"
-
+        get "/poll" $ do
+            -- do something and return a new list of commands to the client
+            json [NoOp,DrawLine (5,5) (50,50)]
 
 send :: Canvas -> [Command] -> IO ()
 send (Canvas var) commands = do
@@ -104,4 +114,3 @@ restore = Restore
 save = Save
 stroke = Stroke
 transform (a,b,c,d,e,f) = Transform a b c d e f
-

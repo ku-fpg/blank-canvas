@@ -2,8 +2,27 @@
     <head>
         <title>Blank Canvas</title>
         <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery-json.js"></script>
     </head>
     <body>
         foo
+        <script type="text/javascript">
+            var t; // global timeout variable
+            $(document).ready(function() {
+                $.ajax({ url: "/setDims",
+                         type: "POST",
+                         data: $.toJSON([1,2]),
+                         contentType: "application/json; charset=utf-8",
+                         success: function(res) { looper(); },
+                         dataType: "json"}); // desired response type
+            });
+
+            function looper() {
+                $.getJSON('/poll', function(resp) {
+                    alert($.toJSON(resp)); // use clearTimeout(t); to stop
+                    t = setTimeout("looper()", 3000); // run again in 3 secs
+                });
+            }
+        </script>
     </body>
 </html>
