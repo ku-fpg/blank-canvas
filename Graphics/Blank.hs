@@ -2,7 +2,7 @@
 
 module Graphics.Blank where
 
-import Control.Concurrent.MVar
+import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
 import Web.Scotty
 import Network.Wai.Middleware.RequestLogger
