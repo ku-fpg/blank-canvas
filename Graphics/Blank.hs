@@ -38,7 +38,7 @@ blankCanvas port actions = do
 
         post "/setDims" $ do
             req <- jsonData
-            liftIO $ modifyMVar_ (dims :: MVar (Int,Int)) (const (return req))
+            liftIO $ modifyMVar_ dims (const (return req))
             json ()
 
         get "/poll" $ do

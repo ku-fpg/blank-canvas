@@ -19,7 +19,7 @@
 
             function looper() {
                 $.getJSON('/poll', function(resp) {
-                    alert($.toJSON(resp)); // use clearTimeout(t); to stop
+                    alert($.toJSON(resp));
                     t = setTimeout("looper()", 3000); // run again in 3 secs
                 });
             }
