@@ -40,7 +40,7 @@ Build-type:          Simple
 -- Extra-source-files:
 
 -- Constraint on the version of Cabal needed to build this package.
-Cabal-version:       >=1.2
+Cabal-version:       >=1.8
 
 
 Executable blank-canvas
@@ -54,7 +54,8 @@ Executable blank-canvas
         scotty,
         transformers,
         wai-extra,
-        wai-middleware-static
+        wai-middleware-static,
+        text
 
 
   -- Modules not exported by this package.

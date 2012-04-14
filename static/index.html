@@ -5,24 +5,39 @@
         <script type="text/javascript" src="jquery-json.js"></script>
     </head>
     <body>
-        foo
+        <canvas id="canvas" width="800" height="600" style="border: red 1px solid">
+                Hello World
+        </canvas>
         <script type="text/javascript">
             var t; // global timeout variable
+            function getContext() {
+                    var canvas = document.getElementById("canvas");
+                    if (canvas.getContext) {
+                        return canvas.getContext("2d");
+                    }
+                    alert("no canvas");
+            }
+            function redraw() {
+                t = setTimeout("draw()", 0); // run again in 1 second
+            }
+            function draw() {
+                $.ajax({ url: "/canvas",
+                         type: "GET",
+                         dataType: "script"}); // desired response type
+             }
+             
+
             $(document).ready(function() {
+/*
                 $.ajax({ url: "/setDims",
                          type: "POST",
                          data: $.toJSON([1,2]),
                          contentType: "application/json; charset=utf-8",
                          success: function(res) { looper(); },
                          dataType: "json"}); // desired response type
+*/
+                draw();
             });
-
-            function looper() {
-                $.getJSON('/poll', function(resp) {
-                    alert($.toJSON(resp));
-                    t = setTimeout("looper()", 3000); // run again in 3 secs
-                });
-            }
         </script>
     </body>
 </html>
