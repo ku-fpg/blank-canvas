@@ -23,6 +23,7 @@
             function draw() {
                 $.ajax({ url: "/canvas",
                          type: "GET",
+                         cache : false,
                          dataType: "script"}); // desired response type
              }
              

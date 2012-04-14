@@ -42,6 +42,7 @@ blankCanvas port actions = do
             json ()
 -}
         get "/canvas" $ do
+            header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             -- do something and return a new list of commands to the client
             res <- liftIO $ tryTakeMVar picture
             case res of
