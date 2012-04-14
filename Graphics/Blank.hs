@@ -98,8 +98,8 @@ data Command
         | Transform Float Float Float Float Float Float
         | Translate Float Float
 
-rgba :: (Float,Float,Float,Float) -> String
-rgba (r,g,b,a) = "rgba(" ++ showJ r ++ "," ++ showJ g ++ "," ++ showJ b ++ "," ++ showJ a ++ ")"
+rgba :: (Int,Int,Int,Int) -> String
+rgba (r,g,b,a) = "rgba(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ "," ++ show a ++ ")"
 
 showJ a = showFFloat (Just 3) a ""
 
