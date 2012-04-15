@@ -32,7 +32,7 @@ eventChan cxt@(Context _ _ callbacks) a = do
 sendToCanvas :: Context -> ShowS -> IO ()
 sendToCanvas (Context _ var _) cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
 
--- Create a thread to perceptually handle a specific type of event.
+-- | Create a thread to perceptually handle a specific type of event.
 -- Do not use at the same application as (try)readEventQueue on the
 -- same 'EventName'.
 handleEvents :: Context -> EventName -> (Event -> IO ()) -> IO ()
