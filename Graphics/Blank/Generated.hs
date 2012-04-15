@@ -8,7 +8,7 @@ instance Show Command where
   show ClosePath = "c.closePath();"
   show Fill = "c.fill();"
   show (FillStyle (a1)) = "c.fillStyle = (" ++ show a1 ++ ");"
-  show (LineCap (a1)) = "c.lineCap(" ++ show a1 ++ ");"
+  show (LineCap (a1)) = "c.lineCap = (" ++ show a1 ++ ");"
   show (LineTo (a1,a2)) = "c.lineTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
   show (LineWidth (a1)) = "c.lineWidth = (" ++ showJ a1 ++ ");"
   show (MiterLimit (a1)) = "c.miterLimit = (" ++ showJ a1 ++ ");"

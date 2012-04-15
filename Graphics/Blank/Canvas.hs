@@ -16,7 +16,7 @@ instance Monad Canvas where
         return = Return
         (>>=) = Bind
 
--- HTML5 Canvas assignments: FillStyle, LineWidth, MiterLimit, StrokeStyle
+-- HTML5 Canvas assignments: FillStyle, LineCap, LineWidth, MiterLimit, StrokeStyle
 data Command
         -- regular HTML5 canvas commands
         = BeginPath
