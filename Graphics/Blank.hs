@@ -3,6 +3,8 @@
 module Graphics.Blank
         ( module Graphics.Blank
         , module Graphics.Blank.Events
+        , module Graphics.Blank.Context
+        , module Graphics.Blank.Canvas
         ) where
 
 import Control.Concurrent
@@ -12,7 +14,6 @@ import Web.Scotty as S
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
-import Numeric
 
 import Data.Aeson.TH (deriveJSON)
 import Data.Aeson (Value, FromJSON(..))
@@ -26,12 +27,8 @@ import Data.Char
 import Control.Monad
 
 import Graphics.Blank.Events
-
-data Context = Context
-        { theSize :: (Float,Float)
-        , theDraw :: MVar String
-        , eventHandle :: MVar (Map EventName EventQueue)
-        }
+import Graphics.Blank.Context
+import Graphics.Blank.Canvas
 
 
 -- $(deriveJSON Prelude.id ''Event)
@@ -84,23 +81,6 @@ blankCanvas port actions = do
                  text (T.pack "redraw();")
 
 
--- | 'eventChan' gets the raw event channel for a specific event type.
-eventChan :: Context -> EventName -> IO EventQueue
-eventChan cxt@(Context _ canvas callbacks) a = do
-        db <- takeMVar callbacks
-        case Map.lookup a db of
-          Just var -> do
-            putMVar callbacks db
-            return var
-          Nothing -> do
-            var <- newEventQueue
-            putMVar callbacks $ Map.insert a var db
-            sendToCanvas cxt (("register('" ++ map toLower (show a) ++ "');") ++)
-            return var
-
--- Internal command to send a message to the canvas.
-sendToCanvas :: Context -> ShowS -> IO ()
-sendToCanvas (Context _ var _) cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
 
 send :: Context -> Canvas a -> IO a
 send cxt@(Context (h,w) var callbacks) commands = send' commands id
@@ -158,61 +138,6 @@ data StateOfInput = StateOfInput
    Touch
  -}
 
-data Canvas :: * -> * where
-        Command :: Command                           -> Canvas ()
-        Bind    :: Canvas a -> (a -> Canvas b)       -> Canvas b
-        Return  :: a                                 -> Canvas a
-        Get     :: EventName -> (EventQueue -> IO a) -> Canvas a
-        Size    ::                                      Canvas (Float,Float)
-
-instance Monad Canvas where
-        return = Return
-        (>>=) = Bind
-
--- HTML5 Canvas assignments: FillStyle, LineWidth, MiterLimit, StrokeStyle
-data Command
-        -- regular HTML5 canvas commands
-        = BeginPath
-        | ClearRect (Float,Float,Float,Float)
-        | ClosePath
-        | Fill
-        | FillStyle String
-        | LineTo (Float,Float)
-        | LineWidth Float
-        | MiterLimit Float
-        | MoveTo (Float,Float)
-        | Restore
-        | Rotate Float
-        | Scale (Float,Float)
-        | Save
-        | Stroke
-        | StrokeStyle String
-        | Transform (Float,Float,Float,Float,Float,Float)
-        | Translate (Float,Float)
-
-rgba :: (Int,Int,Int,Int) -> String
-rgba (r,g,b,a) = "rgba(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ "," ++ show a ++ ")"
-
-showJ a = showFFloat (Just 3) a ""
-
-instance Show Command where
-  show BeginPath = "c.beginPath();"
-  show (ClearRect (a1,a2,a3,a4)) = "c.clearRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ");"
-  show ClosePath = "c.closePath();"
-  show Fill = "c.fill();"
-  show (FillStyle (a1)) = "c.fillStyle = (" ++ show a1 ++ ");"
-  show (LineTo (a1,a2)) = "c.lineTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
-  show (LineWidth (a1)) = "c.lineWidth = (" ++ showJ a1 ++ ");"
-  show (MiterLimit (a1)) = "c.miterLimit = (" ++ showJ a1 ++ ");"
-  show (MoveTo (a1,a2)) = "c.moveTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
-  show Restore = "c.restore();"
-  show (Rotate (a1)) = "c.rotate(" ++ showJ a1 ++ ");"
-  show (Scale (a1,a2)) = "c.scale(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
-  show Save = "c.save();"
-  show Stroke = "c.stroke();"
-  show (StrokeStyle (a1)) = "c.strokeStyle = (" ++ show a1 ++ ");"
-  show (Transform (a1,a2,a3,a4,a5,a6)) = "c.transform(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ");"
-  show (Translate (a1,a2)) = "c.translate(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
 {-
   show (BeginPath)             = "c.beginPath();"
   show (ClosePath)             = "c.closePath();"
@@ -237,70 +162,3 @@ instance Show Command where
 --keypress :: (Int -> IO ()) -> Command
 --keypress f =
 
------------------------------------------------------------------
-
--- | size of the canvas
-size :: Canvas (Float,Float)
-size = Size
-
-readEvent :: EventName -> Canvas Event
-readEvent nm = Get nm readEventQueue
-
-tryReadEvent :: EventName -> Canvas (Maybe Event)
-tryReadEvent nm = Get nm tryReadEventQueue
-
-flushEvents :: EventName -> Canvas ()
-flushEvents nm = Get nm flushEventQueue
-
------------------------------------------------------------------
-
-beginPath :: Canvas ()
-beginPath = Command BeginPath
-
-clearRect :: (Float,Float,Float,Float) -> Canvas ()
-clearRect = Command . ClearRect
-
-closePath :: Canvas ()
-closePath = Command ClosePath
-
-fill :: Canvas ()
-fill = Command Fill
-
-fillStyle :: String -> Canvas ()
-fillStyle = Command . FillStyle
-
-lineTo :: (Float,Float) -> Canvas ()
-lineTo = Command . LineTo
-
-lineWidth :: Float -> Canvas ()
-lineWidth = Command . LineWidth
-
-miterLimit :: Float -> Canvas ()
-miterLimit = Command . MiterLimit
-
-moveTo :: (Float,Float) -> Canvas ()
-moveTo = Command . MoveTo
-
-restore :: Canvas ()
-restore = Command Restore
-
-rotate :: Float -> Canvas ()
-rotate = Command . Rotate
-
-scale :: (Float,Float) -> Canvas ()
-scale = Command . Scale
-
-save :: Canvas ()
-save = Command Save
-
-stroke :: Canvas ()
-stroke = Command Stroke
-
-strokeStyle :: String -> Canvas ()
-strokeStyle = Command . StrokeStyle
-
-transform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
-transform = Command . Transform
-
-translate :: (Float,Float) -> Canvas ()
-translate = Command . Translate
