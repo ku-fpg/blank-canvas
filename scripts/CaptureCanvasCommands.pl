@@ -2,15 +2,16 @@ open(F,"Graphics/Blank/Canvas.hs");
 
 $state = 0;
 while(<F>) {
+	if ($state <= 2) {
+		$keep .= $_;
+	}
 	if ($state == 0) {
-
 		if (/HTML5 Canvas assignments:\s+(.*)$/) {
 			foreach (split(/,\s*/,$1)) {
 				$isAssign{$_} = 1;
 			}
 			
 		}
-
 
 		next if (! /^data Command/);
 		$state = 1;
@@ -76,18 +77,30 @@ while(<F>) {
 			}
 
 		}
-
-
 	}
-
-
-	
-	
+	if ($state == 2) {
+		if (/AUTO GENERATED AFTER HERE/) {
+			$state = 3;
+			next;
+		}
+	}
 }
 
 
-print "-- DSL\n$dsl\n";
+#print "-- DSL\n$dsl\n";
+#print "-- Header\n$header\n";
+#print "$keep";
+#print "\n";
+#print "instance Show Command where\n";
+#print "$show\n";
 
-print "-- Show\n$show\n";
+open(G,">Graphics/Blank/Generated.hs");
+print G "module Graphics.Blank.Generated where\n";
+print G "\n";
+print G "import Graphics.Blank.Canvas\n";
+print G "\n";
+print G "instance Show Command where\n";
+print G "$show\n";
+print G "-- DSL\n$dsl\n";
 
-print "-- Header\n$header\n";
+close(G);

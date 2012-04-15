@@ -17,6 +17,7 @@ Library
   other-modules:       Graphics.Blank.Canvas,
                        Graphics.Blank.Context,
                        Graphics.Blank.Events,
+                       Graphics.Blank.Generated,
                        Paths_blank_canvas
 
   default-language:    Haskell2010

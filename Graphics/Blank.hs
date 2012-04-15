@@ -4,40 +4,22 @@ module Graphics.Blank
         (
          -- * Starting blank-canvas
           blankCanvas
-         -- * Drawing pictures
+        -- * Graphics 'Context'
+        , Context       -- abstact
         , send
-        , beginPath
-        , clearRect
-        , closePath
-        , fill
-        , fillStyle
-        , lineTo
-        , lineWidth
-        , miterLimit
-        , moveTo
-        , restore
-        , rotate
-        , scale
-        , save
-        , stroke
-        , strokeStyle
-        , transform
-        , translate
-        -- * Building color
-        , rgba
-        -- * Reading brower state
-        , size
-        -- * Reading brower events
-        , Event(..)
-        , EventName(..)
+        , handleEvents
+         -- * Drawing pictures using the Canvas DSL
+        , Canvas        -- abstact
+        , module Graphics.Blank.Generated
         , readEvent
         , tryReadEvent
         , flushEvents
-        , handleEvents
-        -- * Graphics 'Context'
-        , Context       -- abstact
-        -- * 'Canvas' 'Monad'
-        , Canvas        -- abstact
+        , size
+        -- * Building color
+        , rgba
+        -- * Events
+        , Event(..)
+        , EventName(..)
         ) where
 
 import Control.Concurrent
@@ -52,6 +34,7 @@ import qualified Data.Map as Map
 import Graphics.Blank.Events
 import Graphics.Blank.Context
 import Graphics.Blank.Canvas
+import Graphics.Blank.Generated
 import Paths_blank_canvas
 
 -- | blankCanvas is the main entry point into blank-canvas.
@@ -115,7 +98,7 @@ blankCanvas port actions = do
                      Nothing -> do
                             -- hack, wait a 1/10 of a second
                             liftIO $ threadDelay (100 * 1000)
-                            tryPicture (n - 1)
+                            tryPicture (n - 1 :: Int)
             tryPicture 10
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
