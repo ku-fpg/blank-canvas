@@ -25,8 +25,8 @@ main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
                   stroke
                   restore | x <- [5] ] -- 1..10] ]
 
---        res <- send canvas $ wait MouseMove
---        print res
+        res <- send canvas $ tryReadEvent MouseMove
+        print res
 
         loop canvas (n + 0.01) -- if n > 0.99 then 0 else n + 0.01)
 

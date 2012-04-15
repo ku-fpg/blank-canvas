@@ -5,7 +5,7 @@ module Graphics.Blank where
 import Control.Concurrent
 import Control.Concurrent.Chan
 import Control.Monad.IO.Class (liftIO)
-import Web.Scotty
+import Web.Scotty as S
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
@@ -20,6 +20,7 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 
 import Data.Char
+import Control.Monad
 
 data Context = Context
         { theSize :: (Float,Float)
@@ -83,7 +84,7 @@ blankCanvas port actions = do
 
 
    scotty port $ do
---        middleware logStdoutDev
+        middleware logStdoutDev
         middleware $ staticRoot "static"
 
         get "/" $ file "static/index.html"
@@ -115,8 +116,26 @@ blankCanvas port actions = do
                  text (T.pack "redraw();")
 
 
+-- | 'eventChan' gets the raw event channel for a specific event type.
+eventChan :: Context -> EventName -> IO (Chan Event)
+eventChan cxt@(Context _ canvas callbacks) a = do
+        db <- takeMVar callbacks
+        case Map.lookup a db of
+          Just var -> do
+            putMVar callbacks db
+            return var
+          Nothing -> do
+            var <- newChan
+            putMVar callbacks $ Map.insert a var db
+            sendToCanvas cxt (("register('" ++ map toLower (show a) ++ "');") ++)
+            return var
+
+-- Internal command to send a message to the canvas.
+sendToCanvas :: Context -> ShowS -> IO ()
+sendToCanvas (Context _ var _) cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
+
 send :: Context -> Canvas a -> IO a
-send (Context (h,w) var callbacks) commands = send' commands id
+send cxt@(Context (h,w) var callbacks) commands = send' commands id
   where
       send' :: Canvas a -> (String -> String) -> IO a
 
@@ -128,30 +147,20 @@ send (Context (h,w) var callbacks) commands = send' commands id
               res <- send' other cmds
               send' (k res) id
 
-      send' (Get a)                cmds = do
-              db <- takeMVar callbacks
-              case Map.lookup a db of
-                Just var -> do
-                   putMVar callbacks db
-                   -- send the pending messages
-                   send' (Return ()) cmds
-                   -- wait for event to actually arrive (can block)
-                   event <- readChan var
-                   print ("1",event)
-                   return event
-                Nothing -> do
-                   var <- newChan
-                   putMVar callbacks $ Map.insert a var db
-                   send' (Return ()) (cmds . (("register('" ++ map toLower (show a) ++ "');") ++))
-                   -- wait for event to actually arrive (can block)
-                   event <- readChan var
-                   print ("2",event)
-                   return event
+      send' (Get a op)             cmds = do
+              -- clear the commands
+              sendToCanvas cxt cmds
+              -- get the channel for this event
+              chan <- eventChan cxt a
+              op chan
+
       send' (Return a)             cmds = do
               putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
               return a
       send' other                  cmds = send' (Bind other Return) cmds
 
+      sendCmds :: (String -> String) -> IO ()
+      sendCmds cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
 {-
       send' (Get name)             cmds = do
               -- send the commands
@@ -182,11 +191,11 @@ data StateOfInput = StateOfInput
  -}
 
 data Canvas :: * -> * where
-        Command :: Command                       -> Canvas ()
-        Bind    :: Canvas a -> (a -> Canvas b)   -> Canvas b
-        Return  :: a                             -> Canvas a
-        Get     :: EventName                     -> Canvas Event
-        Size    ::                                  Canvas (Float,Float)
+        Command :: Command                           -> Canvas ()
+        Bind    :: Canvas a -> (a -> Canvas b)       -> Canvas b
+        Return  :: a                                 -> Canvas a
+        Get     :: EventName -> (Chan Event -> IO a) -> Canvas a
+        Size    ::                                      Canvas (Float,Float)
 
 instance Monad Canvas where
         return = Return
@@ -266,8 +275,14 @@ instance Show Command where
 size :: Canvas (Float,Float)
 size = Size
 
-wait :: EventName -> Canvas Event
-wait = Get
+readEvent :: EventName -> Canvas Event
+readEvent nm = Get nm readChan
+
+tryReadEvent :: EventName -> Canvas (Maybe Event)
+tryReadEvent nm = Get nm $ \  chan -> do
+        b <- isEmptyChan chan
+        if b then return Nothing
+             else liftM Just $ readChan chan
 
 -----------------------------------------------------------------
 
