@@ -8,23 +8,13 @@ module Graphics.Blank
         ) where
 
 import Control.Concurrent
-import Control.Concurrent.Chan
 import Control.Monad.IO.Class (liftIO)
 import Web.Scotty as S
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
 
-import Data.Aeson.TH (deriveJSON)
-import Data.Aeson (Value, FromJSON(..))
-import qualified Data.Aeson as A
-import qualified Data.Vector as V
-
 import qualified Data.Map as Map
-import Data.Map (Map)
-
-import Data.Char
-import Control.Monad
 
 import Graphics.Blank.Events
 import Graphics.Blank.Context
@@ -52,7 +42,7 @@ blankCanvas port actions = do
    print indexHtml
 
    scotty port $ do
-        middleware logStdoutDev
+--        middleware logStdoutDev
         middleware $ staticRoot "static"
 
         get "/" $ file indexHtml
@@ -78,14 +68,15 @@ blankCanvas port actions = do
             res <- liftIO $ tryTakeMVar picture
             case res of
               Just js -> do
-                      text ("var c = getContext();" `T.append` T.pack js)
+                      text $ T.pack js
               Nothing -> do
                  -- hack, wait a second
                  liftIO $ threadDelay (1000 * 1000)
                  text (T.pack "redraw();")
 
 
-
+-- | Sends a set of Canvas commands to the canvas. Attempts
+-- to common up as many commands as possible.
 send :: Context -> Canvas a -> IO a
 send cxt@(Context (h,w) var callbacks) commands = send' commands id
   where
@@ -107,9 +98,7 @@ send cxt@(Context (h,w) var callbacks) commands = send' commands id
               op chan
 
       send' (Return a)             cmds = do
-              putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
+              sendToCanvas cxt cmds
               return a
       send' other                  cmds = send' (Bind other Return) cmds
 
-      sendCmds :: (String -> String) -> IO ()
-      sendCmds cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
