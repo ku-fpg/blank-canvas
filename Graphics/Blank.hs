@@ -104,15 +104,19 @@ blankCanvas port actions = do
         get "/canvas" $ do
             header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             -- do something and return a new list of commands to the client
-            res <- liftIO $ tryTakeMVar picture
-            case res of
-              Just js -> do
-                      text $ T.pack js
-              Nothing -> do
-                 -- hack, wait a second
-                 liftIO $ threadDelay (1000 * 1000)
-                 text (T.pack "redraw();")
-
+            let tryPicture n = do
+                    res <- liftIO $ tryTakeMVar picture
+                    case res of
+                     Just js -> do
+                            text $ T.pack js
+                     Nothing | n == 0 ->
+                            -- give the browser something to do (approx every second)
+                            text (T.pack "redraw();")
+                     Nothing -> do
+                            -- hack, wait a 1/10 of a second
+                            liftIO $ threadDelay (100 * 1000)
+                            tryPicture (n - 1)
+            tryPicture 10
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible.
