@@ -3,6 +3,7 @@
 module Graphics.Blank where
 
 import Control.Concurrent
+import Control.Concurrent.Chan
 import Control.Monad.IO.Class (liftIO)
 import Web.Scotty
 import Network.Wai.Middleware.RequestLogger
@@ -11,22 +12,44 @@ import qualified Data.Text.Lazy as T
 import Numeric
 
 import Data.Aeson.TH (deriveJSON)
-import Data.Aeson (Value)
+import Data.Aeson (Value, FromJSON(..))
+import qualified Data.Aeson as A
+import qualified Data.Vector as V
 
+import qualified Data.Map as Map
+import Data.Map (Map)
 
-data Context = Context Int Int (MVar String)
+import Data.Char
 
-type Dimensions = (Int, Int)
+data Context = Context
+        { theSize :: (Float,Float)
+        , theDraw :: MVar String
+        , eventHandle :: MVar (Map EventName (Chan Event))
+        }
 
-type Point = (Int, Int)
-data JsCommand = NoOp | DrawLine Point Point -- | ...
-$(deriveJSON Prelude.id ''JsCommand)
-
-data JsEvent = JsEvent
+data Event = Event
         { jsCode  :: Int
-        , jsMouse :: (Int,Int)
+        , jsMouse :: Maybe (Int,Int)
         }
         deriving (Show)
+
+data NamedEvent = NamedEvent EventName Event
+        deriving (Show)
+
+instance FromJSON NamedEvent where
+   parseJSON o = do
+           (str,code,x,y) <- parseJSON o
+           case Map.lookup str namedEventDB of
+             Just n -> return $ NamedEvent n (Event code (Just (x,y)))
+             Nothing -> do (str,code,(),()) <- parseJSON o
+                           case Map.lookup str namedEventDB of
+                             Just n -> return $ NamedEvent n (Event code Nothing)
+                             Nothing -> fail "bad parse"
+
+namedEventDB = Map.fromList
+                [ (map toLower (show n),n)
+                | n <- [minBound..maxBound]
+                ]
 
 data EventName
         -- Keys
@@ -40,38 +63,44 @@ data EventName
         | MouseOut
         | MouseOver
         | MouseUp
-        deriving (Show)
+        deriving (Eq, Ord, Show, Enum, Bounded)
 
-
--- $(deriveJSON Prelude.id ''JsEvent)
+-- $(deriveJSON Prelude.id ''Event)
 
 blankCanvas :: Int -> (Context -> IO ()) -> IO ()
 blankCanvas port actions = do
    picture <- newEmptyMVar
 
+   dims <- newEmptyMVar
+   callbacks <- newMVar $ Map.empty
+
    -- perform the canvas writing actions
    -- in worker thread.
-   forkIO $ actions (Context 800 600 picture)
+   forkIO $ do
+       -- do not start until we know the screen size
+       (w,h) <- takeMVar dims
+       actions (Context (w,h) picture callbacks)
 
-   dims <- newMVar (100 :: Int, 100 :: Int)
 
    scotty port $ do
 --        middleware logStdoutDev
         middleware $ staticRoot "static"
 
         get "/" $ file "static/index.html"
-{-
-        post "/setDims" $ do
-            req <- jsonData
-            liftIO $ modifyMVar_ dims (const (return req))
-            json ()
--}
-        post "/event" $ do
-            req <- jsonData
---            liftIO $ print (req  :: JsEvent) -- modifyMVar_ dims (const (return req))
 
-            liftIO $ print (req  :: Value) -- modifyMVar_ dims (const (return req))
+        post "/start" $ do
+            req <- jsonData
+            liftIO $ tryPutMVar dims (req  :: (Float,Float))
             json ()
+
+        post "/event" $ do
+            NamedEvent nm event <- jsonData
+            db <- liftIO $ readMVar callbacks
+            liftIO $ print (nm,event)
+            case Map.lookup nm db of
+              Nothing -> json ()
+              Just var -> do liftIO $ writeChan var event -- perhaps use Chan?
+                             json ()
 
         get "/canvas" $ do
             header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
@@ -80,40 +109,45 @@ blankCanvas port actions = do
             case res of
               Just js -> do
                       text ("var c = getContext();" `T.append` T.pack js)
-              Nothing -> text (T.pack "redraw();")
+              Nothing -> do
+                 -- hack, wait a second
+                 liftIO $ threadDelay (1000 * 1000)
+                 text (T.pack "redraw();")
 
 
-        get "/poll" $ do
-            -- do something and return a new list of commands to the client
---            liftIO $ do
---                res <- tryTakeMVar
-            json [NoOp,DrawLine (5,5) (50,50)]
-
-width :: Context -> Float
-width (Context w _ _) = fromIntegral w
-
-height :: Context -> Float
-height (Context _ h _) = fromIntegral h
-
-send :: Context -> Canvas () -> IO ()
-send (Context _ _ var) commands = send' commands id
+send :: Context -> Canvas a -> IO a
+send (Context (h,w) var callbacks) commands = send' commands id
   where
       send' :: Canvas a -> (String -> String) -> IO a
 
       send' (Bind (Return a) k)    cmds = send' (k a) cmds
       send' (Bind (Bind m k1) k2)  cmds = send' (Bind m (\ r -> Bind (k1 r) k2)) cmds
       send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd)
+      send' (Bind Size k)          cmds = send' (k (h,w)) cmds
       send' (Bind other k)         cmds = do
               res <- send' other cmds
               send' (k res) id
 
-{-
       send' (Get a)                cmds = do
-              -- Hack
-              () <- send' (Return a) cmds
-              return $ undefined
--}
-      send' (Return a)              cmds = do
+              db <- takeMVar callbacks
+              case Map.lookup a db of
+                Just var -> do
+                   putMVar callbacks db
+                   -- send the pending messages
+                   send' (Return ()) cmds
+                   -- wait for event to actually arrive (can block)
+                   event <- readChan var
+                   print ("1",event)
+                   return event
+                Nothing -> do
+                   var <- newChan
+                   putMVar callbacks $ Map.insert a var db
+                   send' (Return ()) (cmds . (("register('" ++ map toLower (show a) ++ "');") ++))
+                   -- wait for event to actually arrive (can block)
+                   event <- readChan var
+                   print ("2",event)
+                   return event
+      send' (Return a)             cmds = do
               putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
               return a
       send' other                  cmds = send' (Bind other Return) cmds
@@ -151,13 +185,12 @@ data Canvas :: * -> * where
         Command :: Command                       -> Canvas ()
         Bind    :: Canvas a -> (a -> Canvas b)   -> Canvas b
         Return  :: a                             -> Canvas a
-        Get     :: EventName                     -> Canvas JsEvent
-
+        Get     :: EventName                     -> Canvas Event
+        Size    ::                                  Canvas (Float,Float)
 
 instance Monad Canvas where
         return = Return
         (>>=) = Bind
-
 
 -- HTML5 Canvas assignments: FillStyle, LineWidth, MiterLimit, StrokeStyle
 data Command
@@ -229,7 +262,12 @@ instance Show Command where
 
 -----------------------------------------------------------------
 
--- get :: EventName -> Command
+-- | size of the canvas
+size :: Canvas (Float,Float)
+size = Size
+
+wait :: EventName -> Canvas Event
+wait = Get
 
 -----------------------------------------------------------------
 

@@ -55,7 +55,9 @@ Executable blank-canvas
         transformers,
         wai-extra,
         wai-middleware-static,
-        text
+        text,
+        containers,
+        vector
 
 
   -- Modules not exported by this package.

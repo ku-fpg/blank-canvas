@@ -4,10 +4,8 @@
         <script type="text/javascript" src="jquery.js"></script>
         <script type="text/javascript" src="jquery-json.js"></script>
     </head>
-    <body>
-        <canvas id="canvas" width="800" height="600" style="border: red 1px solid">
-                Hello World
-        </canvas>
+    <body style="padding: 0px; margin: 0px; border:0px">
+        <div id="canvas"></div>
         <script type="text/javascript">
             var t; // global timeout variable
             function getContext() {
@@ -17,27 +15,39 @@
                     }
                     alert("no canvas");
             }
+            function register(name) {
+                $(document).bind(name,function (e){
+                        $.ajax({ url: "/event",
+                         type: "POST",
+                         data: $.toJSON([name,e.which,e.pageX, e.pageY]),
+                         contentType: "application/json; charset=utf-8",
+                         dataType: "json"});
+                });
+            }  
             function redraw() {
-                t = setTimeout("draw()", 0); // run again in 1 second
-            }
-            function draw() {
                 $.ajax({ url: "/canvas",
                          type: "GET",
-                         cache : false,
                          dataType: "script"}); // desired response type
              }
              
-
             $(document).ready(function() {
-/*
-                $.ajax({ url: "/setDims",
+                // Make the canvas the size of the window
+                var w = $(window).width();
+                var h = $(window).height();
+
+                $("#canvas").replaceWith(
+                            '<canvas id="canvas" width="' + w + '" height="' + h +
+                            '" style="border: blue solid 0px; padding: 0px; margin: 0px"></canvas>');
+
+                 // start the server-side
+                $.ajax({ url: "/start",
                          type: "POST",
-                         data: $.toJSON([1,2]),
+                         data: $.toJSON([w,h]),
                          contentType: "application/json; charset=utf-8",
-                         success: function(res) { looper(); },
                          dataType: "json"}); // desired response type
-*/
-                draw();
+
+                // and ask for the first drawing
+                redraw();
             });
         </script>
     </body>
