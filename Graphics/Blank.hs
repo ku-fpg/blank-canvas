@@ -1,6 +1,9 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures #-}
 
-module Graphics.Blank where
+module Graphics.Blank
+        ( module Graphics.Blank
+        , module Graphics.Blank.Events
+        ) where
 
 import Control.Concurrent
 import Control.Concurrent.Chan
@@ -22,49 +25,14 @@ import Data.Map (Map)
 import Data.Char
 import Control.Monad
 
+import Graphics.Blank.Events
+
 data Context = Context
         { theSize :: (Float,Float)
         , theDraw :: MVar String
-        , eventHandle :: MVar (Map EventName (Chan Event))
+        , eventHandle :: MVar (Map EventName EventQueue)
         }
 
-data Event = Event
-        { jsCode  :: Int
-        , jsMouse :: Maybe (Int,Int)
-        }
-        deriving (Show)
-
-data NamedEvent = NamedEvent EventName Event
-        deriving (Show)
-
-instance FromJSON NamedEvent where
-   parseJSON o = do
-           (str,code,x,y) <- parseJSON o
-           case Map.lookup str namedEventDB of
-             Just n -> return $ NamedEvent n (Event code (Just (x,y)))
-             Nothing -> do (str,code,(),()) <- parseJSON o
-                           case Map.lookup str namedEventDB of
-                             Just n -> return $ NamedEvent n (Event code Nothing)
-                             Nothing -> fail "bad parse"
-
-namedEventDB = Map.fromList
-                [ (map toLower (show n),n)
-                | n <- [minBound..maxBound]
-                ]
-
-data EventName
-        -- Keys
-        = KeyPress
-        | KeyDown
-        | KeyUp
-        -- Mouse
-        | MouseDown
-        | MouseEnter
-        | MouseMove
-        | MouseOut
-        | MouseOver
-        | MouseUp
-        deriving (Eq, Ord, Show, Enum, Bounded)
 
 -- $(deriveJSON Prelude.id ''Event)
 
@@ -100,7 +68,7 @@ blankCanvas port actions = do
             liftIO $ print (nm,event)
             case Map.lookup nm db of
               Nothing -> json ()
-              Just var -> do liftIO $ writeChan var event -- perhaps use Chan?
+              Just var -> do liftIO $ writeEventQueue var event -- perhaps use Chan?
                              json ()
 
         get "/canvas" $ do
@@ -117,7 +85,7 @@ blankCanvas port actions = do
 
 
 -- | 'eventChan' gets the raw event channel for a specific event type.
-eventChan :: Context -> EventName -> IO (Chan Event)
+eventChan :: Context -> EventName -> IO EventQueue
 eventChan cxt@(Context _ canvas callbacks) a = do
         db <- takeMVar callbacks
         case Map.lookup a db of
@@ -125,7 +93,7 @@ eventChan cxt@(Context _ canvas callbacks) a = do
             putMVar callbacks db
             return var
           Nothing -> do
-            var <- newChan
+            var <- newEventQueue
             putMVar callbacks $ Map.insert a var db
             sendToCanvas cxt (("register('" ++ map toLower (show a) ++ "');") ++)
             return var
@@ -194,7 +162,7 @@ data Canvas :: * -> * where
         Command :: Command                           -> Canvas ()
         Bind    :: Canvas a -> (a -> Canvas b)       -> Canvas b
         Return  :: a                                 -> Canvas a
-        Get     :: EventName -> (Chan Event -> IO a) -> Canvas a
+        Get     :: EventName -> (EventQueue -> IO a) -> Canvas a
         Size    ::                                      Canvas (Float,Float)
 
 instance Monad Canvas where
@@ -276,13 +244,13 @@ size :: Canvas (Float,Float)
 size = Size
 
 readEvent :: EventName -> Canvas Event
-readEvent nm = Get nm readChan
+readEvent nm = Get nm readEventQueue
 
 tryReadEvent :: EventName -> Canvas (Maybe Event)
-tryReadEvent nm = Get nm $ \  chan -> do
-        b <- isEmptyChan chan
-        if b then return Nothing
-             else liftM Just $ readChan chan
+tryReadEvent nm = Get nm tryReadEventQueue
+
+flushEvents :: EventName -> Canvas ()
+flushEvents nm = Get nm flushEventQueue
 
 -----------------------------------------------------------------
 
