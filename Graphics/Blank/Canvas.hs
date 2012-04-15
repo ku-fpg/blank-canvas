@@ -40,6 +40,7 @@ data Command
 rgba :: (Int,Int,Int,Int) -> String
 rgba (r,g,b,a) = "rgba(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ "," ++ show a ++ ")"
 
+showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
 
 instance Show Command where

@@ -1,16 +1,49 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures #-}
 
 module Graphics.Blank
-        ( module Graphics.Blank
-        , module Graphics.Blank.Events
-        , module Graphics.Blank.Context
-        , module Graphics.Blank.Canvas
+        (
+         -- * Starting blank-canvas
+          blankCanvas
+         -- * Drawing pictures
+        , send
+        , beginPath
+        , clearRect
+        , closePath
+        , fill
+        , fillStyle
+        , lineTo
+        , lineWidth
+        , miterLimit
+        , moveTo
+        , restore
+        , rotate
+        , scale
+        , save
+        , stroke
+        , strokeStyle
+        , transform
+        , translate
+        -- * Building color
+        , rgba
+        -- * Reading brower state
+        , size
+        -- * Reading brower events
+        , Event(..)
+        , EventName(..)
+        , readEvent
+        , tryReadEvent
+        , flushEvents
+        , handleEvents
+        -- * Graphics 'Context'
+        , Context       -- abstact
+        -- * 'Canvas' 'Monad'
+        , Canvas        -- abstact
         ) where
 
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
 import Web.Scotty as S
-import Network.Wai.Middleware.RequestLogger
+-- import Network.Wai.Middleware.RequestLogger -- Used when debugging
 import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
 
@@ -21,7 +54,13 @@ import Graphics.Blank.Context
 import Graphics.Blank.Canvas
 import Paths_blank_canvas
 
--- $(deriveJSON Prelude.id ''Event)
+-- | blankCanvas is the main entry point into blank-canvas.
+-- A typical invocation would be
+--
+-- > main = blankCanvas 3000 $ \ c -> do
+-- >    send c $ do
+-- >        foobar
+-- >
 
 blankCanvas :: Int -> (Context -> IO ()) -> IO ()
 blankCanvas port actions = do
@@ -32,7 +71,7 @@ blankCanvas port actions = do
 
    -- perform the canvas writing actions
    -- in worker thread.
-   forkIO $ do
+   _ <- forkIO $ do
        -- do not start until we know the screen size
        (w,h) <- takeMVar dims
        actions (Context (w,h) picture callbacks)
@@ -49,7 +88,7 @@ blankCanvas port actions = do
 
         post "/start" $ do
             req <- jsonData
-            liftIO $ tryPutMVar dims (req  :: (Float,Float))
+            _ <- liftIO $ tryPutMVar dims (req  :: (Float,Float))
             json ()
 
         post "/event" $ do
@@ -78,7 +117,7 @@ blankCanvas port actions = do
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible.
 send :: Context -> Canvas a -> IO a
-send cxt@(Context (h,w) var callbacks) commands = send' commands id
+send cxt@(Context (h,w) _ _) commands = send' commands id
   where
       send' :: Canvas a -> (String -> String) -> IO a
 

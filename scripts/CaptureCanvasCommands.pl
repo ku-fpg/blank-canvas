@@ -1,4 +1,4 @@
-open(F,"Graphics/Blank.hs");
+open(F,"Graphics/Blank/Canvas.hs");
 
 $state = 0;
 while(<F>) {
@@ -37,6 +37,8 @@ while(<F>) {
 			} else {
 				$type = "$orig_args -> Canvas ()";
 			}
+
+			$header .= "        , $name\n";
 
 #			$dsl .= "-- | '$name'\n";
 			$dsl .= "\n";
@@ -87,3 +89,5 @@ while(<F>) {
 print "-- DSL\n$dsl\n";
 
 print "-- Show\n$show\n";
+
+print "-- Header\n$header\n";
