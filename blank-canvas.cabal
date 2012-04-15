@@ -40,29 +40,23 @@ Build-type:          Simple
 -- Extra-source-files:
 
 -- Constraint on the version of Cabal needed to build this package.
-Cabal-version:       >=1.8
+Cabal-version:       >= 1.10
 
-
-Executable blank-canvas
-  -- .hs or .lhs file containing the Main module.
-  Main-is: Main.hs
-
-  -- Packages needed in order to build this package.
-  Build-depends:
-        aeson,
-        base,
-        scotty,
-        transformers,
-        wai-extra,
-        wai-middleware-static,
-        text,
-        containers,
-        vector
-
-
-  -- Modules not exported by this package.
-  -- Other-modules:
-
-  -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
-  -- Build-tools:
+Library
+  Exposed-modules:     Graphics.Blank
+  other-modules:       Graphics.Blank.Canvas,
+                       Graphics.Blank.Context,
+                       Graphics.Blank.Events
+  default-language:    Haskell2010
+  build-depends:       base,
+                       aeson,
+                       scotty,
+                       transformers,
+                       wai-extra,
+                       wai-middleware-static,
+                       text,
+                       containers,
+                       vector
+  
+  GHC-options: -Wall -fno-warn-orphans
 

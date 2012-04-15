@@ -29,7 +29,7 @@ import Control.Monad
 import Graphics.Blank.Events
 import Graphics.Blank.Context
 import Graphics.Blank.Canvas
-
+import Paths_blank_canvas
 
 -- $(deriveJSON Prelude.id ''Event)
 
@@ -47,12 +47,15 @@ blankCanvas port actions = do
        (w,h) <- takeMVar dims
        actions (Context (w,h) picture callbacks)
 
+   indexHtml <- getDataFileName "static/index.html"
+
+   print indexHtml
 
    scotty port $ do
         middleware logStdoutDev
         middleware $ staticRoot "static"
 
-        get "/" $ file "static/index.html"
+        get "/" $ file indexHtml
 
         post "/start" $ do
             req <- jsonData
@@ -60,6 +63,7 @@ blankCanvas port actions = do
             json ()
 
         post "/event" $ do
+            header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             NamedEvent nm event <- jsonData
             db <- liftIO $ readMVar callbacks
             liftIO $ print (nm,event)
@@ -109,56 +113,3 @@ send cxt@(Context (h,w) var callbacks) commands = send' commands id
 
       sendCmds :: (String -> String) -> IO ()
       sendCmds cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
-{-
-      send' (Get name)             cmds = do
-              -- send the commands
-              return undefined
--}
---      send' (Command draw) todo = todo ++ show commands
-{-
-
-
-
-
--}
---    return ()
-
-
-data StateOfInput = StateOfInput
-        { mousePos :: Maybe (Int,Int)
-        , mousePress :: Bool
-        }
-
-
-{-
-   Browser
-   Keyboard
-   Mouse
-     - down/up
-   Touch
- -}
-
-{-
-  show (BeginPath)             = "c.beginPath();"
-  show (ClosePath)             = "c.closePath();"
---  show (ClearRect a b c d)     = "c.clearRect(" ++ showJ a ++ "," ++ showJ b ++ "," ++ showJ c ++ "," ++ showJ d ++ ");"
-  show (Fill)                  = "c.fill();"
-  show (FillStyle any)         = "c.fillStyle = " ++ show any ++ ";"
-  show (LineTo a b)            = "c.lineTo(" ++ showJ a ++ "," ++ showJ b ++ ");"
-  show (LineWidth w)           = "c.lineWidth = " ++ showJ w ++ ";"
-  show (MiterLimit f)          = "c.miterLimit = " ++ showJ f ++ ";"
-  show (MoveTo a b)            = "c.moveTo(" ++ showJ a ++ "," ++ showJ b ++ ");"
-  show (Restore)   	       = "c.restore();"
-  show (Rotate f)   	       = "c.rotate(" ++ showJ f ++ ");"
-  show (Scale a b)             = "c.scale(" ++ showJ a ++ "," ++ showJ b ++ ");"
-  show (Save) 		       = "c.save();"
-  show (Stroke)   	       = "c.stroke();"
-  show (StrokeStyle any)       = "c.strokeStyle = " ++ show any ++ ";"
-  show (Transform a b c d e f) = "c.transform(" ++ showJ a ++ "," ++ showJ b ++ "," ++ showJ c ++ "," ++ showJ d ++ "," ++ showJ e ++ "," ++ showJ f ++ ");"
-  show (Translate a b)         = "c.translate(" ++ showJ a ++ "," ++ showJ b ++ ");"
--}
--- And our Deep DSL.
-
---keypress :: (Int -> IO ()) -> Command
---keypress f =
-
