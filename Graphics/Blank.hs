@@ -68,9 +68,9 @@ blankCanvas port actions = do
    scotty port $ do
 --        middleware logStdoutDev
 
-        middleware $ staticRoot $ TS.pack $ dataDir
+        middleware $ staticRoot $ TS.pack $ (dataDir ++ "/static")
 
-        get "/" $ file $ dataDir ++ "/index.html"
+        get "/" $ file $ dataDir ++ "/static/index.html"
 
         post "/start" $ do
             req <- jsonData
