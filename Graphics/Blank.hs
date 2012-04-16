@@ -15,8 +15,6 @@ module Graphics.Blank
         , tryReadEvent
         , flushEvents
         , size
-        -- * Building color
-        , rgba
         -- * Events
         , Event(..)
         , EventName(..)

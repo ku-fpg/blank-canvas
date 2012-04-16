@@ -44,9 +44,6 @@ data Command
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
 
-rgba :: (Int,Int,Int,Float) -> String
-rgba (r,g,b,a) = "rgba(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ "," ++ showJ a ++ ")"
-
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
 
