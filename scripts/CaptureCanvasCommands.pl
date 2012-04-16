@@ -34,7 +34,7 @@ while(<F>) {
 			$name = $cmd;
 			$name =~ s/(\w+)/\l$1/g;
 			if ($args eq "") {
-				$type = "Canvas ()";
+				$type = "() -> Canvas ()";
 			} else {
 				$type = "$orig_args -> Canvas ()";
 			}
@@ -45,7 +45,7 @@ while(<F>) {
 			$dsl .= "\n";
 			$dsl .= "$name :: $type\n";
 			if ($args eq "") {
-				$dsl .= "$name = Command $cmd\n";
+				$dsl .= "$name () = Command $cmd\n";
 				$show .= "  show $cmd = \"c.$name();\"\n";
 			} else {
 				$dsl .= "$name = Command . $cmd\n";

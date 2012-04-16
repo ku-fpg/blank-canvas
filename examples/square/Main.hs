@@ -3,25 +3,25 @@ module Main where
 import Graphics.Blank
 
 main = blankCanvas 3000 $ \ canvas -> do
-          let loop (x,y) colors = do
+          let loop (x,y) (color:colors) = do
                 send canvas $ do
-                        save
+                        save()
                         translate (x,y)
-                        beginPath
+                        beginPath()
                         moveTo(-100,-100)
                         lineTo(-100,100)
                         lineTo(100,100)
                         lineTo(100,-100)
-                        closePath
+                        closePath()
                         lineWidth 10
-                        strokeStyle (head colors)
-                        stroke
-                        restore
+                        strokeStyle color
+                        stroke()
+                        restore()
 
                 event <- send canvas $ readEvent MouseDown
                 case jsMouse event of
                         Nothing -> loop (x,y) colors
-                        Just (x',y') -> loop (fromIntegral x',fromIntegral y') (tail colors)
+                        Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
 
           (width,height) <- send canvas size
           loop (width / 2,height / 2)

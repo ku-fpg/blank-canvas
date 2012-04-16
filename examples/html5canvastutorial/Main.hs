@@ -7,13 +7,13 @@ main = blankCanvas 3000 $ \ canvas ->
               do send canvas $ do
                       (width,height) <- size
                       clearRect (0,0,width,height)
-                      beginPath
+                      beginPath()
 
                  -- run this example
                  send canvas $ do
-                      save
+                      save()
                       example
-                      restore
+                      restore()
 
                  -- draw the watermark in corner
                  send canvas $ message name
@@ -47,32 +47,32 @@ examples =
 example_1_2_1 = do
         moveTo(100,150)
         lineTo(450,50)
-        stroke
+        stroke()
 
 example_1_2_2 = do
         moveTo(100,150)
         lineTo(450,50)
         lineWidth 15
-        stroke
+        stroke()
 
 example_1_2_3 = do
         moveTo(100,150)
         lineTo(450,50)
         lineWidth 5
         strokeStyle "#ff0000"
-        stroke
+        stroke()
 
 example_1_2_4 = do
         (width,height) <- size
 
         sequence_
-           [ do beginPath
+           [ do beginPath()
                 moveTo(200, height / 2 + n)
                 lineTo(width - 200, height / 2 + n)
                 lineWidth 20
                 strokeStyle "#0000ff"
                 lineCap cap
-                stroke
+                stroke()
            | (cap,n) <- zip ["butt","round","square"] [-50,0,50]
            ]
 
@@ -87,7 +87,7 @@ example_1_3_1 = do
         arc(centerX, centerY, radius, startingAngle, endingAngle, counterclockwise)
         lineWidth 15
         strokeStyle "black"
-        stroke
+        stroke()
 
 example_1_8_1 = do
         font "40pt Calibri"
@@ -129,10 +129,10 @@ example_1_8_5 = do
 -- Small "watermark-like text in the bottom corner"
 message :: String -> Canvas ()
 message msg = do
-        save
+        save()
         (width,height) <- size
         font "30pt Calibri"
         textAlign "left"
         fillStyle "#8090a0"
         fillText(msg, 10, height - 10)
-        restore
+        restore()

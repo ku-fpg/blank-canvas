@@ -9,20 +9,20 @@ main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
         send canvas $ do
                 (width,height) <- size
                 clearRect (0,0,width,height)
-                beginPath
-                save
+                beginPath()
+                save()
                 translate (width / 2,height / 2)
                 rotate (pi * n)
-                beginPath
+                beginPath()
                 moveTo(-100,-100)
                 lineTo(-100,100)
                 lineTo(100,100)
                 lineTo(100,-100)
-                closePath
+                closePath()
                 lineWidth 10
                 strokeStyle "green"
-                stroke
-                restore
+                stroke()
+                restore()
 
         loop canvas (n + 0.01)
 

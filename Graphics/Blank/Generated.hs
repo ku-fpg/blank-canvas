@@ -33,17 +33,17 @@ instance Show Command where
 arc :: (Float,Float,Float,Float,Float,Bool) -> Canvas ()
 arc = Command . Arc
 
-beginPath :: Canvas ()
-beginPath = Command BeginPath
+beginPath :: () -> Canvas ()
+beginPath () = Command BeginPath
 
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
 clearRect = Command . ClearRect
 
-closePath :: Canvas ()
-closePath = Command ClosePath
+closePath :: () -> Canvas ()
+closePath () = Command ClosePath
 
-fill :: Canvas ()
-fill = Command Fill
+fill :: () -> Canvas ()
+fill () = Command Fill
 
 fillStyle :: String -> Canvas ()
 fillStyle = Command . FillStyle
@@ -69,8 +69,8 @@ miterLimit = Command . MiterLimit
 moveTo :: (Float,Float) -> Canvas ()
 moveTo = Command . MoveTo
 
-restore :: Canvas ()
-restore = Command Restore
+restore :: () -> Canvas ()
+restore () = Command Restore
 
 rotate :: Float -> Canvas ()
 rotate = Command . Rotate
@@ -78,11 +78,11 @@ rotate = Command . Rotate
 scale :: (Float,Float) -> Canvas ()
 scale = Command . Scale
 
-save :: Canvas ()
-save = Command Save
+save :: () -> Canvas ()
+save () = Command Save
 
-stroke :: Canvas ()
-stroke = Command Stroke
+stroke :: () -> Canvas ()
+stroke () = Command Stroke
 
 strokeText :: (String,Float,Float) -> Canvas ()
 strokeText = Command . StrokeText
