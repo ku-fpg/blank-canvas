@@ -41,10 +41,19 @@ import System.FilePath (dropFileName)
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
 --
--- > main = blankCanvas 3000 $ \ c -> do
--- >    send c $ do
--- >        foobar
+-- >module Main where
 -- >
+-- >import Graphics.Blank
+-- >
+-- >main = blankCanvas 3000 $ \ canvas -> do
+-- >        send canvas $ do
+-- >                moveTo(50,50)
+-- >                lineTo(200,100)
+-- >                lineWidth 10
+-- >                strokeStyle "red"
+-- >                stroke
+-- >
+
 
 blankCanvas :: Int -> (Context -> IO ()) -> IO ()
 blankCanvas port actions = do
