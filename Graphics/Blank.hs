@@ -26,7 +26,6 @@ import Web.Scotty as S
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
-import qualified Data.Text as TS
 
 import qualified Data.Map as Map
 
@@ -35,8 +34,6 @@ import Graphics.Blank.Context
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Paths_blank_canvas
-
-import System.FilePath (dropFileName)
 
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
@@ -57,31 +54,17 @@ import System.FilePath (dropFileName)
 
 blankCanvas :: Int -> (Context -> IO ()) -> IO ()
 blankCanvas port actions = do
-   picture <- newEmptyMVar
-
-   dims <- newEmptyMVar
-   callbacks <- newMVar $ Map.empty
-
-   -- perform the canvas writing actions
-   -- in worker thread.
-   _ <- forkIO $ do
-       -- do not start until we know the screen size
-       (w,h) <- takeMVar dims
-       actions (Context (w,h) picture callbacks 0)
-
    dataDir <- getDataDir
-   print dataDir
+--   print dataDir
 
    uVar <- newMVar 0
-
-   contextDB <- newMVar $ (Map.empty :: Map.Map Int Context)
-
    let getUniq :: IO Int
        getUniq = do
               u <- takeMVar uVar
               putMVar uVar (u + 1)
               return u
 
+   contextDB <- newMVar $ (Map.empty :: Map.Map Int Context)
    let newContext :: (Float,Float) -> IO Int
        newContext (w,h) = do
             uq <- getUniq
