@@ -16,14 +16,17 @@ instance Monad Canvas where
         return = Return
         (>>=) = Bind
 
--- HTML5 Canvas assignments: FillStyle, LineCap, LineWidth, MiterLimit, StrokeStyle
+-- HTML5 Canvas assignments: FillStyle, Font, LineCap, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
 data Command
         -- regular HTML5 canvas commands
-        = BeginPath
+        = Arc (Float,Float,Float,Float,Float,Bool)
+        | BeginPath
         | ClearRect (Float,Float,Float,Float)
         | ClosePath
         | Fill
         | FillStyle String
+        | FillText (String,Float,Float)
+        | Font String
         | LineCap String
         | LineTo (Float,Float)
         | LineWidth Float
@@ -34,15 +37,22 @@ data Command
         | Scale (Float,Float)
         | Save
         | Stroke
+        | StrokeText (String,Float,Float)
         | StrokeStyle String
+        | TextAlign String
+        | TextBaseline String
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
 
-rgba :: (Int,Int,Int,Int) -> String
-rgba (r,g,b,a) = "rgba(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ "," ++ show a ++ ")"
+rgba :: (Int,Int,Int,Float) -> String
+rgba (r,g,b,a) = "rgba(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ "," ++ showJ a ++ ")"
 
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
+
+showB :: Bool -> String
+showB True = "true"
+showB False = "false"
 
 -- | size of the canvas
 size :: Canvas (Float,Float)
