@@ -15,9 +15,9 @@ data Context = Context
         , sessionNo   :: Int
         }
 
--- | 'eventChan' gets the raw event channel for a specific event type.
-eventChan :: Context -> EventName -> IO EventQueue
-eventChan cxt@(Context _ _ callbacks num) a = do
+-- | 'events' gets the raw event queue for a specific event type.
+events :: Context -> EventName -> IO EventQueue
+events cxt@(Context _ _ callbacks num) a = do
         db <- takeMVar callbacks
         case Map.lookup a db of
           Just var -> do

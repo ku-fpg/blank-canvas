@@ -150,7 +150,7 @@ send cxt@(Context (h,w) _ _ _) commands = send' commands id
               -- clear the commands
               sendToCanvas cxt cmds
               -- get the channel for this event
-              chan <- eventChan cxt a
+              chan <- events cxt a
               op chan
 
       send' (Return a)             cmds = do
