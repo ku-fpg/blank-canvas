@@ -68,11 +68,14 @@ blankCanvas port actions = do
    scotty port $ do
 --        middleware logStdoutDev
 
-        middleware $ staticRoot $ TS.pack $ (dataDir ++ "/static")
+--        middleware $ staticRoot $ TS.pack $ (dataDir ++ "/static")
 
         get "/" $ file $ dataDir ++ "/static/index.html"
+        get "/jquery.js" $ file $ dataDir ++ "/static/jquery.js"
+        get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
 
         post "/start" $ do
+
             req <- jsonData
             _ <- liftIO $ tryPutMVar dims (req  :: (Float,Float))
             json ()
