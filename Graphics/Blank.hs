@@ -25,6 +25,7 @@ module Graphics.Blank
 
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
+import Network.Wai.Handler.Warp (run)
 import Web.Scotty as S
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
@@ -80,7 +81,7 @@ blankCanvas port actions = do
             _ <- forkIO $ actions cxt
             return uq
 
-   scotty port $ do
+   app <- scottyApp $ do
 --        middleware logStdoutDev
 
 --        middleware $ staticRoot $ TS.pack $ (dataDir ++ "/static")
@@ -133,6 +134,8 @@ blankCanvas port actions = do
             case Map.lookup num db of
                Nothing -> text (T.pack $ "alert('/canvas/, can not find " ++ show num ++ "');")
                Just (Context _ pic _ _) -> tryPicture pic 10
+
+   run port app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible.

@@ -33,7 +33,8 @@ Library
                        text             >= 0.11,
                        transformers     >= 0.2.2,
                        wai-extra        >= 1.2,
-                       wai-middleware-static
+                       wai-middleware-static,
+                       warp             >= 1.2.0.1
 
 
   GHC-options:  -Wall -fno-warn-orphans
