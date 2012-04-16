@@ -67,6 +67,8 @@ while(<F>) {
 				     	push(@outs,"showJ a$n");
 				     } elsif ($arg eq "String") {
 				     	push(@outs,"show a$n");
+				     } elsif ($arg eq "Bool") {
+				     	push(@outs,"showB a$n");
 				     } else {
 				     	push(@outs,"a$n");
 				     }
