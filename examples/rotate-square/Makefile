@@ -6,7 +6,7 @@ build::
 
 # execute
 run::
-	export blank_canvas_datadir=../.. ; ./$(BIN)
+	./$(BIN)
 
 # Make using source
 build-inplace::
