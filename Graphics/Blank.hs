@@ -14,8 +14,7 @@ module Graphics.Blank
         , readEvent
         , tryReadEvent
         , flushEvents
-        , height
-        , width
+        , size
         -- * Events
         , Event(..)
         , EventName(..)
