@@ -1,5 +1,18 @@
-rotate-square::
-	ghc --make Main.hs -o rotate-square
+BIN=rotate-square
 
+# Make using installed package
+build::
+	ghc --make Main.hs -o $(BIN)
+
+# execute
 run::
-	./rotate-square
+	export blank_canvas_datadir=../.. ; ./$(BIN)
+
+# Make using source
+build-inplace::
+	ghc --make Main.hs -i.:../..:../../dist/build/autogen/ -o $(BIN)-inplace
+
+# execute inplace
+run-inplace::
+	export blank_canvas_datadir=../.. ; ./$(BIN)-inplace
+

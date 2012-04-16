@@ -62,15 +62,14 @@ blankCanvas port actions = do
        (w,h) <- takeMVar dims
        actions (Context (w,h) picture callbacks)
 
-   indexHtml <- getDataFileName "static/index.html"
-
-   print indexHtml
+   dataDir <- getDataDir
 
    scotty port $ do
 --        middleware logStdoutDev
-        middleware $ staticRoot $ TS.pack $ dropFileName indexHtml
 
-        get "/" $ file indexHtml
+        middleware $ staticRoot $ TS.pack $ dataDir
+
+        get "/" $ file $ dataDir ++ "/index.html"
 
         post "/start" $ do
             req <- jsonData
