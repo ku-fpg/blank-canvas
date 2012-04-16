@@ -28,6 +28,7 @@ import Web.Scotty as S
 -- import Network.Wai.Middleware.RequestLogger -- Used when debugging
 import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
+import qualified Data.Text as TS
 
 import qualified Data.Map as Map
 
@@ -36,6 +37,8 @@ import Graphics.Blank.Context
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Paths_blank_canvas
+
+import System.FilePath (dropFileName)
 
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
@@ -65,7 +68,7 @@ blankCanvas port actions = do
 
    scotty port $ do
 --        middleware logStdoutDev
-        middleware $ staticRoot "static"
+        middleware $ staticRoot $ TS.pack $ dropFileName indexHtml
 
         get "/" $ file indexHtml
 
