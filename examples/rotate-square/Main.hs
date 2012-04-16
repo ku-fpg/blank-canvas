@@ -4,7 +4,6 @@ import Graphics.Blank
 
 main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
  where
---    loop canvas n | n > 2 = wait canvas
     loop canvas n = do
 
         send canvas $ do
@@ -21,7 +20,7 @@ main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
                 lineTo(100,-100)
                 closePath
                 lineWidth 10
-                strokeStyle $ rgba (100,200,128,255)
+                strokeStyle "green"
                 stroke
                 restore
 
