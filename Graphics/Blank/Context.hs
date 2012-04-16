@@ -12,11 +12,12 @@ data Context = Context
         { theSize     :: (Float,Float)
         , theDraw     :: MVar String
         , eventHandle :: MVar (Map EventName EventQueue)
+        , sessionNo   :: Int
         }
 
 -- | 'eventChan' gets the raw event channel for a specific event type.
 eventChan :: Context -> EventName -> IO EventQueue
-eventChan cxt@(Context _ _ callbacks) a = do
+eventChan cxt@(Context _ _ callbacks num) a = do
         db <- takeMVar callbacks
         case Map.lookup a db of
           Just var -> do
@@ -25,12 +26,12 @@ eventChan cxt@(Context _ _ callbacks) a = do
           Nothing -> do
             var <- newEventQueue
             putMVar callbacks $ Map.insert a var db
-            sendToCanvas cxt (("register('" ++ map toLower (show a) ++ "');") ++)
+            sendToCanvas cxt (("register('" ++ map toLower (show a) ++ "'," ++ show num ++ ");") ++)
             return var
 
 -- | internal command to send a message to the canvas.
 sendToCanvas :: Context -> ShowS -> IO ()
-sendToCanvas (Context _ var _) cmds = putMVar var $ "var c = getContext(); " ++ cmds "redraw();"
+sendToCanvas (Context _ var _ num) cmds = putMVar var $ "if (session == " ++ show num ++ "){var c = getContext();" ++ cmds "}"
 
 -- | Create a thread to perceptually handle a specific type of event.
 -- Do not use at the same application as (try)readEventQueue on the

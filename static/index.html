@@ -7,7 +7,7 @@
     <body style="padding: 0px; margin: 0px; border:0px">
         <div id="canvas"></div>
         <script type="text/javascript">
-            var t; // global timeout variable
+            var session = 0; // global session number
             function getContext() {
                     var canvas = document.getElementById("canvas");
                     if (canvas.getContext) {
@@ -15,9 +15,9 @@
                     }
                     alert("no canvas");
             }
-            function register(name) {
+            function register(name,mysession) {
                 $(document).bind(name,function (e){
-                        $.ajax({ url: "/event",
+                        $.ajax({ url: "/event/" + mysession,
                          type: "POST",
                          data: $.toJSON([name,e.which,e.pageX, e.pageY]),
                          contentType: "application/json; charset=utf-8",
@@ -25,9 +25,13 @@
                 });
             }  
             function redraw() {
-                $.ajax({ url: "/canvas",
+                $.ajax({ url: "/canvas/" + session,
                          type: "GET",
-                         dataType: "script"}); // desired response type
+                         dataType: "script",
+                         success: function success() {
+                                 redraw();
+                         }
+                         }); // desired response type
              }
              
             $(document).ready(function() {
@@ -43,11 +47,7 @@
                 $.ajax({ url: "/start",
                          type: "POST",
                          data: $.toJSON([w,h]),
-                         contentType: "application/json; charset=utf-8",
-                         dataType: "json"}); // desired response type
-
-                // and ask for the first drawing
-                redraw();
+                         dataType: "script"}); // desired response type
             });
         </script>
     </body>

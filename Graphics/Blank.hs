@@ -23,8 +23,8 @@ module Graphics.Blank
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
 import Web.Scotty as S
--- import Network.Wai.Middleware.RequestLogger -- Used when debugging
-import Network.Wai.Middleware.Static
+--import Network.Wai.Middleware.RequestLogger -- Used when debugging
+--import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
 import qualified Data.Text as TS
 
@@ -67,10 +67,32 @@ blankCanvas port actions = do
    _ <- forkIO $ do
        -- do not start until we know the screen size
        (w,h) <- takeMVar dims
-       actions (Context (w,h) picture callbacks)
+       actions (Context (w,h) picture callbacks 0)
 
    dataDir <- getDataDir
    print dataDir
+
+   uVar <- newMVar 0
+
+   contextDB <- newMVar $ (Map.empty :: Map.Map Int Context)
+
+   let getUniq :: IO Int
+       getUniq = do
+              u <- takeMVar uVar
+              putMVar uVar (u + 1)
+              return u
+
+   let newContext :: (Float,Float) -> IO Int
+       newContext (w,h) = do
+            uq <- getUniq
+            picture <- newEmptyMVar
+            callbacks <- newMVar $ Map.empty
+            let cxt = Context (w,h) picture callbacks uq
+            db <- takeMVar contextDB
+            putMVar contextDB $ Map.insert uq cxt db
+            -- Here is where we actually spawn the user code
+            _ <- forkIO $ actions cxt
+            return uq
 
    scotty port $ do
 --        middleware logStdoutDev
@@ -82,42 +104,54 @@ blankCanvas port actions = do
         get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
 
         post "/start" $ do
-
             req <- jsonData
-            _ <- liftIO $ tryPutMVar dims (req  :: (Float,Float))
-            json ()
+            uq  <- liftIO $ newContext req
+            text (T.pack $ "session = " ++ show uq ++ ";redraw();")
 
-        post "/event" $ do
+        post "/event/:num" $ do
             header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
+            num <- param "num"
+--            liftIO $ print (num :: Int)
             NamedEvent nm event <- jsonData
-            db <- liftIO $ readMVar callbacks
-            liftIO $ print (nm,event)
-            case Map.lookup nm db of
-              Nothing -> json ()
-              Just var -> do liftIO $ writeEventQueue var event -- perhaps use Chan?
-                             json ()
+            db <- liftIO $ readMVar contextDB
+            case Map.lookup num db of
+               Nothing -> json ()
+               Just (Context _ _ callbacks _) -> do
+                   db' <- liftIO $ readMVar callbacks
+--                   liftIO $ print (nm,event)
+                   case Map.lookup nm db' of
+                       Nothing -> json ()
+                       Just var -> do liftIO $ writeEventQueue var event
+                                      json ()
 
-        get "/canvas" $ do
+        get "/canvas/:num" $ do
             header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             -- do something and return a new list of commands to the client
-            let tryPicture n = do
+            num <- param "num"
+--            liftIO $ print (num :: Int)
+            let tryPicture picture n = do
                     res <- liftIO $ tryTakeMVar picture
                     case res of
                      Just js -> do
+--                            liftIO $ print js
                             text $ T.pack js
                      Nothing | n == 0 ->
                             -- give the browser something to do (approx every second)
-                            text (T.pack "redraw();")
+                            text (T.pack "")
                      Nothing -> do
                             -- hack, wait a 1/10 of a second
                             liftIO $ threadDelay (100 * 1000)
-                            tryPicture (n - 1 :: Int)
-            tryPicture 10
+                            tryPicture picture (n - 1 :: Int)
+
+            db <- liftIO $ readMVar contextDB
+            case Map.lookup num db of
+               Nothing -> text (T.pack $ "alert('/canvas/, can not find " ++ show num ++ "');")
+               Just (Context _ pic _ _) -> tryPicture pic 10
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible.
 send :: Context -> Canvas a -> IO a
-send cxt@(Context (h,w) _ _) commands = send' commands id
+send cxt@(Context (h,w) _ _ _) commands = send' commands id
   where
       send' :: Canvas a -> (String -> String) -> IO a
 
