@@ -63,6 +63,7 @@ blankCanvas port actions = do
        actions (Context (w,h) picture callbacks)
 
    dataDir <- getDataDir
+   print dataDir
 
    scotty port $ do
 --        middleware logStdoutDev
