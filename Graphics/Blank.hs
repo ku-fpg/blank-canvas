@@ -7,7 +7,7 @@ module Graphics.Blank
         -- * Graphics 'Context'
         , Context       -- abstact
         , send
-        , handleEvents
+        , events
          -- * Drawing pictures using the Canvas DSL
         , Canvas        -- abstact
         , module Graphics.Blank.Generated
@@ -18,6 +18,9 @@ module Graphics.Blank
         -- * Events
         , Event(..)
         , EventName(..)
+        , readEventQueue
+        , tryReadEventQueue
+        , flushEventQueue
         ) where
 
 import Control.Concurrent
