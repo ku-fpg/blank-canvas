@@ -5,8 +5,9 @@ import Graphics.Blank
 main = blankCanvas 3000 $ \ canvas ->
   sequence_ [ -- blank the screeen
               do send canvas $ do
-                      (width,height) <- size
-                      clearRect (0,0,width,height)
+                      w <- width
+                      h <- height
+                      clearRect (0,0,w,h)
                       beginPath()
 
                  -- run this example
@@ -63,12 +64,13 @@ example_1_2_3 = do
         stroke()
 
 example_1_2_4 = do
-        (width,height) <- size
+        w <- width
+        h <- height
 
         sequence_
            [ do beginPath()
-                moveTo(200, height / 2 + n)
-                lineTo(width - 200, height / 2 + n)
+                moveTo(200, h / 2 + n)
+                lineTo(w - 200, h / 2 + n)
                 lineWidth 20
                 strokeStyle "#0000ff"
                 lineCap cap
@@ -77,9 +79,10 @@ example_1_2_4 = do
            ]
 
 example_1_3_1 = do
-        (width,height) <- size
-        let centerX = width / 2;
-        let centerY = height / 2;
+        w <- width
+        h <- height
+        let centerX = w / 2;
+        let centerY = h / 2;
         let radius = 75;
         let startingAngle = 1.1 * pi
         let endingAngle = 1.9 * pi
@@ -105,23 +108,25 @@ example_1_8_3 = do
         strokeText("Hello World!", 80, 110)
 
 example_1_8_4 = do
-        (width,height) <- size
-        let x = width / 2
-        let y = height / 2
+        w <- width
+        h <- height
+        let centerX = w / 2;
+        let centerY = h / 2;
         font "30pt Calibri"
         textAlign "center"
         fillStyle "blue"
-        fillText("Hello World!", x, y)
+        fillText("Hello World!", centerX, centerY)
 
 example_1_8_5 = do
-        (width,height) <- size
-        let x = width / 2
-        let y = height / 2
+        w <- width
+        h <- height
+        let centerX = w / 2;
+        let centerY = h / 2;
         font "30pt Calibri"
         textAlign "center"
         textBaseline "middle"
         fillStyle "blue"
-        fillText("Hello World!", x, y)
+        fillText("Hello World!", centerX, centerY)
 
 
 ---------------------------------------------------------------------------
@@ -130,9 +135,10 @@ example_1_8_5 = do
 message :: String -> Canvas ()
 message msg = do
         save()
-        (width,height) <- size
+        w <- width
+        h <- height
         font "30pt Calibri"
         textAlign "left"
         fillStyle "#8090a0"
-        fillText(msg, 10, height - 10)
+        fillText(msg, 10, h - 10)
         restore()

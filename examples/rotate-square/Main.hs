@@ -7,11 +7,12 @@ main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
     loop canvas n = do
 
         send canvas $ do
-                (width,height) <- size
-                clearRect (0,0,width,height)
+                w <- width
+                h <- height
+                clearRect (0,0,w,h)
                 beginPath()
                 save()
-                translate (width / 2,height / 2)
+                translate (w / 2,h / 2)
                 rotate (pi * n)
                 beginPath()
                 moveTo(-100,-100)

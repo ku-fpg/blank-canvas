@@ -52,8 +52,11 @@ showB True = "true"
 showB False = "false"
 
 -- | size of the canvas
-size :: Canvas (Float,Float)
-size = Size
+width :: Canvas Float
+width = Size >>= return . fst
+
+height :: Canvas Float
+height = Size >>= return . snd
 
 readEvent :: EventName -> Canvas Event
 readEvent nm = Get nm readEventQueue

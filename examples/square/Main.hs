@@ -23,8 +23,12 @@ main = blankCanvas 3000 $ \ canvas -> do
                         Nothing -> loop (x,y) colors
                         Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
 
-          (width,height) <- send canvas size
-          loop (width / 2,height / 2)
+          (w,h) <- send canvas $ do
+                        w <- width
+                        h <- height
+                        return (w,h)
+
+          loop (w / 2,h / 2)
                (cycle [ "#749871", "#1887f2", "#808080", "f01234"])
 
 
