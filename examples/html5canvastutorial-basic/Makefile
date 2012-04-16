@@ -1,5 +1,18 @@
-tutorial::
-	ghc --make Main.hs -i.:../..:../../dist/build/autogen/ -o tutorial
+BIN=tutorial
 
+# Make using installed package
+build::
+	ghc --make Main.hs -o $(BIN)
+
+# execute
 run::
-	export blank_canvas_datadir=../.. ; ./tutorial
+	./$(BIN)
+
+# Make using source
+build-inplace::
+	ghc --make Main.hs -i.:../..:../../dist/build/autogen/ -o $(BIN)-inplace
+
+# execute inplace
+run-inplace::
+	export blank_canvas_datadir=../.. ; ./$(BIN)-inplace
+
