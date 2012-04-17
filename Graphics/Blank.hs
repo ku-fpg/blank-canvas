@@ -18,6 +18,7 @@ module Graphics.Blank
         -- * Events
         , Event(..)
         , EventName(..)
+        , EventQueue
         , readEventQueue
         , tryReadEventQueue
         , flushEventQueue
