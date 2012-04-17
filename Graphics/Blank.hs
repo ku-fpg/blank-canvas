@@ -13,7 +13,6 @@ module Graphics.Blank
         , module Graphics.Blank.Generated
         , readEvent
         , tryReadEvent
-        , flushEvents
         , size
         -- * Events
         , Event(..)
@@ -21,7 +20,6 @@ module Graphics.Blank
         , EventQueue
         , readEventQueue
         , tryReadEventQueue
-        , flushEventQueue
         ) where
 
 import Control.Concurrent

@@ -8,7 +8,6 @@ module Graphics.Blank.Events
         , writeEventQueue
         , readEventQueue
         , tryReadEventQueue
-        , flushEventQueue
         , newEventQueue
         ) where
 
@@ -76,13 +75,6 @@ tryReadEventQueue q = atomically $ do
         b <- isEmptyTChan q
         if b then return Nothing
              else liftM Just (readTChan q)
-
-flushEventQueue :: EventQueue -> IO ()
-flushEventQueue q = do
-        r <- tryReadEventQueue q
-        case r of
-          Just {} -> flushEventQueue q
-          Nothing -> return ()
 
 newEventQueue :: IO EventQueue
 newEventQueue = atomically newTChan

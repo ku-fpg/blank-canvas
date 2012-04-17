@@ -61,5 +61,3 @@ readEvent nm = Get nm readEventQueue
 tryReadEvent :: EventName -> Canvas (Maybe Event)
 tryReadEvent nm = Get nm tryReadEventQueue
 
-flushEvents :: EventName -> Canvas ()
-flushEvents nm = Get nm flushEventQueue
