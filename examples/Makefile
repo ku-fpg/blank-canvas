@@ -1,4 +1,3 @@
-BIN=trivial
 
 # Make using installed package
 build::
