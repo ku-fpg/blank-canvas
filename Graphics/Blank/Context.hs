@@ -7,6 +7,7 @@ import Data.Char
 
 import Graphics.Blank.Events
 
+-- | 'Context' is our abstact handle into a specific 2d-context inside a browser.
 data Context = Context
         { theSize     :: (Float,Float)
         , theDraw     :: MVar String

@@ -55,9 +55,11 @@ showB False = "false"
 size :: Canvas (Float,Float)
 size = Size
 
+-- | read a specific event; wait for it if the event is not in queue.
 readEvent :: EventName -> Canvas Event
 readEvent nm = Get nm readEventQueue
 
+-- | read a specific event; or return Nothing if the event is not in queue.
 tryReadEvent :: EventName -> Canvas (Maybe Event)
 tryReadEvent nm = Get nm tryReadEventQueue
 

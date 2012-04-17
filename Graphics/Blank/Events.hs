@@ -18,7 +18,7 @@ import Data.Char
 import Control.Monad
 import Control.Concurrent.STM
 
--- | Basic Event from Browser, the code is event type specific.
+-- | Basic Event from Browser, the code is event-type specific.
 data Event = Event
         { jsCode  :: Int
         , jsMouse :: Maybe (Int,Int)
@@ -61,7 +61,8 @@ data EventName
         | MouseUp
         deriving (Eq, Ord, Show, Enum, Bounded)
 
--- | We have our own custom EventQueue.
+-- | EventQueue is a STM channel ('TChan') of 'Event's.
+-- Intentionally, 'EventQueue' is not abstract.
 type EventQueue = TChan Event
 
 writeEventQueue :: EventQueue -> Event -> IO ()
