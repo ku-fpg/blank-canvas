@@ -2,11 +2,10 @@ module Main where
 
 import Graphics.Blank
 
-main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
- where
-    loop canvas n = do
+main = blankCanvas 3000 $ \ context -> loop context (0 :: Float)
 
-        send canvas $ do
+loop context n = do
+        send context $ do
                 (width,height) <- size
                 clearRect (0,0,width,height)
                 beginPath()
@@ -23,6 +22,5 @@ main = blankCanvas 3000 $ \ canvas -> loop canvas (0 :: Float)
                 strokeStyle "green"
                 stroke()
                 restore()
-
-        loop canvas (n + 0.01)
+        loop context (n + 0.01)
 
