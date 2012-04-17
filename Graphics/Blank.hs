@@ -52,7 +52,7 @@ import Paths_blank_canvas
 -- >                lineTo(200,100)
 -- >                lineWidth 10
 -- >                strokeStyle "red"
--- >                stroke
+-- >                stroke()
 -- >
 
 
