@@ -1,10 +1,13 @@
 blank-canvas is a Haskell port of the HTML5 Canvas API.
-Tutorials for the HTML5 Canvas should be trivial to port
-to this library.
+Tutorials and examples for the HTML5 for the HTML5 Canvas
+should be trivial to port to this library.
 
 blank-canvas works by providing a web service, that
 displays the users' Haskell commands inside a browser.
 
 There are several examples inside the 'examples' directory.
 
+Enjoy!
+--
+FPG @ KU
 
