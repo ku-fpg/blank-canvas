@@ -31,7 +31,7 @@
                          success: function success() {
                                  redraw();
                          }
-                         }); // desired response type
+                         }); 
              }
              
             $(document).ready(function() {
@@ -47,7 +47,7 @@
                 $.ajax({ url: "/start",
                          type: "POST",
                          data: $.toJSON([w,h]),
-                         dataType: "script"}); // desired response type
+                         dataType: "script"}); 
             });
         </script>
     </body>
