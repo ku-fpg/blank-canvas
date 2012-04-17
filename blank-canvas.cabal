@@ -1,7 +1,10 @@
 Name:                blank-canvas
 Version:             0.2.0
 Synopsis:            HTML5 Canvas Graphics Library
--- Description:
+Description:         A Haskell port of the HTML5 Canvas API. 
+                     blank-canvas works by providing a web service that
+                     displays the users' Haskell commands inside a browser. 
+
 License:             BSD3
 License-file:        LICENSE
 Author:              Andy Gill
@@ -16,6 +19,17 @@ data-files:
     static/index.html
     static/jquery.js
     static/jquery-json.js
+    examples/Makefile
+    examples/square/Main.hs
+    examples/square/Makefile
+    examples/tictactoe/Main.hs
+    examples/tictactoe/Makefile
+    examples/html5canvastutorial/Main.hs
+    examples/html5canvastutorial/Makefile
+    examples/trivial/Main.hs
+    examples/trivial/Makefile
+    examples/rotate-square/Main.hs
+    examples/rotate-square/Makefile
 
 Library
   Exposed-modules:     Graphics.Blank
@@ -39,3 +53,6 @@ Library
 
   GHC-options:  -Wall -fno-warn-orphans
 
+source-repository head
+  type:     git
+  location: git://github.com/andygill/blank-canvas.git
