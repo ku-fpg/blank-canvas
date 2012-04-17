@@ -2,9 +2,9 @@ module Main where
 
 import Graphics.Blank
 
-main = blankCanvas 3000 $ \ canvas -> do
+main = blankCanvas 3000 $ \ context -> do
           let loop (x,y) (color:colors) = do
-                send canvas $ do
+                send context $ do
                         save()
                         translate (x,y)
                         beginPath()
@@ -18,12 +18,12 @@ main = blankCanvas 3000 $ \ canvas -> do
                         stroke()
                         restore()
 
-                event <- send canvas $ readEvent MouseDown
+                event <- send context $ readEvent MouseDown
                 case jsMouse event of
                         Nothing -> loop (x,y) colors
                         Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
 
-          (width,height) <- send canvas size
+          (width,height) <- send context size
           loop (width / 2,height / 2)
                (cycle [ "#749871", "#1887f2", "#808080", "f01234"])
 
