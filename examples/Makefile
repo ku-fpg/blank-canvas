@@ -5,6 +5,7 @@ build::
 	(cd trivial; make build)
 	(cd html5canvastutorial; make build)
 	(cd square; make build)
+	(cd tictactoe; make build)
 
 # Make using source
 build-inplace::
@@ -12,5 +13,4 @@ build-inplace::
 	(cd trivial; make build-inplace)
 	(cd html5canvastutorial; make build-inplace)
 	(cd square; make build-inplace)
-
-
+	(cd tictactoe; make build-inplace)
