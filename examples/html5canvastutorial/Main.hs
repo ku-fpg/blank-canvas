@@ -30,6 +30,7 @@ examples =
         , (example_1_2_3,"1.2.3 Line Color")
         , (example_1_2_4,"1.2.4 Line Cap")
         , (example_1_3_1,"1.3.1 Arc")
+        , (example_1_5_4,"1.5.4 Circle")
         , (example_1_8_1,"1.8.1 Text Font & Size")
         , (example_1_8_2,"1.8.2 Text Color")
         , (example_1_8_3,"1.8.3 Text Stroke")
@@ -86,6 +87,20 @@ example_1_3_1 = do
         let counterclockwise = False
         arc(centerX, centerY, radius, startingAngle, endingAngle, counterclockwise)
         lineWidth 15
+        strokeStyle "black"
+        stroke()
+
+example_1_5_4 = do
+        (width,height) <- size
+        let centerX = width / 2
+        let centerY = height / 2
+        let radius = 70
+
+        beginPath()
+        arc(centerX, centerY, radius, 0, 2 * pi, False)
+        fillStyle "#8ED6FF"
+        fill()
+        lineWidth  5
         strokeStyle "black"
         stroke()
 
