@@ -1,10 +1,10 @@
 module Graphics.Blank.Events
         ( -- * Events
-         Event(..)
+          Event(..)
         , NamedEvent(..)
         , EventName(..)
          -- * Event Queue
-        , EventQueue            -- abstract
+        , EventQueue            -- not abstract
         , writeEventQueue
         , readEventQueue
         , tryReadEventQueue
@@ -17,9 +17,7 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.Char
 import Control.Monad
-import Control.Concurrent.Chan
-import Control.Concurrent
-
+import Control.Concurrent.STM
 
 -- | Basic Event from Browser, the code is event type specific.
 data Event = Event
@@ -65,16 +63,19 @@ data EventName
         deriving (Eq, Ord, Show, Enum, Bounded)
 
 -- | We have our own custom EventQueue.
-data EventQueue = EventQueue (MVar Event) (Chan Event)
+type EventQueue = TChan Event
 
 writeEventQueue :: EventQueue -> Event -> IO ()
-writeEventQueue (EventQueue _ chan) event = writeChan chan event
+writeEventQueue q e = atomically $ writeTChan q e
 
 readEventQueue :: EventQueue -> IO Event
-readEventQueue (EventQueue var _) = takeMVar var
+readEventQueue q = atomically $ readTChan q
 
 tryReadEventQueue :: EventQueue -> IO (Maybe Event)
-tryReadEventQueue (EventQueue var _) = tryTakeMVar var
+tryReadEventQueue q = atomically $ do
+        b <- isEmptyTChan q
+        if b then return Nothing
+             else liftM Just (readTChan q)
 
 flushEventQueue :: EventQueue -> IO ()
 flushEventQueue q = do
@@ -84,10 +85,5 @@ flushEventQueue q = do
           Nothing -> return ()
 
 newEventQueue :: IO EventQueue
-newEventQueue = do
-        var <- newEmptyMVar
-        chan <- newChan
-        _ <- forkIO $ forever $ do
-            event <- readChan chan
-            putMVar var event
-        return $ EventQueue var chan
+newEventQueue = atomically newTChan
+
