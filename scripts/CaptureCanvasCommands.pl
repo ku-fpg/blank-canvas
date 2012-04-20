@@ -97,6 +97,7 @@ while(<F>) {
 #print "$show\n";
 
 open(G,">Graphics/Blank/Generated.hs");
+print G "{-# OPTIONS_GHC -fno-warn-orphans #-}\n";
 print G "module Graphics.Blank.Generated where\n";
 print G "\n";
 print G "import Graphics.Blank.Canvas\n";

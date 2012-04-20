@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
 import Graphics.Blank.Canvas
