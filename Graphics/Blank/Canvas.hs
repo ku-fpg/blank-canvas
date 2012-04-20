@@ -16,7 +16,7 @@ instance Monad Canvas where
         return = Return
         (>>=) = Bind
 
--- HTML5 Canvas assignments: FillStyle, Font, LineCap, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
+-- HTML5 Canvas assignments: FillStyle, Font, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
 data Command
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
@@ -29,6 +29,7 @@ data Command
         | FillText (String,Float,Float)
         | Font String
         | LineCap String
+        | LineJoin String
         | LineTo (Float,Float)
         | LineWidth Float
         | MiterLimit Float
