@@ -3,6 +3,9 @@
 module Graphics.Blank.Canvas where
 
 import Graphics.Blank.Events
+
+import Control.Applicative (Applicative(..))
+import Control.Monad (ap)
 import Numeric
 
 data Canvas :: * -> * where
@@ -15,6 +18,13 @@ data Canvas :: * -> * where
 instance Monad Canvas where
         return = Return
         (>>=) = Bind
+
+instance Applicative Canvas where
+  pure  = return
+  (<*>) = ap
+
+instance Functor Canvas where
+  fmap f c = c >>= return . f
 
 -- HTML5 Canvas assignments: FillStyle, Font, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
 data Command
