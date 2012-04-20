@@ -21,6 +21,7 @@ data Command
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
         | BeginPath
+        | BezierCurveTo (Float,Float,Float,Float,Float,Float)
         | ClearRect (Float,Float,Float,Float)
         | ClosePath
         | Fill

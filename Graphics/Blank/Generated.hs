@@ -5,6 +5,7 @@ import Graphics.Blank.Canvas
 instance Show Command where
   show (Arc (a1,a2,a3,a4,a5,a6)) = "c.arc(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showB a6 ++ ");"
   show BeginPath = "c.beginPath();"
+  show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "c.bezierCurveTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ");"
   show (ClearRect (a1,a2,a3,a4)) = "c.clearRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ");"
   show ClosePath = "c.closePath();"
   show Fill = "c.fill();"
@@ -35,6 +36,9 @@ arc = Command . Arc
 
 beginPath :: () -> Canvas ()
 beginPath () = Command BeginPath
+
+bezierCurveTo :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
+bezierCurveTo = Command . BezierCurveTo
 
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
 clearRect = Command . ClearRect
