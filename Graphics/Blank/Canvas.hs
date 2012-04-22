@@ -26,7 +26,7 @@ instance Applicative Canvas where
 instance Functor Canvas where
   fmap f c = c >>= return . f
 
--- HTML5 Canvas assignments: FillStyle, Font, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
+-- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
 data Command
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
@@ -38,6 +38,7 @@ data Command
         | FillStyle String
         | FillText (String,Float,Float)
         | Font String
+        | GlobalAlpha Float
         | LineCap String
         | LineJoin String
         | LineTo (Float,Float)

@@ -13,6 +13,7 @@ instance Show Command where
   show (FillStyle (a1)) = "c.fillStyle = (" ++ show a1 ++ ");"
   show (FillText (a1,a2,a3)) = "c.fillText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ");"
   show (Font (a1)) = "c.font = (" ++ show a1 ++ ");"
+  show (GlobalAlpha (a1)) = "c.globalAlpha = (" ++ showJ a1 ++ ");"
   show (LineCap (a1)) = "c.lineCap = (" ++ show a1 ++ ");"
   show (LineJoin (a1)) = "c.lineJoin = (" ++ show a1 ++ ");"
   show (LineTo (a1,a2)) = "c.lineTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
@@ -59,6 +60,9 @@ fillText = Command . FillText
 
 font :: String -> Canvas ()
 font = Command . Font
+
+globalAlpha :: Float -> Canvas ()
+globalAlpha = Command . GlobalAlpha
 
 lineCap :: String -> Canvas ()
 lineCap = Command . LineCap
