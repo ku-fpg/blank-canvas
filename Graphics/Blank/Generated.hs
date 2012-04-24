@@ -10,6 +10,7 @@ instance Show Command where
   show (ClearRect (a1,a2,a3,a4)) = "c.clearRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ");"
   show ClosePath = "c.closePath();"
   show Fill = "c.fill();"
+  show (FillRect (a1,a2,a3,a4)) = "c.fillRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ");"
   show (FillStyle (a1)) = "c.fillStyle = (" ++ show a1 ++ ");"
   show (FillText (a1,a2,a3)) = "c.fillText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ");"
   show (Font (a1)) = "c.font = (" ++ show a1 ++ ");"
@@ -25,6 +26,7 @@ instance Show Command where
   show (Scale (a1,a2)) = "c.scale(" ++ showJ a1 ++ "," ++ showJ a2 ++ ");"
   show Save = "c.save();"
   show Stroke = "c.stroke();"
+  show (StrokeRect (a1,a2,a3,a4)) = "c.strokeRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ");"
   show (StrokeText (a1,a2,a3)) = "c.strokeText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ");"
   show (StrokeStyle (a1)) = "c.strokeStyle = (" ++ show a1 ++ ");"
   show (TextAlign (a1)) = "c.textAlign = (" ++ show a1 ++ ");"
@@ -51,6 +53,9 @@ closePath () = Command ClosePath
 
 fill :: () -> Canvas ()
 fill () = Command Fill
+
+fillRect :: (Float,Float,Float,Float) -> Canvas ()
+fillRect = Command . FillRect
 
 fillStyle :: String -> Canvas ()
 fillStyle = Command . FillStyle
@@ -96,6 +101,9 @@ save () = Command Save
 
 stroke :: () -> Canvas ()
 stroke () = Command Stroke
+
+strokeRect :: (Float,Float,Float,Float) -> Canvas ()
+strokeRect = Command . StrokeRect
 
 strokeText :: (String,Float,Float) -> Canvas ()
 strokeText = Command . StrokeText

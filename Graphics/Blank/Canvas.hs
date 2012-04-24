@@ -35,6 +35,7 @@ data Command
         | ClearRect (Float,Float,Float,Float)
         | ClosePath
         | Fill
+        | FillRect (Float,Float,Float,Float)
         | FillStyle String
         | FillText (String,Float,Float)
         | Font String
@@ -50,6 +51,7 @@ data Command
         | Scale (Float,Float)
         | Save
         | Stroke
+        | StrokeRect (Float,Float,Float,Float)
         | StrokeText (String,Float,Float)
         | StrokeStyle String
         | TextAlign String
