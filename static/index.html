@@ -46,6 +46,7 @@
                  // start the server-side
                 $.ajax({ url: "/start",
                          type: "POST",
+                         contentType: "application/json; charset=utf-8",
                          data: $.toJSON([w,h]),
                          dataType: "script"}); 
             });
