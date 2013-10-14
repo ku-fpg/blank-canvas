@@ -95,7 +95,7 @@ blankCanvas port actions = do
             text (T.pack $ "session = " ++ show uq ++ ";redraw();")
 
         post "/event/:num" $ do
-            header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
+            addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             num <- param "num"
 --            liftIO $ print (num :: Int)
             NamedEvent nm event <- jsonData
@@ -111,7 +111,7 @@ blankCanvas port actions = do
                                       json ()
 
         get "/canvas/:num" $ do
-            header "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
+            addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             -- do something and return a new list of commands to the client
             num <- param "num"
 --            liftIO $ print (num :: Int)
