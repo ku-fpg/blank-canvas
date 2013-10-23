@@ -25,6 +25,9 @@ module Graphics.Blank
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Handler.Warp (run)
+import Network.Wai (Middleware,remoteHost, responseLBS)
+import qualified Network.HTTP.Types as H
+import Network.Socket (SockAddr(..))
 import Web.Scotty as S
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
@@ -82,6 +85,7 @@ blankCanvas port actions = do
 
    app <- scottyApp $ do
 --        middleware logStdoutDev
+        middleware local_only
 
 --        middleware $ staticRoot $ TS.pack $ (dataDir ++ "/static")
 
@@ -163,3 +167,15 @@ send cxt@(Context (h,w) _ _ _) commands = send' commands id
               return a
       send' other                  cmds = send' (Bind other Return) cmds
 
+
+local_only :: Middleware
+local_only f r = case remoteHost r of
+                   SockAddrInet _  h | h == fromIntegral home
+                                    -> f r
+                   SockAddrUnix _   -> f r
+                   _                ->  return $ responseLBS H.status403
+                                                             [("Content-Type", "text/plain")]
+                                                             "local access only"
+ where
+        home :: Integer
+        home = 127 + (256 * 256 * 256) * 1
