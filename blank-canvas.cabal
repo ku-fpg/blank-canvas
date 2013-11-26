@@ -1,5 +1,5 @@
 Name:                blank-canvas
-Version:             0.2.3.2
+Version:             0.2.3.3
 Synopsis:            HTML5 Canvas Graphics Library
 Description:         A Haskell port of the HTML5 Canvas API.
                      blank-canvas works by providing a web service that

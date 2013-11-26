@@ -68,15 +68,15 @@ data EventName
 
 -- | EventQueue is a STM channel ('TChan') of 'Event's.
 -- Intentionally, 'EventQueue' is not abstract.
-type EventQueue = TChan Event
+type EventQueue = TChan NamedEvent
 
-writeEventQueue :: EventQueue -> Event -> IO ()
+writeEventQueue :: EventQueue -> NamedEvent -> IO ()
 writeEventQueue q e = atomically $ writeTChan q e
 
-readEventQueue :: EventQueue -> IO Event
+readEventQueue :: EventQueue -> IO NamedEvent
 readEventQueue q = atomically $ readTChan q
 
-tryReadEventQueue :: EventQueue -> IO (Maybe Event)
+tryReadEventQueue :: EventQueue -> IO (Maybe NamedEvent)
 tryReadEventQueue q = atomically $ do
         b <- isEmptyTChan q
         if b then return Nothing

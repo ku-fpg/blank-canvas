@@ -12,11 +12,14 @@ module Graphics.Blank
         , Canvas        -- abstact
         , module Graphics.Blank.Generated
         , readEvent
+        , readEvents
         , tryReadEvent
+        , tryReadEvents
         , size
         -- * Events
         , Event(..)
         , EventName(..)
+        , NamedEvent(..)
         , EventQueue
         , readEventQueue
         , tryReadEventQueue
@@ -34,12 +37,15 @@ import Web.Scotty as S
 import qualified Data.Text.Lazy as T
 
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 import Graphics.Blank.Events
 import Graphics.Blank.Context
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Paths_blank_canvas
+
+import Data.Aeson (Value)
 
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
@@ -75,8 +81,9 @@ blankCanvas port actions = do
        newContext (w,h) = do
             uq <- getUniq
             picture <- newEmptyMVar
-            callbacks <- newMVar $ Map.empty
-            let cxt = Context (w,h) picture callbacks uq
+            callbacks <- newMVar $ Set.empty
+            queue <- newEventQueue
+            let cxt = Context (w,h) picture callbacks queue uq
             db <- takeMVar contextDB
             putMVar contextDB $ Map.insert uq cxt db
             -- Here is where we actually spawn the user code
@@ -101,18 +108,13 @@ blankCanvas port actions = do
         post "/event/:num" $ do
             addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             num <- param "num"
---            liftIO $ print (num :: Int)
-            NamedEvent nm event <- jsonData
+            ne@(NamedEvent nm event) <- jsonData
             db <- liftIO $ readMVar contextDB
             case Map.lookup num db of
                Nothing -> json ()
-               Just (Context _ _ callbacks _) -> do
-                   db' <- liftIO $ readMVar callbacks
---                   liftIO $ print (nm,event)
-                   case Map.lookup nm db' of
-                       Nothing -> json ()
-                       Just var -> do liftIO $ writeEventQueue var event
-                                      json ()
+               Just (Context _ _ _ q _) ->
+                                do liftIO $ writeEventQueue q ne
+                                   json ()
 
         get "/canvas/:num" $ do
             addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
@@ -136,14 +138,14 @@ blankCanvas port actions = do
             db <- liftIO $ readMVar contextDB
             case Map.lookup num db of
                Nothing -> text (T.pack $ "alert('/canvas/, can not find " ++ show num ++ "');")
-               Just (Context _ pic _ _) -> tryPicture pic 10
+               Just (Context _ pic _ _ _) -> tryPicture pic 10
 
    run port app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible.
 send :: Context -> Canvas a -> IO a
-send cxt@(Context (h,w) _ _ _) commands = send' commands id
+send cxt@(Context (h,w) _ _ _ _) commands = send' commands id
   where
       send' :: Canvas a -> (String -> String) -> IO a
 
@@ -155,12 +157,13 @@ send cxt@(Context (h,w) _ _ _) commands = send' commands id
               res <- send' other cmds
               send' (k res) id
 
-      send' (Get a op)             cmds = do
+      send' (Get nms op)             cmds = do
               -- clear the commands
               sendToCanvas cxt cmds
-              -- get the channel for this event
-              chan <- events cxt a
-              op chan
+              -- make sure these events are registered
+              register cxt nms
+              -- and apply the channel
+              op (eventQueue cxt)
 
       send' (Return a)             cmds = do
               sendToCanvas cxt cmds
