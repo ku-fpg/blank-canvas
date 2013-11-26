@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP #-}
 
 module Graphics.Blank
         (
@@ -172,7 +172,9 @@ local_only :: Middleware
 local_only f r = case remoteHost r of
                    SockAddrInet _  h | h == fromIntegral home
                                     -> f r
+#if !defined(mingw32_HOST_OS) && !defined(_WIN32)
                    SockAddrUnix _   -> f r
+#endif
                    _                ->  return $ responseLBS H.status403
                                                              [("Content-Type", "text/plain")]
                                                              "local access only"
