@@ -45,8 +45,6 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Paths_blank_canvas
 
-import Data.Aeson (Value)
-
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
 --
@@ -108,7 +106,7 @@ blankCanvas port actions = do
         post "/event/:num" $ do
             addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
             num <- param "num"
-            ne@(NamedEvent nm event) <- jsonData
+            ne <- jsonData
             db <- liftIO $ readMVar contextDB
             case Map.lookup num db of
                Nothing -> json ()

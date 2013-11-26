@@ -38,9 +38,9 @@ instance FromJSON NamedEvent where
              Just n -> fmap (NamedEvent n) (opt1 <|> opt2)
              Nothing -> fail "bad parse"
     where
-           opt1 = do (str::String,code,x,y) <- parseJSON o
+           opt1 = do (_::String,code,x,y) <- parseJSON o
                      return $ Event code (Just (x,y))
-           opt2 = do (str::String,code,_::Value,_::Value) <- parseJSON o
+           opt2 = do (_::String,code,_::Value,_::Value) <- parseJSON o
                      return $ Event code Nothing
 
 
