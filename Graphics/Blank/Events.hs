@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Graphics.Blank.Events
         ( -- * Events
           Event(..)
@@ -11,11 +12,12 @@ module Graphics.Blank.Events
         , newEventQueue
         ) where
 
-import Data.Aeson (FromJSON(..))
+import Data.Aeson (FromJSON(..), Value)
 import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.Char
 import Control.Monad
+import Control.Applicative((<|>))
 import Control.Concurrent.STM
 
 -- | Basic Event from Browser, the code is event-type specific.
@@ -31,13 +33,16 @@ data NamedEvent = NamedEvent EventName Event
 
 instance FromJSON NamedEvent where
    parseJSON o = do
-           (str,code,x,y) <- parseJSON o
+           (str::String,_::Value,_::Value,_::Value) <- parseJSON o
            case Map.lookup str namedEventDB of
-             Just n -> return $ NamedEvent n (Event code (Just (x,y)))
-             Nothing -> do (str',code',(),()) <- parseJSON o
-                           case Map.lookup str' namedEventDB of
-                             Just n -> return $ NamedEvent n (Event code' Nothing)
-                             Nothing -> fail "bad parse"
+             Just n -> fmap (NamedEvent n) (opt1 <|> opt2)
+             Nothing -> fail "bad parse"
+    where
+           opt1 = do (str::String,code,x,y) <- parseJSON o
+                     return $ Event code (Just (x,y))
+           opt2 = do (str::String,code,_::Value,_::Value) <- parseJSON o
+                     return $ Event code Nothing
+
 
 namedEventDB :: Map String EventName
 namedEventDB = Map.fromList
