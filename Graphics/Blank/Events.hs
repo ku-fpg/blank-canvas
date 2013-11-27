@@ -73,6 +73,7 @@ type EventQueue = TChan NamedEvent
 writeEventQueue :: EventQueue -> NamedEvent -> IO ()
 writeEventQueue q e = atomically $ writeTChan q e
 
+{-# DEPRECATED EventQueue, readEventQueue, tryReadEventQueue "use readEvent(s) or tryReadEvent(s)" #-}
 readEventQueue :: EventQueue -> IO NamedEvent
 readEventQueue q = atomically $ readTChan q
 

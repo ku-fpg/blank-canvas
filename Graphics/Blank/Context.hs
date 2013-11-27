@@ -17,7 +17,7 @@ data Context = Context
         }
 
 -- 'events' gets a copy of the events Queue
-
+{-# DEPRECATED events "use readEvent(s) or tryReadEvent(s)" #-}
 events :: Context -> IO EventQueue
 events = return . eventQueue
 

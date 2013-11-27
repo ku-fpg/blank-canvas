@@ -7,7 +7,6 @@ module Graphics.Blank
         -- * Graphics 'Context'
         , Context       -- abstact
         , send
-        , events
          -- * Drawing pictures using the Canvas DSL
         , Canvas        -- abstact
         , module Graphics.Blank.Generated
@@ -20,6 +19,8 @@ module Graphics.Blank
         , Event(..)
         , EventName(..)
         , NamedEvent(..)
+        -- * DEPRECATED API (DO NOT USE)
+        , events
         , EventQueue
         , readEventQueue
         , tryReadEventQueue
