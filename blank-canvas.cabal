@@ -1,5 +1,5 @@
 Name:                blank-canvas
-Version:             0.3.3
+Version:             0.3.4
 Synopsis:            HTML5 Canvas Graphics Library
 Description:         A Haskell port of the HTML5 Canvas API.
                      blank-canvas works by providing a web service that
@@ -45,11 +45,11 @@ Library
   build-depends:       base             >= 4.3.1        && < 5,
                        aeson            == 0.6.*,
                        containers       == 0.5.*,
-                       scotty           == 0.6.*,
+                       scotty           == 0.7.*,
                        wai              == 2.*,
                        http-types       == 0.8.*,
-                       text             == 0.11.*,
-                       network          == 2.4.*,
+                       text             >= 0.11.0	&& < 1.2,
+                       network          >= 2.4    	&& < 2.6,
                        transformers     == 0.3.*,
                        wai-extra        == 2.*,
                        warp             == 2.*,
