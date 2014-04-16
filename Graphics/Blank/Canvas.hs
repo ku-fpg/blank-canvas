@@ -15,8 +15,6 @@ data Canvas :: * -> * where
         Get     :: [EventName] -> (EventQueue -> IO a) -> Canvas a
         Size    ::                                        Canvas (Float,Float)
 
-
-
 instance Monad Canvas where
         return = Return
         (>>=) = Bind
@@ -34,6 +32,7 @@ data Command
         = Arc (Float,Float,Float,Float,Float,Bool)
         | BeginPath
         | BezierCurveTo (Float,Float,Float,Float,Float,Float)
+        | QuadraticCurveTo (Float,Float,Float,Float)
         | ClearRect (Float,Float,Float,Float)
         | ClosePath
         | Fill
