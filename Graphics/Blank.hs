@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP, BangPatterns #-}
 
 module Graphics.Blank
         (
@@ -11,6 +11,7 @@ module Graphics.Blank
          -- * Drawing pictures using the Canvas DSL
         , Canvas        -- abstact
         , module Graphics.Blank.Generated
+        , module Graphics.Blank.Utils
         , readEvent
         , readEvents
         , tryReadEvent
@@ -37,6 +38,7 @@ import Network.Wai (Middleware,remoteHost, responseLBS)
 import qualified Network.HTTP.Types as H
 import Network.Socket (SockAddr(..))
 import System.IO.Unsafe (unsafePerformIO)
+import System.Mem.StableName
 import Web.Scotty as S
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
@@ -49,6 +51,7 @@ import Graphics.Blank.Events
 import Graphics.Blank.Context
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
+import Graphics.Blank.Utils
 import Paths_blank_canvas
 
 -- | blankCanvas is the main entry point into blank-canvas.
@@ -141,9 +144,10 @@ blankCanvas port actions = do
    run port app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
--- to common up as many commands as possible.
+-- to common up as many commands as possible. Can not crash.
 send :: Context -> Canvas a -> IO a
-send cxt@(Context (h,w) _ _ _ _) commands = send' commands id
+send cxt@(Context (h,w) _ _ _ _) commands = 
+      send' commands id 
   where
       send' :: Canvas a -> (String -> String) -> IO a
 
@@ -191,17 +195,22 @@ local_only f r = case remoteHost r of
 -- >import Graphics.Blank
 -- >splatCanvas 3000 << .. canvas command .. >>
 
-splatCanvas :: Int -> Canvas () -> IO ()
+splatCanvas :: Int -> (Canvas () -> Canvas ()) -> IO ()
 splatCanvas port cmds = do
     optCh <- atomically $ do
         ports <- readTVar usedPorts
         uq <- getUniq
         case lookup port ports of
-          Just ch -> do writeTVar ch (uq,cmds)
+          Just ch -> do modifyTVar ch $ \ (_,orig) -> (uq,cmds orig)
                         return Nothing
-          Nothing -> do ch <- newTVar (uq,cmds)
+          Nothing -> do ch <- newTVar (uq,cmds (return ()))
                         writeTVar usedPorts ((port,ch):ports)
                         return (Just ch)
+
+    let full cmd = do
+            clearCanvas
+            cmd
+
 
     case optCh of
       Nothing -> return ()
@@ -211,7 +220,7 @@ splatCanvas port cmds = do
                         (uq',cmd) <- readTVar ch
                         check (uq' /= uq)     -- must be a new command
                         return (uq',cmd)
-                send cxt cmd -- issue the screen command (should check for failure)
+                send cxt $ full cmd -- issue the screen command (should check for failure)
                 callback uq' cxt
          _ <- forkIO $ blankCanvas port $ callback (-1)
          return ()
@@ -231,3 +240,10 @@ getUniq = do
     writeTVar uniqVar (u + 1)
     return u
 
+data CanvasAct = CanvasAct (Canvas ()) !Int
+
+mkCanvasAct :: Canvas () -> IO CanvasAct
+mkCanvasAct !cmds = do
+    sn <- makeStableName cmds
+    return $ CanvasAct cmds (hashStableName sn)
+    
