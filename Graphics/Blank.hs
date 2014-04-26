@@ -4,6 +4,7 @@ module Graphics.Blank
         (
          -- * Starting blank-canvas
           blankCanvas
+        , splatCanvas
         -- * Graphics 'Context'
         , Context       -- abstact
         , send
@@ -24,14 +25,18 @@ module Graphics.Blank
         , EventQueue
         , readEventQueue
         , tryReadEventQueue
+        , usedPorts, uniqVar
         ) where
 
 import Control.Concurrent
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TVar
 import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Handler.Warp (run)
 import Network.Wai (Middleware,remoteHost, responseLBS)
 import qualified Network.HTTP.Types as H
 import Network.Socket (SockAddr(..))
+import System.IO.Unsafe (unsafePerformIO)
 import Web.Scotty as S
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
@@ -68,17 +73,11 @@ blankCanvas port actions = do
    dataDir <- getDataDir
 --   print dataDir
 
-   uVar <- newMVar 0
-   let getUniq :: IO Int
-       getUniq = do
-              u <- takeMVar uVar
-              putMVar uVar (u + 1)
-              return u
 
    contextDB <- newMVar $ (Map.empty :: Map.Map Int Context)
    let newContext :: (Float,Float) -> IO Int
        newContext (w,h) = do
-            uq <- getUniq
+            uq <- atomically getUniq
             picture <- newEmptyMVar
             callbacks <- newMVar $ Set.empty
             queue <- newEventQueue
@@ -183,3 +182,52 @@ local_only f r = case remoteHost r of
  where
         home :: Integer
         home = 127 + (256 * 256 * 256) * 1
+
+-- | splitCanvas is the GHCi entry point into blank-canvas.
+-- A typical invocation would be
+--
+-- >
+-- >
+-- >import Graphics.Blank
+-- >splatCanvas 3000 << .. canvas command .. >>
+
+splatCanvas :: Int -> Canvas () -> IO ()
+splatCanvas port cmds = do
+    optCh <- atomically $ do
+        ports <- readTVar usedPorts
+        uq <- getUniq
+        case lookup port ports of
+          Just ch -> do writeTVar ch (uq,cmds)
+                        return Nothing
+          Nothing -> do ch <- newTVar (uq,cmds)
+                        writeTVar usedPorts ((port,ch):ports)
+                        return (Just ch)
+
+    case optCh of
+      Nothing -> return ()
+      Just ch -> do
+         let callback uq cxt = do
+                (uq',cmd) <- atomically $ do
+                        (uq',cmd) <- readTVar ch
+                        check (uq' /= uq)     -- must be a new command
+                        return (uq',cmd)
+                send cxt cmd -- issue the screen command (should check for failure)
+                callback uq' cxt
+         _ <- forkIO $ blankCanvas port $ callback (-1)
+         return ()
+
+-- common TVar for all ports in use.
+{-# NOINLINE usedPorts #-}
+usedPorts :: TVar [(Int,TVar (Int,Canvas ()))]
+usedPorts = unsafePerformIO $ newTVarIO []
+
+{-# NOINLINE uniqVar #-}
+uniqVar :: TVar Int
+uniqVar = unsafePerformIO $ newTVarIO 0
+
+getUniq :: STM Int
+getUniq = do
+    u <- readTVar uniqVar
+    writeTVar uniqVar (u + 1)
+    return u
+
