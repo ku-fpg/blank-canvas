@@ -11,22 +11,17 @@ module Graphics.Blank
          -- * Drawing pictures using the Canvas DSL
         , Canvas        -- abstact
         , module Graphics.Blank.Generated
-        , module Graphics.Blank.Utils
-        , readEvent
-        , readEvents
-        , tryReadEvent
-        , tryReadEvents
+         -- * Reading from 'Canvas'
         , size
-        -- * Events
+         -- * Drawing Utilities
+        , module Graphics.Blank.Utils
+         -- * Event Stuff
+        , events
+        , wait
         , Event(..)
         , EventName(..)
         , NamedEvent(..)
-        -- * DEPRECATED API (DO NOT USE)
-        , events
         , EventQueue
-        , readEventQueue
-        , tryReadEventQueue
-        , usedPorts, uniqVar
         ) where
 
 import Control.Concurrent
@@ -38,7 +33,7 @@ import Network.Wai (Middleware,remoteHost, responseLBS)
 import qualified Network.HTTP.Types as H
 import Network.Socket (SockAddr(..))
 import System.IO.Unsafe (unsafePerformIO)
-import System.Mem.StableName
+--import System.Mem.StableName
 import Web.Scotty as S
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
@@ -83,7 +78,7 @@ blankCanvas port actions = do
             uq <- atomically getUniq
             picture <- newEmptyMVar
             callbacks <- newMVar $ Set.empty
-            queue <- newEventQueue
+            queue <- atomically newTChan
             let cxt = Context (w,h) picture callbacks queue uq
             db <- takeMVar contextDB
             putMVar contextDB $ Map.insert uq cxt db
@@ -150,27 +145,14 @@ send cxt@(Context (h,w) _ _ _ _) commands =
       send' commands id 
   where
       send' :: Canvas a -> (String -> String) -> IO a
-
       send' (Bind (Return a) k)    cmds = send' (k a) cmds
       send' (Bind (Bind m k1) k2)  cmds = send' (Bind m (\ r -> Bind (k1 r) k2)) cmds
       send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd)
       send' (Bind Size k)          cmds = send' (k (h,w)) cmds
-      send' (Bind other k)         cmds = do
-              res <- send' other cmds
-              send' (k res) id
-
-      send' (Get nms op)             cmds = do
-              -- clear the commands
-              sendToCanvas cxt cmds
-              -- make sure these events are registered
-              register cxt nms
-              -- and apply the channel
-              op (eventQueue cxt)
-
       send' (Return a)             cmds = do
               sendToCanvas cxt cmds
               return a
-      send' other                  cmds = send' (Bind other Return) cmds
+      send' cmd                    cmds = send' (Bind cmd Return) cmds
 
 
 local_only :: Middleware
@@ -193,7 +175,11 @@ local_only f r = case remoteHost r of
 -- >
 -- >
 -- >import Graphics.Blank
--- >splatCanvas 3000 << .. canvas command .. >>
+-- > -- Adding commands to the canvas buffer
+-- >splatCanvas 3000 $ (>> do { .. canvas commands .. })
+-- > -- Replacing the buffer with some commands
+-- >splatCanvas 3000 $ (\ _ -> do { .. canvas commands .. })
+
 
 splatCanvas :: Int -> (Canvas () -> Canvas ()) -> IO ()
 splatCanvas port cmds = do
@@ -239,11 +225,3 @@ getUniq = do
     u <- readTVar uniqVar
     writeTVar uniqVar (u + 1)
     return u
-
-data CanvasAct = CanvasAct (Canvas ()) !Int
-
-mkCanvasAct :: Canvas () -> IO CanvasAct
-mkCanvasAct !cmds = do
-    sn <- makeStableName cmds
-    return $ CanvasAct cmds (hashStableName sn)
-    

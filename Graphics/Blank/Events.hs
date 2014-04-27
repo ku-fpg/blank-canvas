@@ -6,17 +6,15 @@ module Graphics.Blank.Events
         , EventName(..)
          -- * Event Queue
         , EventQueue            -- not abstract
+        , wait
+        -- * Internal
         , writeEventQueue
-        , readEventQueue
-        , tryReadEventQueue
-        , newEventQueue
         ) where
 
 import Data.Aeson (FromJSON(..), Value)
 import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.Char
-import Control.Monad
 import Control.Applicative((<|>))
 import Control.Concurrent.STM
 
@@ -73,16 +71,10 @@ type EventQueue = TChan NamedEvent
 writeEventQueue :: EventQueue -> NamedEvent -> IO ()
 writeEventQueue q e = atomically $ writeTChan q e
 
-{-# DEPRECATED EventQueue, readEventQueue, tryReadEventQueue "use readEvent(s) or tryReadEvent(s)" #-}
-readEventQueue :: EventQueue -> IO NamedEvent
-readEventQueue q = atomically $ readTChan q
-
-tryReadEventQueue :: EventQueue -> IO (Maybe NamedEvent)
-tryReadEventQueue q = atomically $ do
-        b <- isEmptyTChan q
-        if b then return Nothing
-             else liftM Just (readTChan q)
-
-newEventQueue :: IO EventQueue
-newEventQueue = atomically newTChan
+-- | wait for a specific, named event.
+wait :: EventQueue -> EventName -> IO Event
+wait q nm = atomically $ do
+   NamedEvent nm' e <- readTChan q
+   check (nm == nm')
+   return e
 

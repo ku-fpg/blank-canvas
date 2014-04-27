@@ -2,8 +2,6 @@
 
 module Graphics.Blank.Canvas where
 
-import Graphics.Blank.Events
-
 import Control.Applicative (Applicative(..))
 import Control.Monad (ap)
 import Numeric
@@ -12,7 +10,6 @@ data Canvas :: * -> * where
         Command :: Command                             -> Canvas ()
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
-        Get     :: [EventName] -> (EventQueue -> IO a) -> Canvas a
         Size    ::                                        Canvas (Float,Float)
 
 instance Monad Canvas where
@@ -71,6 +68,7 @@ showB False = "false"
 size :: Canvas (Float,Float)
 size = Size
 
+{-
 -- | read a specific event; wait for it if the event is not in queue.
 -- **Thows away all other events while waiting.**
 readEvent :: EventName -> Canvas Event
@@ -103,3 +101,4 @@ tryReadEvents nms = Get nms $ \ q -> do
    loop
 
 
+-}

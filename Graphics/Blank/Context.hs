@@ -12,20 +12,19 @@ data Context = Context
         { theSize     :: (Float,Float)
         , theDraw     :: MVar String
         , eventRegs   :: MVar (Set EventName)       -- events that are registered
-        , eventQueue  :: EventQueue -- now a single event queueMVar (Map EventName EventQueue)
+        , eventQueue  :: EventQueue -- now a single event queue
         , sessionNo   :: Int
         }
 
--- 'events' gets a copy of the events Queue
-{-# DEPRECATED events "use readEvent(s) or tryReadEvent(s)" #-}
-events :: Context -> IO EventQueue
-events = return . eventQueue
+-- 'events' returns the events Queue
+events :: Context -> EventQueue
+events = eventQueue
 
--- | 'register' makes sure the named events are registered.
-register :: Context -> [EventName] -> IO ()
-register cxt@(Context _ _ regs _ num) nms = do
+-- | 'register' makes sure the named event is registered.
+register :: Context -> EventName -> IO ()
+register cxt@(Context _ _ regs _ num) newEvent = do
         db <- takeMVar regs
-        let new = Set.difference (Set.fromList nms) db
+        let new = Set.difference (Set.fromList [newEvent]) db
         sequence_ [ sendToCanvas cxt (("register('" ++ map toLower (show nm) ++ "'," ++ show num ++ ");") ++)
                   | nm <- Set.toList new
                   ]
