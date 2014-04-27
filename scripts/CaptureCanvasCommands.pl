@@ -18,7 +18,7 @@ while(<F>) {
 		next;
 	}
 	if ($state == 1) {
-		if (/^$/) {
+		if (/^$/ || /Specials/) {
 			$state = 2;
 			next;
 		}
