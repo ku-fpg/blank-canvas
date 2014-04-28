@@ -4,3 +4,4 @@ dist/*
 *.swp
 *.swo
 *~
+examples/dist/*

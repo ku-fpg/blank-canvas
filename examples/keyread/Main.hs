@@ -1,8 +1,6 @@
 module Main where
 
 import Graphics.Blank
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Debug.Trace
 import Control.Concurrent
 import Data.List (nub)
