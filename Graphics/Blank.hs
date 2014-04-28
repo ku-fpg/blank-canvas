@@ -34,7 +34,8 @@ import qualified Network.HTTP.Types as H
 import Network.Socket (SockAddr(..))
 import System.IO.Unsafe (unsafePerformIO)
 --import System.Mem.StableName
-import Web.Scotty as S
+import qualified Web.Scotty as S
+import Web.Scotty (scottyApp, middleware, get, file, post, jsonData, text, addHeader, param, json)
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
@@ -66,8 +67,8 @@ import Paths_blank_canvas
 -- >
 
 
-blankCanvas :: Int -> (Context -> IO ()) -> IO ()
-blankCanvas port actions = do
+blankCanvas :: Options -> (Context -> IO ()) -> IO ()
+blankCanvas opts actions = do
    dataDir <- getDataDir
 --   print dataDir
 
@@ -136,7 +137,7 @@ blankCanvas port actions = do
                Nothing -> text (T.pack $ "alert('/canvas/, can not find " ++ show num ++ "');")
                Just (Context _ pic _ _ _) -> tryPicture pic 10
 
-   run port app
+   run (port opts) app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible. Can not crash.
@@ -181,16 +182,16 @@ local_only f r = case remoteHost r of
 -- >splatCanvas 3000 $ (\ _ -> do { .. canvas commands .. })
 
 
-splatCanvas :: Int -> (Canvas () -> Canvas ()) -> IO ()
-splatCanvas port cmds = do
+splatCanvas :: Options -> (Canvas () -> Canvas ()) -> IO ()
+splatCanvas opts cmds = do
     optCh <- atomically $ do
         ports <- readTVar usedPorts
         uq <- getUniq
-        case lookup port ports of
+        case lookup (port opts) ports of
           Just ch -> do modifyTVar ch $ \ (_,orig) -> (uq,cmds orig)
                         return Nothing
           Nothing -> do ch <- newTVar (uq,cmds (return ()))
-                        writeTVar usedPorts ((port,ch):ports)
+                        writeTVar usedPorts ((port opts,ch):ports)
                         return (Just ch)
 
     let full cmd = do
@@ -208,7 +209,7 @@ splatCanvas port cmds = do
                         return (uq',cmd)
                 send cxt $ full cmd -- issue the screen command (should check for failure)
                 callback uq' cxt
-         _ <- forkIO $ blankCanvas port $ callback (-1)
+         _ <- forkIO $ blankCanvas opts $ callback (-1)
          return ()
 
 -- common TVar for all ports in use.
@@ -233,4 +234,11 @@ data Options = Options
         , events :: [EventName]
         }
         
-        
+instance Num Options where
+    (+) = error "no arithmetic for Blank Canvas Options"
+    (-) = error "no arithmetic for Blank Canvas Options"
+    (*) = error "no arithmetic for Blank Canvas Options"
+    abs = error "no arithmetic for Blank Canvas Options"
+    signum = error "no arithmetic for Blank Canvas Options"
+    fromInteger n = Options { port = fromInteger n, events = [] }
+    
