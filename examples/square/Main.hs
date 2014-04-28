@@ -2,7 +2,7 @@ module Main where
 
 import Graphics.Blank
 
-main = blankCanvas 3000 $ \ context -> do
+main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
           let loop (x,y) (color:colors) = do
                 send context $ do
                         save()
@@ -18,7 +18,7 @@ main = blankCanvas 3000 $ \ context -> do
                         stroke()
                         restore()
 
-                event <- send context $ readEvent MouseDown
+		NamedEvent _ event <- wait context
                 case jsMouse event of
                         Nothing -> loop (x,y) colors
                         Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
