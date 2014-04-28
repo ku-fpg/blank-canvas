@@ -225,3 +225,12 @@ getUniq = do
     u <- readTVar uniqVar
     writeTVar uniqVar (u + 1)
     return u
+
+-------------------------------------------------
+
+data Options = Options 
+        { port   :: Int
+        , events :: [EventName]
+        }
+        
+        
