@@ -109,7 +109,7 @@ blankCanvas port actions = do
             case Map.lookup num db of
                Nothing -> json ()
                Just (Context _ _ _ q _) ->
-                                do liftIO $ writeEventQueue q ne
+                                do liftIO $ atomically $ writeTChan q ne
                                    json ()
 
         get "/canvas/:num" $ do

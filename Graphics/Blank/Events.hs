@@ -8,7 +8,7 @@ module Graphics.Blank.Events
         , EventQueue            -- not abstract
         , wait
         -- * Internal
-        , writeEventQueue
+--        , writeEventQueue
         ) where
 
 import Data.Aeson (FromJSON(..), Value)
@@ -32,44 +32,22 @@ data NamedEvent = NamedEvent EventName Event
 instance FromJSON NamedEvent where
    parseJSON o = do
            (str::String,_::Value,_::Value,_::Value) <- parseJSON o
-           case Map.lookup str namedEventDB of
-             Just n -> fmap (NamedEvent n) (opt1 <|> opt2)
-             Nothing -> fail "bad parse"
+           fmap (NamedEvent str) (opt1 <|> opt2)
     where
            opt1 = do (_::String,code,x,y) <- parseJSON o
                      return $ Event code (Just (x,y))
            opt2 = do (_::String,code,_::Value,_::Value) <- parseJSON o
                      return $ Event code Nothing
 
-
-namedEventDB :: Map String EventName
-namedEventDB = Map.fromList
-                [ (map toLower (show n),n)
-                | n <- [minBound..maxBound]
-                ]
-
--- | 'EventName' mirrors event names from jquery, where 'map toLower (show name)' gives
--- the jquery event name.
-data EventName
-        -- Keys
-        = KeyPress
-        | KeyDown
-        | KeyUp
-        -- Mouse
-        | MouseDown
-        | MouseEnter
-        | MouseMove
-        | MouseOut
-        | MouseOver
-        | MouseUp
-        deriving (Eq, Ord, Show, Enum, Bounded)
+-- | 'EventName' mirrors event names from jquery, and use lower case.
+--   Possible named events
+--    * keypress, keydown, keyup
+--    * mouseDown, mouseenter, mousemove, mouseout, mouseover, mouseup
+type EventName = String
 
 -- | EventQueue is a STM channel ('TChan') of 'Event's.
 -- Intentionally, 'EventQueue' is not abstract.
 type EventQueue = TChan NamedEvent
-
-writeEventQueue :: EventQueue -> NamedEvent -> IO ()
-writeEventQueue q e = atomically $ writeTChan q e
 
 -- | wait for a specific, named event.
 wait :: EventQueue -> EventName -> IO Event
@@ -78,3 +56,19 @@ wait q nm = atomically $ do
    check (nm == nm')
    return e
 
+{-
+    DEPRECATED EventQueue, readEventQueue, tryReadEventQueue "use readEvent(s) or tryReadEvent(s)" 
+readEventQueue :: EventQueue -> IO NamedEvent
+readEventQueue q = atomically $ readTChan q
+
+
+tryReadEventQueue :: EventQueue -> IO (Maybe NamedEvent)
+tryReadEventQueue q = atomically $ do
+        b <- isEmptyTChan q
+        if b then return Nothing
+             else liftM Just (readTChan q)
+
+newEventQueue :: IO EventQueue
+newEventQueue = atomically newTChan
+
+-}

@@ -2,6 +2,8 @@
 
 module Graphics.Blank.Canvas where
 
+import Graphics.Blank.Events
+
 import Control.Applicative (Applicative(..))
 import Control.Monad (ap)
 import Numeric
@@ -56,6 +58,8 @@ data Command
         | TextBaseline String
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
+        -- Specials
+        | Trigger EventName Event
 
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
@@ -67,6 +71,10 @@ showB False = "false"
 -- | size of the canvas
 size :: Canvas (Float,Float)
 size = Size
+
+-- | trigger a specific event, please.
+trigger :: EventName -> Event -> Canvas ()
+trigger nm ev = Command (Trigger nm ev)
 
 {-
 -- | read a specific event; wait for it if the event is not in queue.

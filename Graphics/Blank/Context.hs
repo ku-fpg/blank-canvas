@@ -12,13 +12,9 @@ data Context = Context
         { theSize     :: (Float,Float)
         , theDraw     :: MVar String
         , eventRegs   :: MVar (Set EventName)       -- events that are registered
-        , eventQueue  :: EventQueue -- now a single event queue
+        , eventQueue  :: EventQueue -- ^ A single event queue
         , sessionNo   :: Int
         }
-
--- 'events' returns the events Queue
-events :: Context -> EventQueue
-events = eventQueue
 
 -- | 'register' makes sure the named event is registered.
 register :: Context -> EventName -> IO ()
