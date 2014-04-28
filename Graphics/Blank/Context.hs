@@ -1,6 +1,7 @@
 module Graphics.Blank.Context where
 
 import Control.Concurrent
+import Control.Concurrent.STM
 import qualified Data.Set as Set
 import Data.Set (Set)
 import Data.Char
@@ -21,7 +22,7 @@ register :: Context -> EventName -> IO ()
 register cxt@(Context _ _ regs _ num) newEvent = do
         db <- takeMVar regs
         let new = Set.difference (Set.fromList [newEvent]) db
-        sequence_ [ sendToCanvas cxt (("register('" ++ map toLower (show nm) ++ "'," ++ show num ++ ");") ++)
+        sequence_ [ sendToCanvas cxt (("register(" ++ map toLower (show nm) ++ "," ++ show num ++ ");") ++)
                   | nm <- Set.toList new
                   ]
         if Set.null new
@@ -31,3 +32,9 @@ register cxt@(Context _ _ regs _ num) newEvent = do
 -- | internal command to send a message to the canvas.
 sendToCanvas :: Context -> ShowS -> IO ()
 sendToCanvas (Context _ var _ _ num) cmds = putMVar var $ "if (session == " ++ show num ++ "){var c = getContext();" ++ cmds "}"
+
+-- | wait for any event
+wait :: Context -> IO NamedEvent
+wait c = atomically $ readTChan (eventQueue c)
+
+        

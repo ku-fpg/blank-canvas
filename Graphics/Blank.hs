@@ -5,6 +5,7 @@ module Graphics.Blank
          -- * Starting blank-canvas
           blankCanvas
         , splatCanvas
+        , Options(..)
         -- * Graphics 'Context'
         , Context       -- abstact
         , send
@@ -16,10 +17,10 @@ module Graphics.Blank
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
-        , events
+        , eventQueue
         , wait
         , Event(..)
-        , EventName(..)
+        , EventName
         , NamedEvent(..)
         , EventQueue
         ) where
@@ -84,7 +85,11 @@ blankCanvas opts actions = do
             db <- takeMVar contextDB
             putMVar contextDB $ Map.insert uq cxt db
             -- Here is where we actually spawn the user code
-            _ <- forkIO $ actions cxt
+            _ <- forkIO $ do
+                    -- register specific events
+                    sequence_ [ register cxt nm | nm <- events opts ]
+                    -- and run the user application
+                    actions cxt
             return uq
 
    app <- scottyApp $ do
@@ -230,8 +235,8 @@ getUniq = do
 -------------------------------------------------
 
 data Options = Options 
-        { port   :: Int
-        , events :: [EventName]
+        { port   :: Int                 -- ^ which port do we issue the blank canvas using
+        , events :: [EventName]         -- ^ which events does the canvas listen to
         }
         
 instance Num Options where

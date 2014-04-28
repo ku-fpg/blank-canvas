@@ -8,6 +8,7 @@ import Control.Applicative (Applicative(..))
 import Control.Monad (ap)
 import Numeric
 
+
 data Canvas :: * -> * where
         Command :: Command                             -> Canvas ()
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b

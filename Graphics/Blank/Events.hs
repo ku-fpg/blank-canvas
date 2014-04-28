@@ -6,9 +6,6 @@ module Graphics.Blank.Events
         , EventName(..)
          -- * Event Queue
         , EventQueue            -- not abstract
-        , wait
-        -- * Internal
---        , writeEventQueue
         ) where
 
 import Data.Aeson (FromJSON(..), Value)
@@ -48,13 +45,6 @@ type EventName = String
 -- | EventQueue is a STM channel ('TChan') of 'Event's.
 -- Intentionally, 'EventQueue' is not abstract.
 type EventQueue = TChan NamedEvent
-
--- | wait for a specific, named event.
-wait :: EventQueue -> EventName -> IO Event
-wait q nm = atomically $ do
-   NamedEvent nm' e <- readTChan q
-   check (nm == nm')
-   return e
 
 {-
     DEPRECATED EventQueue, readEventQueue, tryReadEventQueue "use readEvent(s) or tryReadEvent(s)" 
