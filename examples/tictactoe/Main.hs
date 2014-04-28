@@ -5,7 +5,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Debug.Trace
 
-main = blankCanvas 3000 $ \ context -> loop context Map.empty X
+main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> loop context Map.empty X
 data XO = X | O
         deriving (Eq,Ord,Show)
 
@@ -55,7 +55,7 @@ loop context board turn = do
                     if r `elem` [-1..1] then Just (signum r) else Nothing
                 where r = round (x * 3.3333)
 
-        event <- send context $ readEvent MouseDown
+        NamedEvent _ event <- wait context
 --        print event
         case jsMouse event of
            -- if no mouse location, ignore, and redraw

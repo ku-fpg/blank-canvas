@@ -2,7 +2,7 @@ module Main (main) where
 
 import Graphics.Blank
 
-main = blankCanvas 3000 $ \ canvas ->
+main = blankCanvas 3000 { events = ["mousedown"] } $ \ canvas ->
   sequence_ [ -- blank the screeen
               do send canvas $ do
                       (width,height) <- size
@@ -19,7 +19,7 @@ main = blankCanvas 3000 $ \ canvas ->
                  send canvas $ message name
 
                  -- wait for a mouse press
-                 send canvas $ readEvent MouseDown
+                 wait canvas 
 
             | (example,name) <- cycle examples
             ]

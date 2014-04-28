@@ -13,7 +13,7 @@ data State = State
      	     }
      deriving Show
 
-main = blankCanvas 3000 $ \ context -> loop context (State [] 0)
+main = blankCanvas 3000 { events = ["keyup","keydown"] } $ \ context -> loop context (State [] 0)
 
 loop context state = do
 --        threadDelay (1 * 1000 * 10)    -- remove if writing a game
@@ -31,13 +31,11 @@ loop context state = do
         control context state
 
 control context state = do
-        event <- send context $ tryReadEvents [KeyDown,KeyUp]
-        let down_keys = case event of { Just (NamedEvent KeyDown e) -> [jsCode e] ; _ -> [] }
-        let up_keys = case event of { Just (NamedEvent KeyUp e) -> [jsCode e] ; _ -> []}
+        event <- wait context
+        let down_keys = case event of { (NamedEvent "keydown" e) -> [jsCode e] ; _ -> [] }
+        let up_keys = case event of { (NamedEvent "keyup" e) -> [jsCode e] ; _ -> []}
         let current_keys = [ k | k <- nub (keys state ++ down_keys), not (k `elem` up_keys) ]
         let state' = state { step = step state + 1, keys = current_keys }
-        case event of
-          Nothing -> loop context state'
-          Just _  -> control context state'      -- there may be more events to process
+        loop context state'
 
 
