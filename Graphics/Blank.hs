@@ -235,8 +235,9 @@ getUniq = do
 -------------------------------------------------
 
 data Options = Options 
-        { port   :: Int                 -- ^ which port do we issue the blank canvas using
-        , events :: [EventName]         -- ^ which events does the canvas listen to
+        { port   :: Int            -- ^ which port do we issue the blank canvas using
+        , events :: [EventName]    -- ^ which events does the canvas listen to
+        , debug  :: Bool           -- ^ turn on debugging
         }
         
 instance Num Options where
@@ -245,5 +246,5 @@ instance Num Options where
     (*) = error "no arithmetic for Blank Canvas Options"
     abs = error "no arithmetic for Blank Canvas Options"
     signum = error "no arithmetic for Blank Canvas Options"
-    fromInteger n = Options { port = fromInteger n, events = [] }
-    
+    fromInteger n = Options { port = fromInteger n, events = [], debug = False }
+
