@@ -43,6 +43,7 @@ import Web.Scotty (scottyApp, middleware, get, file, post, jsonData, text, addHe
 import qualified Data.Text.Lazy as T
 import qualified Web.KansasComet as KC
 import Data.Aeson
+import Data.Aeson.Types (parse)
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -80,26 +81,6 @@ blankCanvas opts actions = do
 
 --   print dataDir
 
-{-
-   contextDB <- newMVar $ (Map.empty :: Map.Map Int Context)
-
-   let newContext :: KC.Document -> (Float,Float) -> IO Int
-       newContext kc_doc (w,h) = do
-            uq <- atomically getUniq
-            picture <- newEmptyMVar
-            callbacks <- newMVar $ Set.empty
-            queue <- atomically newTChan
-            let cxt = Context (w,h) picture callbacks queue uq
-            db <- takeMVar contextDB
-            putMVar contextDB $ Map.insert uq cxt db
-            -- Here is where we actually spawn the user code
-            _ <- forkIO $ do
-                    -- register specific events
-                    sequence_ [ register cxt nm | nm <- events opts ]
-                    -- and run the user application
-                    actions cxt
-            return uq
--}
    app <- scottyApp $ do
 --        middleware logStdoutDev
         middleware local_only
@@ -114,7 +95,6 @@ blankCanvas opts actions = do
                    | nm <- events opts
                    ]
 
-
                 queue <- atomically newTChan
                 _ <- forkIO $ forever $ do
                         val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
@@ -124,20 +104,8 @@ blankCanvas opts actions = do
                                    print event
                                    atomically $ writeTChan queue event
                            _ -> return ()
-                   
-                -- first, ask the size
-                print "ASKING SIZE"
-                KC.send kc_doc $ unlines
-                    [ "$.kc.reply(0,size());" ]
 
-                print "SENT"
-                v <- KC.getReply kc_doc 0
-                print v
-                print "DONE"
-
-                let cxt = Context kc_doc queue
-                -- TODO: register the events
-                actions cxt
+                actions $ Context kc_doc queue
 
 
         get "/" $ file $ dataDir ++ "/static/index.html"
@@ -145,47 +113,6 @@ blankCanvas opts actions = do
         get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
         get "/kansas-comet.js" $ file $ kComet
 
-{-
-        post "/start" $ do
-            req <- jsonData
-            uq  <- liftIO $ newContext req
-            text (T.pack $ "session = " ++ show uq ++ ";redraw();")
-
-        post "/event/:num" $ do
-            addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
-            num <- param "num"
-            ne <- jsonData
-            db <- liftIO $ readMVar contextDB
-            case Map.lookup num db of
-               Nothing -> json ()
-               Just (Context _ _ _ q _) ->
-                                do liftIO $ atomically $ writeTChan q ne
-                                   json ()
-
-        get "/canvas/:num" $ do
-            addHeader "Cache-Control" "max-age=0, no-cache, private, no-store, must-revalidate"
-            -- do something and return a new list of commands to the client
-            num <- param "num"
---            liftIO $ print (num :: Int)
-            let tryPicture picture n = do
-                    res <- liftIO $ tryTakeMVar picture
-                    case res of
-                     Just js -> do
---                            liftIO $ print js
-                            text $ T.pack js
-                     Nothing | n == 0 ->
-                            -- give the browser something to do (approx every second)
-                            text (T.pack "")
-                     Nothing -> do
-                            -- hack, wait a 1/10 of a second
-                            liftIO $ threadDelay (100 * 1000)
-                            tryPicture picture (n - 1 :: Int)
-
-            db <- liftIO $ readMVar contextDB
-            case Map.lookup num db of
-               Nothing -> text (T.pack $ "alert('/canvas/, can not find " ++ show num ++ "');")
-               Just (Context _ pic _ _ _) -> tryPicture pic 10
--}
    run (port opts) app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
@@ -197,8 +124,19 @@ send cxt commands =
       send' :: Canvas a -> (String -> String) -> IO a
       send' (Bind (Return a) k)    cmds = send' (k a) cmds
       send' (Bind (Bind m k1) k2)  cmds = send' (Bind m (\ r -> Bind (k1 r) k2)) cmds
-      send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd)
-      send' (Bind Size k)          cmds = send' (k (500,500)) cmds
+      send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd . (";" ++))
+      send' (Bind (Query query) k) cmds = do
+              -- send the com
+              print ("Query",query)
+              uq <- atomically $ getUniq
+              sendToCanvas cxt (cmds .  (("$.kc.reply(" ++ show uq ++ "," ++ show query ++ ");") ++))
+              v <- KC.getReply (theComet cxt) uq
+              print v
+              case parse (parseQueryResult query) v of
+                Error msg -> fail msg
+                Success a -> do
+                        print a
+                        send' (k a) id
       send' (Return a)             cmds = do
               sendToCanvas cxt cmds
               return a

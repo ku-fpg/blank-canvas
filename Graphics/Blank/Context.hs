@@ -16,20 +16,6 @@ data Context = Context
         , eventQueue  :: EventQueue                 -- ^ A single (typed) event queue
         }
 
--- | 'register' makes sure the named event is registered.
-register :: Context -> EventName -> IO ()
-register cxt newEvent = return ()
-{-
-do
-        db <- takeMVar regs
-        let new = Set.difference (Set.fromList [newEvent]) db
-        sequence_ [ sendToCanvas cxt (("register(" ++ map toLower (show nm) ++ "," ++ show num ++ ");") ++)
-                  | nm <- Set.toList new
-                  ]
-        if Set.null new
-        then putMVar regs $ db
-        else putMVar regs $ (db `Set.union` new)
--}
 
 -- | internal command to send a message to the canvas.
 sendToCanvas :: Context -> ShowS -> IO ()

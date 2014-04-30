@@ -1,9 +1,11 @@
-{-# LANGUAGE TemplateHaskell, GADTs, KindSignatures #-}
+{-# LANGUAGE TemplateHaskell, GADTs, KindSignatures, ScopedTypeVariables #-}
 
 module Graphics.Blank.Canvas where
 
 import Graphics.Blank.Events
 
+import Data.Aeson (FromJSON(..),Value(..))
+import Data.Aeson.Types (Parser)
 import Control.Applicative (Applicative(..))
 import Control.Monad (ap)
 import Numeric
@@ -11,9 +13,10 @@ import Numeric
 
 data Canvas :: * -> * where
         Command :: Command                             -> Canvas ()
+        Query   :: (Show a) => Query a                             -> Canvas a
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
-        Size    ::                                        Canvas (Float,Float)
+--        Size    ::                                        Canvas (Float,Float)
 
 instance Monad Canvas where
         return = Return
@@ -62,6 +65,19 @@ data Command
         -- Specials
         | Trigger EventName Event
 
+
+data Query :: * -> * where
+        Size            :: Query (Float,Float)
+
+instance Show (Query a) where
+  show Size = "size()"
+
+-- This is how we take our value to bits
+parseQueryResult :: Query a -> Value -> Parser a
+parseQueryResult (Size {}) o = do
+    (a::Float,b::Float) <- parseJSON o
+    return (a,b)
+
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
 
@@ -71,7 +87,7 @@ showB False = "false"
 
 -- | size of the canvas
 size :: Canvas (Float,Float)
-size = Size
+size = Query Size
 
 -- | trigger a specific event, please.
 trigger :: EventName -> Event -> Canvas ()

@@ -46,7 +46,7 @@ while(<F>) {
 			$dsl .= "$name :: $type\n";
 			if ($args eq "") {
 				$dsl .= "$name () = Command $cmd\n";
-				$show .= "  show $cmd = \"c.$name();\"\n";
+				$show .= "  show $cmd = \"c.$name()\"\n";
 			} else {
 				$dsl .= "$name = Command . $cmd\n";
 				@ins = ();
@@ -75,7 +75,7 @@ while(<F>) {
 				     $n++;
 				}
 				$show .= join(" ++ \",\" ++ ",@outs);
-				$show .= " ++ \");\"\n";
+				$show .= " ++ \")\"\n";
 			}
 
 		}
