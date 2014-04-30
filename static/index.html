@@ -3,6 +3,7 @@
         <title>Blank Canvas</title>
         <script type="text/javascript" src="jquery.js"></script>
         <script type="text/javascript" src="jquery-json.js"></script>
+        <script type="text/javascript" src="kansas-comet.js"></script>
     </head>
     <body style="padding: 0px; margin: 0px; border:0px">
         <div id="canvas"></div>
@@ -14,6 +15,11 @@
                         return canvas.getContext("2d");
                     }
                     alert("no canvas");
+            }
+            function size() {
+                    console.log("got to size()");
+                    var canvas = document.getElementById("canvas");
+                    return [canvas.width, canvas.height];
             }
             function register(name,mysession) {
                 $(document).bind(name,function (e){
@@ -43,12 +49,16 @@
                             '<canvas id="canvas" width="' + w + '" height="' + h +
                             '" style="border: blue solid 0px; padding: 0px; margin: 0px"></canvas>');
 
+                $.kc.connect("/blank");
+
+                /*
                  // start the server-side
                 $.ajax({ url: "/start",
                          type: "POST",
                          contentType: "application/json; charset=utf-8",
                          data: $.toJSON([w,h]),
                          dataType: "script"}); 
+                */
             });
         </script>
     </body>

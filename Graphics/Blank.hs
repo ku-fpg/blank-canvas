@@ -40,6 +40,7 @@ import Web.Scotty (scottyApp, middleware, get, file, post, jsonData, text, addHe
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
+import qualified Web.KansasComet as KC
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -71,12 +72,17 @@ import Paths_blank_canvas
 blankCanvas :: Options -> (Context -> IO ()) -> IO ()
 blankCanvas opts actions = do
    dataDir <- getDataDir
+
+   kComet <- KC.kCometPlugin
+
+
 --   print dataDir
 
-
+{-
    contextDB <- newMVar $ (Map.empty :: Map.Map Int Context)
-   let newContext :: (Float,Float) -> IO Int
-       newContext (w,h) = do
+
+   let newContext :: KC.Document -> (Float,Float) -> IO Int
+       newContext kc_doc (w,h) = do
             uq <- atomically getUniq
             picture <- newEmptyMVar
             callbacks <- newMVar $ Set.empty
@@ -91,17 +97,37 @@ blankCanvas opts actions = do
                     -- and run the user application
                     actions cxt
             return uq
-
+-}
    app <- scottyApp $ do
 --        middleware logStdoutDev
         middleware local_only
+        -- use the comet
+        let kc_opts :: KC.Options
+            kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = 3 }
 
---        middleware $ staticRoot $ TS.pack $ (dataDir ++ "/static")
+        KC.connect kc_opts $ \ kc_doc -> do
+                -- first, ask the size
+                print "ASKING SIZE"
+                KC.send kc_doc $ unlines
+                    [ "$.kc.reply(0,size());" ]
+
+                print "SENT"
+                v <- KC.getReply kc_doc 0
+                print v
+                print "DONE"
+
+                queue <- atomically newTChan
+                let cxt = Context kc_doc queue
+                -- TODO: register the events
+                actions cxt
+
 
         get "/" $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js" $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
+        get "/kansas-comet.js" $ file $ kComet
 
+{-
         post "/start" $ do
             req <- jsonData
             uq  <- liftIO $ newContext req
@@ -141,20 +167,20 @@ blankCanvas opts actions = do
             case Map.lookup num db of
                Nothing -> text (T.pack $ "alert('/canvas/, can not find " ++ show num ++ "');")
                Just (Context _ pic _ _ _) -> tryPicture pic 10
-
+-}
    run (port opts) app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible. Can not crash.
 send :: Context -> Canvas a -> IO a
-send cxt@(Context (h,w) _ _ _ _) commands = 
+send cxt commands = 
       send' commands id 
   where
       send' :: Canvas a -> (String -> String) -> IO a
       send' (Bind (Return a) k)    cmds = send' (k a) cmds
       send' (Bind (Bind m k1) k2)  cmds = send' (Bind m (\ r -> Bind (k1 r) k2)) cmds
       send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd)
-      send' (Bind Size k)          cmds = send' (k (h,w)) cmds
+      send' (Bind Size k)          cmds = send' (k (500,500)) cmds
       send' (Return a)             cmds = do
               sendToCanvas cxt cmds
               return a

@@ -19,19 +19,6 @@ data-files:
     static/index.html
     static/jquery.js
     static/jquery-json.js
-    examples/Makefile
-    examples/square/Main.hs
-    examples/square/Makefile
-    examples/tictactoe/Main.hs
-    examples/tictactoe/Makefile
-    examples/html5canvastutorial/Main.hs
-    examples/html5canvastutorial/Makefile
-    examples/trivial/Main.hs
-    examples/trivial/Makefile
-    examples/rotate-square/Main.hs
-    examples/rotate-square/Makefile
-    examples/keyread/Main.hs
-    examples/keyread/Makefile
 
 Library
   Exposed-modules:     Graphics.Blank
@@ -46,6 +33,7 @@ Library
   build-depends:       base             >= 4.3.1        && < 5,
                        aeson            == 0.7.*,
                        containers       == 0.5.*,
+                       kansas-comet     >= 0.2.2        && < 0.3,
                        scotty           == 0.7.*,
                        wai              == 2.*,
                        http-types       == 0.8.*,
