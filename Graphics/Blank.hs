@@ -125,7 +125,6 @@ send cxt commands =
       send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd . (";" ++))
       send' (Bind (Query query) k) cmds = do
               -- send the com
-              print ("Query",query)
               uq <- atomically $ getUniq
               sendToCanvas cxt (cmds .  (("$.kc.reply(" ++ show uq ++ "," ++ show query ++ ");") ++))
               v <- KC.getReply (theComet cxt) uq
