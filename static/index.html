@@ -21,13 +21,9 @@
                     var canvas = document.getElementById("canvas");
                     return [canvas.width, canvas.height];
             }
-            function register(name,mysession) {
+            function register(name) {
                 $(document).bind(name,function (e){
-                        $.ajax({ url: "/event/" + mysession,
-                         type: "POST",
-                         data: $.toJSON([name,e.which,e.pageX, e.pageY]),
-                         contentType: "application/json; charset=utf-8",
-                         dataType: "json"});
+                        $.kc.event([name,e.which,e.pageX, e.pageY]);
                 });
             }  
             function redraw() {

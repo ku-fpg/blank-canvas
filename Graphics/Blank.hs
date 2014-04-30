@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP, BangPatterns #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP, BangPatterns, ScopedTypeVariables #-}
 
 module Graphics.Blank
         (
@@ -28,6 +28,7 @@ module Graphics.Blank
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
+import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Handler.Warp (run)
 import Network.Wai (Middleware,remoteHost, responseLBS)
@@ -41,6 +42,7 @@ import Web.Scotty (scottyApp, middleware, get, file, post, jsonData, text, addHe
 --import Network.Wai.Middleware.Static
 import qualified Data.Text.Lazy as T
 import qualified Web.KansasComet as KC
+import Data.Aeson
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -106,6 +108,23 @@ blankCanvas opts actions = do
             kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = 3 }
 
         KC.connect kc_opts $ \ kc_doc -> do
+                -- register the events we want to watch for
+                KC.send kc_doc $ unlines
+                   [ "register(" ++ show nm ++ ");"
+                   | nm <- events opts
+                   ]
+
+
+                queue <- atomically newTChan
+                _ <- forkIO $ forever $ do
+                        val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
+                        print val
+                        case fromJSON val of
+                           Success (event :: NamedEvent) -> do
+                                   print event
+                                   atomically $ writeTChan queue event
+                           _ -> return ()
+                   
                 -- first, ask the size
                 print "ASKING SIZE"
                 KC.send kc_doc $ unlines
@@ -116,7 +135,6 @@ blankCanvas opts actions = do
                 print v
                 print "DONE"
 
-                queue <- atomically newTChan
                 let cxt = Context kc_doc queue
                 -- TODO: register the events
                 actions cxt
