@@ -86,7 +86,7 @@ blankCanvas opts actions = do
         middleware local_only
         -- use the comet
         let kc_opts :: KC.Options
-            kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = 3 }
+            kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = 0 }
 
         KC.connect kc_opts $ \ kc_doc -> do
                 -- register the events we want to watch for
@@ -98,10 +98,8 @@ blankCanvas opts actions = do
                 queue <- atomically newTChan
                 _ <- forkIO $ forever $ do
                         val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
-                        print val
                         case fromJSON val of
                            Success (event :: NamedEvent) -> do
-                                   print event
                                    atomically $ writeTChan queue event
                            _ -> return ()
 
@@ -131,11 +129,9 @@ send cxt commands =
               uq <- atomically $ getUniq
               sendToCanvas cxt (cmds .  (("$.kc.reply(" ++ show uq ++ "," ++ show query ++ ");") ++))
               v <- KC.getReply (theComet cxt) uq
-              print v
               case parse (parseQueryResult query) v of
                 Error msg -> fail msg
                 Success a -> do
-                        print a
                         send' (k a) id
       send' (Return a)             cmds = do
               sendToCanvas cxt cmds
