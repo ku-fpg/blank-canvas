@@ -1,13 +1,14 @@
-{-# LANGUAGE TemplateHaskell, GADTs, KindSignatures, ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell, GADTs, KindSignatures, ScopedTypeVariables, OverloadedStrings #-}
 
 module Graphics.Blank.Canvas where
 
 import Graphics.Blank.Events
 
 import Data.Aeson (FromJSON(..),Value(..))
-import Data.Aeson.Types (Parser)
+import Data.Aeson.Types (Parser, (.:))
 import Control.Applicative (Applicative(..))
 import Control.Monad (ap)
+import Control.Applicative
 import Numeric
 
 
@@ -67,16 +68,38 @@ data Command
 
 
 data Query :: * -> * where
-        Size            :: Query (Float,Float)
+        Size                  :: Query (Float,Float)
+        ToDataURL             :: Query String
+        MeasureText :: String -> Query TextMetrics
+
+data TextMetrics = TextMetrics Float
+        deriving Show
 
 instance Show (Query a) where
-  show Size = "size()"
+  show Size      = "size(c)"
+  show ToDataURL = "toDataURL(c)"
+  show (MeasureText txt) = "c.measureText(" ++ show txt ++ ")"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
-parseQueryResult (Size {}) o = do
-    (a::Float,b::Float) <- parseJSON o
-    return (a,b)
+parseQueryResult (Size {}) o      = parseJSON o -- default is good
+parseQueryResult (ToDataURL {}) o = parseJSON o
+parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
+parseQueryResult _ _ = fail "no parse"
+
+-- | size of the canvas
+size :: Canvas (Float,Float)
+size = Query Size
+
+-- | Turn the canvas into a png data stream.
+-- 
+-- > "data:image/png;base64,iVBORw0KGgo.."
+--
+toDataURL :: Canvas String
+toDataURL = Query ToDataURL
+
+measureText :: String -> Canvas TextMetrics
+measureText = Query . MeasureText
 
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
@@ -85,9 +108,6 @@ showB :: Bool -> String
 showB True = "true"
 showB False = "false"
 
--- | size of the canvas
-size :: Canvas (Float,Float)
-size = Query Size
 
 -- | trigger a specific event, please.
 trigger :: EventName -> Event -> Canvas ()

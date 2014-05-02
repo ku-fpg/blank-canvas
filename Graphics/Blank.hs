@@ -14,6 +14,9 @@ module Graphics.Blank
         , module Graphics.Blank.Generated
          -- * Reading from 'Canvas'
         , size
+        , toDataURL
+        , measureText
+        , TextMetrics(..)
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
@@ -87,7 +90,7 @@ blankCanvas opts actions = do
         middleware local_only
         -- use the comet
         let kc_opts :: KC.Options
-            kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = 0 }
+            kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
 
         KC.connect kc_opts $ \ kc_doc -> do
                 -- register the events we want to watch for
@@ -129,6 +132,7 @@ send cxt commands =
               uq <- atomically $ getUniq
               sendToCanvas cxt (cmds .  (("$.kc.reply(" ++ show uq ++ "," ++ show query ++ ");") ++))
               v <- KC.getReply (theComet cxt) uq
+              print v
               case parse (parseQueryResult query) v of
                 Error msg -> fail msg
                 Success a -> do

@@ -16,10 +16,13 @@
                     }
                     alert("no canvas");
             }
-            function size() {
-                    console.log("got to size()");
-                    var canvas = document.getElementById("canvas");
-                    return [canvas.width, canvas.height];
+            function size(c) {
+                    console.log("got to size")
+                    return [c.canvas.width, c.canvas.height];
+            }
+            function toDataURL(c) {
+                    // Has to go back up one level.
+                    return c.canvas.toDataURL();
             }
             function register(name) {
                 $(document).bind(name,function (e){
