@@ -13,7 +13,7 @@ import Numeric
 
 data Canvas :: * -> * where
         Command :: Command                             -> Canvas ()
-        Query   :: (Show a) => Query a                             -> Canvas a
+        Query   :: (Show a) => Query a                 -> Canvas a
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
 --        Size    ::                                        Canvas (Float,Float)
