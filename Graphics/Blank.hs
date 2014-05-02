@@ -217,7 +217,7 @@ data Options = Options
         , events :: [EventName]    -- ^ which events does the canvas listen to
         , debug  :: Bool           -- ^ turn on debugging (default False)
         , remote :: Bool           -- ^ turn on remote access (default False)
-        }
+        } deriving Show
         
 instance Num Options where
     (+) = error "no arithmetic for Blank Canvas Options"
