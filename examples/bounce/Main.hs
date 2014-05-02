@@ -43,7 +43,7 @@ go context = do
 
      let bounce :: Ball a -> Ball a
          bounce ((x,y),d,a)
-            | y + 25 >= height && d > 0 = ((x,y),-(d-0.5)*0.8,a)
+            | y + 25 >= height && d > 0 = ((x,y),-(d-0.5)*0.97,a)
             | otherwise         = ((x,y),d,a)
 
      let loop (balls,cols) = do
