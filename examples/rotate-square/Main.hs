@@ -1,8 +1,10 @@
 module Main where
 
 import Graphics.Blank
+import Control.Concurrent
 
-main = blankCanvas 3000 $ \ context -> loop context (0 :: Float)
+main = blankCanvas 3000 $ \ context -> do
+     loop context (0 :: Float)
 
 loop context n = do
         send context $ do
@@ -22,5 +24,6 @@ loop context n = do
                 strokeStyle "green"
                 stroke()
                 restore()
+	threadDelay (20 * 1000)	
         loop context (n + 0.01)
 
