@@ -20,17 +20,18 @@ type State = ([Ball Color])
 
 showBall :: (Float,Float) -> String -> Canvas ()
 showBall (x,y) col = do
-	save()
-	translate (x,y)
+--	save()
+--	translate (x,y)
 
         beginPath()
 --        scale (1,0.9)
+        globalAlpha 0.5
         fillStyle col
-        arc(0, 0, 50, 0, pi*2, False)
+        arc(x, y, 50, 0, pi*2, False)
         closePath()
         fill()
         
-	restore()
+--	restore()
 
 moveBall :: Ball a -> Ball a
 moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
@@ -42,7 +43,7 @@ go context = do
 
      let bounce :: Ball a -> Ball a
          bounce ((x,y),d,a)
-            | y + 25 >= height && d > 0 = ((x,y),-d*0.95,a)
+            | y + 25 >= height && d > 0 = ((x,y),-(d-0.5)*0.8,a)
             | otherwise         = ((x,y),d,a)
 
      let loop (balls,cols) = do
