@@ -25,3 +25,12 @@ sendToCanvas cxt cmds = do
 -- | wait for any event
 wait :: Context -> IO NamedEvent
 wait c = atomically $ readTChan (eventQueue c)
+
+flush :: Context -> IO [NamedEvent]
+flush cxt = atomically $ loop
+  where loop = do 
+          b <- isEmptyTChan (eventQueue cxt)
+          if b then return [] else do
+                 e <- readTChan (eventQueue cxt)
+                 es <- loop
+                 return (e : es)

@@ -19,6 +19,7 @@ module Graphics.Blank
          -- * Event Stuff
         , eventQueue
         , wait
+        , flush
         , Event(..)
         , EventName
         , NamedEvent(..)
