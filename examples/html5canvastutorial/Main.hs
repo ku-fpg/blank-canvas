@@ -2,7 +2,7 @@ module Main (main) where
 
 import Graphics.Blank
 
-main = blankCanvas 3000 { events = ["mousedown"] } $ \ canvas ->
+main = blankCanvas 3000 { events = ["mousedown"], debug = True, static = ["images/princess.jpg"] } $ \ canvas -> do
   sequence_ [ -- blank the screeen
               do send canvas $ do
                       (width,height) <- size
@@ -36,23 +36,23 @@ examples =
         , (example_1_3_3,"1.3.3 Bezier Curve")
 	-- Paths
         , (example_1_4_1,"1.4.1 Path")
---        , (example_1_4_2,"1.4.2 Line Join")
---        , (example_1_4_3,"1.4.3 Rounded Corners")
+        , (example_1_4_2,"1.4.2 Line Join")
+        , (example_1_4_3,"1.4.3 Rounded Corners")
 	-- Shapes
---        , (example_1_5_1,"1.5.1 Custom Shape")
---        , (example_1_5_2,"1.5.2 Rectangle")
+        , (example_1_5_1,"1.5.1 Custom Shape")
+        , (example_1_5_2,"1.5.2 Rectangle")
         , (example_1_5_3,"1.5.3 Circle")
---        , (example_1_5_4,"1.5.4 Semicircle")
+        , (example_1_5_4,"1.5.4 Semicircle")
 	-- Fill Styles
---        , (example_1_6_1,"1.6.1 Shape Fill")
---        , (example_1_6_2,"1.6.2 Linear Gradient")
---        , (example_1_6_3,"1.6.3 Radial Gradient")
---        , (example_1_6_4,"1.6.4 Pattern")
+        , (example_1_6_1,"1.6.1 Shape Fill")
+        , (example_1_6_2,"1.6.2 Linear Gradient")
+        , (example_1_6_3,"1.6.3 Radial Gradient")
+        , (example_1_6_4,"1.6.4 Pattern")
 	-- Images
---        , (example_1_7_1,"1.7.1 Image")
---        , (example_1_7_2,"1.7.2 Image Size")
---        , (example_1_7_3,"1.7.3 Image Crop")
---        , (example_1_7_4,"1.7.4 Image Loader")
+        , (example_1_7_1,"1.7.1 Image")
+        , (example_1_7_2,"1.7.2 Image Size")
+        , (example_1_7_3,"1.7.3 Image Crop")
+        , (example_1_7_4,"1.7.4 Image Loader")
 	-- Text
         , (example_1_8_1,"1.8.1 Text Font & Size")
         , (example_1_8_2,"1.8.2 Text Color")
@@ -60,7 +60,7 @@ examples =
         , (example_1_8_4,"1.8.4 Text Align")
         , (example_1_8_5,"1.8.5 Text Baseline")
         , (example_1_8_6,"1.8.6 Text Metrics")
---        , (example_1_8_7,"1.8.7 Text Wrap")
+        , (example_1_8_7,"1.8.7 Text Wrap")
         -- Transformations 2.1
         -- Composites 2.2
         -- Image Data & URLs 2.3
@@ -71,9 +71,9 @@ examples =
 -- Examples taken from http://www.html5canvastutorials.com/tutorials/html5-canvas-tutorials-introduction/
 
 {- For example, here is the JavaScript for 1.2.1
-        context.moveTo(100, 150);
-        context.lineTo(450, 50);
-        context.stroke();
+          moveTo(100, 150);
+          lineTo(450, 50);
+          stroke();
 -}
 example_1_2_1 = do
         moveTo(100,150)
@@ -157,6 +157,79 @@ example_1_4_1 = do
         strokeStyle "blue"
         stroke()
 
+
+example_1_4_2 = do
+        (width,height) <- size
+        lineWidth 25;
+
+      -- miter line join (left)
+        beginPath();
+        moveTo(99, 150);
+        lineTo(149, 50);
+        lineTo(199, 150);
+        lineJoin "miter";
+        stroke();
+
+      -- round line join (middle)
+        beginPath();
+        moveTo(239, 150);
+        lineTo(289, 50);
+        lineTo(339, 150);
+        lineJoin "round";
+        stroke();
+
+      -- bevel line join (right)
+        beginPath();
+        moveTo(379, 150);
+        lineTo(429, 50);
+        lineTo(479, 150);
+        lineJoin "bevel";
+        stroke();
+ 
+example_1_4_3 = do
+        (width,height) <- size
+        lineWidth 25;
+
+        let rectWidth = 200;
+        let rectHeight = 100;
+        let rectX = 189;
+        let rectY = 50;
+        let cornerRadius = 50;
+
+        beginPath();
+        moveTo(rectX, rectY);
+        lineTo(rectX + rectWidth - cornerRadius, rectY);
+        arcTo(rectX + rectWidth, rectY, rectX + rectWidth, rectY + cornerRadius, cornerRadius);
+        lineTo(rectX + rectWidth, rectY + rectHeight);
+        lineWidth 5;
+        stroke();
+
+example_1_5_1 = do
+        (width,height) <- size
+        beginPath();
+        moveTo(170, 80);
+        bezierCurveTo(130, 100, 130, 150, 230, 150);
+        bezierCurveTo(250, 180, 320, 180, 340, 150);
+        bezierCurveTo(420, 150, 420, 120, 390, 100);
+        bezierCurveTo(430, 40, 370, 30, 340, 50);
+        bezierCurveTo(320, 5, 250, 20, 250, 50);
+        bezierCurveTo(200, 5, 150, 20, 170, 80);
+      -- complete custom shape
+        closePath();
+        lineWidth 5;
+        strokeStyle "blue";
+        stroke();
+
+example_1_5_2 = do
+        (width,height) <- size
+        beginPath();
+        rect(188, 50, 200, 100);
+        fillStyle "yellow";
+        fill();
+        lineWidth 7;
+        strokeStyle "black";
+        stroke();
+      
 example_1_5_3 = do
         (width,height) <- size
         let centerX = width / 2
@@ -170,6 +243,99 @@ example_1_5_3 = do
         lineWidth  5
         strokeStyle "black"
         stroke()
+
+example_1_5_4 = do
+        (width,height) <- size
+        beginPath();
+        arc(288, 75, 70, 0, pi, False);
+        closePath();
+        lineWidth 5;
+        fillStyle "red";
+        fill();
+        strokeStyle "#550000";
+        stroke();
+
+example_1_6_1 = do
+        (width,height) <- size
+        beginPath();
+        moveTo(170, 80);
+        bezierCurveTo(130, 100, 130, 150, 230, 150);
+        bezierCurveTo(250, 180, 320, 180, 340, 150);
+        bezierCurveTo(420, 150, 420, 120, 390, 100);
+        bezierCurveTo(430, 40, 370, 30, 340, 50);
+        bezierCurveTo(320, 5, 250, 20, 250, 50);
+        bezierCurveTo(200, 5, 150, 20, 170, 80);
+
+      -- complete custom shape
+        closePath();
+        lineWidth 5;
+        fillStyle "#8ED6FF";
+        fill();
+        strokeStyle "blue";
+        stroke();
+
+example_1_6_2 = do
+        (width,height) <- size
+        todo
+{-
+      context.rect(0, 0, canvas.width, canvas.height);
+
+      var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+      // light blue
+      grd.addColorStop(0, '#8ED6FF');   
+      // dark blue
+      grd.addColorStop(1, '#004CB3');
+      context.fillStyle = grd;
+      context.fill();
+-}
+
+example_1_6_3 = do
+        (width,height) <- size
+        todo
+{-
+      context.rect(0, 0, canvas.width, canvas.height);
+        
+      var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+      // light blue
+      grd.addColorStop(0, '#8ED6FF');   
+      // dark blue
+      grd.addColorStop(1, '#004CB3');
+      context.fillStyle = grd;
+      context.fill();
+
+-}
+
+example_1_6_4 = do
+        (width,height) <- size
+        todo
+{-
+      var imageObj = new Image();
+      imageObj.onload = function() {
+        var pattern = context.createPattern(imageObj, 'repeat');
+
+        context.rect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = pattern;
+        context.fill();
+      };
+      imageObj.src = 'http://www.html5canvastutorials.com/demos/assets/wood-pattern.png';
+-}
+
+example_1_7_1 = do
+        img <- newImage "/images/princess.jpg"
+        drawImage(img,[69,50])
+
+example_1_7_2 = do
+        img <- newImage "/images/princess.jpg"
+        drawImage(img,[69,50,97,129])
+
+example_1_7_3 = do
+        (width,height) <- size
+        todo
+
+example_1_7_4 = do
+        (width,height) <- size
+        todo
+
 
 example_1_8_1 = do
         font "40pt Calibri"
@@ -221,7 +387,16 @@ example_1_8_6 = do
         fillStyle "#555"
         fillText("(" ++ show w ++ "px wide)", x, y + 40)
 
+example_1_8_7 = do
+        (width,height) <- size
+        todo
+
 ---------------------------------------------------------------------------
+
+todo :: Canvas ()
+todo = do
+        font "40pt Calibri"
+        fillText("(TODO)", 150, 100)
 
 -- Small "watermark-like text in the bottom corner"
 message :: String -> Canvas ()
