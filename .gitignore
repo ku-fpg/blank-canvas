@@ -6,3 +6,4 @@ dist/*
 *~
 examples/dist/*
 notes/
+tmp/
