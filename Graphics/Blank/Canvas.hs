@@ -85,6 +85,8 @@ instance Show Specials where
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
 
 
+-----------------------------------------------------------------------------
+
 class JSArg a => Style a where
 
 instance Style [Char]
@@ -106,7 +108,7 @@ data Query :: * -> * where
         ToDataURL                    :: Query String
         MeasureText :: String        -> Query TextMetrics
         IsPointInPath :: (Float,Float) -> Query Bool
-        NewImage :: String           -> Query Image
+        NewImage :: String             -> Query Image
         CreateLinearGradient :: [Float] -> Query CanvasGradient
         
 data TextMetrics = TextMetrics Float
@@ -153,10 +155,11 @@ measureText = Query . MeasureText
 isPointInPath :: (Float,Float) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- | 'image' takes a URL (perhaps a data URL), and returns the Image handle, after loading.
+-- | 'image' takes a URL (perhaps a data URL), and returns the 'Image' handle, 
+-- _after_ loading.
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: String -> Canvas Image
-newImage = Query . NewImage
+newImage = Query . NewImage 
 
 createLinearGradient :: [Float] -> Canvas CanvasGradient
 createLinearGradient = Query . CreateLinearGradient
