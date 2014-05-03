@@ -300,34 +300,22 @@ example_1_6_2 = do
 
 example_1_6_3 = do
         (width,height) <- size
-        todo
-{-
-      context.rect(0, 0, canvas.width, canvas.height);
-        
-      var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-      // light blue
-      grd.addColorStop(0, '#8ED6FF');   
-      // dark blue
-      grd.addColorStop(1, '#004CB3');
-      context.fillStyle = grd;
-      context.fill();
-
--}
+        rect(0, 0, width, height)
+        grd <- createLinearGradient[238, 50, 10, 238, 50, 300]
+        -- light blue
+        grd # addColorStop(0, "#8ED6FF")
+        -- dark blue
+        grd # addColorStop(1, "#004CB3")
+        fillStyle grd;
+        fill();
 
 example_1_6_4 = do
         (width,height) <- size
-        todo
-{-
-      var imageObj = new Image();
-      imageObj.onload = function() {
-        var pattern = context.createPattern(imageObj, 'repeat');
-
-        context.rect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = pattern;
-        context.fill();
-      };
-      imageObj.src = 'http://www.html5canvastutorials.com/demos/assets/wood-pattern.png';
--}
+        imageObj <- newImage "/images/fan.jpg"
+        pattern <- createPattern (imageObj,"repeat")
+        rect(0, 0, width, height);
+        fillStyle pattern;
+        fill();
 
 example_1_7_1 = do
         img <- newImage "/images/princess.jpg"

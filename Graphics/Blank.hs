@@ -11,6 +11,7 @@ module Graphics.Blank
         , send
          -- * Drawing pictures using the Canvas DSL
         , Canvas        -- abstact
+        , Style         -- abstact class
         , module Graphics.Blank.Generated
          -- * Reading from 'Canvas'
         , size
@@ -23,6 +24,8 @@ module Graphics.Blank
         , createLinearGradient
         , CanvasGradient
         , addColorStop
+        , createPattern
+        , CanvasPattern
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff

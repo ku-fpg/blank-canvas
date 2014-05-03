@@ -91,6 +91,7 @@ class JSArg a => Style a where
 
 instance Style [Char]
 instance Style CanvasGradient
+instance Style CanvasPattern
 
 -----------------------------------------------------------------------------
 
@@ -110,6 +111,7 @@ data Query :: * -> * where
         IsPointInPath :: (Float,Float) -> Query Bool
         NewImage :: String             -> Query Image
         CreateLinearGradient :: [Float] -> Query CanvasGradient
+        CreatePattern :: (Image,String) -> Query CanvasPattern
         
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -120,6 +122,9 @@ data Image = Image Int deriving (Show,Eq,Ord)
 -- A handle to the CanvasGradient. CanvasGradients can not be destroyed.
 data CanvasGradient = CanvasGradient Int deriving (Show,Eq,Ord)
 
+-- A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
+data CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
+
 instance Show (Query a) where
   show Size                     = "reply(size(c))"
   show ToDataURL                = "reply(toDataURL(c))"
@@ -127,6 +132,7 @@ instance Show (Query a) where
   show (IsPointInPath (x,y))    = "reply(c.isPointInPath(" ++ showJS x ++ "," ++ showJS y ++ "))"
   show (NewImage url)           = "newImage(" ++ showJS url ++ ")"
   show (CreateLinearGradient fs) = "reply(gradients.push(c.createLinearGradient(" ++ showJS fs ++ ")) - 1)"
+  show (CreatePattern (img,str)) = "reply(patterns.push(c.createPattern(" ++ showJS img ++ "," ++ showJS str ++ ")) - 1)"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -136,6 +142,7 @@ parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o        = parseJSON o
 parseQueryResult (NewImage {}) o             = Image <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
+parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult _ _ = fail "no parse"
 
 -- | size of the canvas
@@ -164,6 +171,10 @@ newImage = Query . NewImage
 createLinearGradient :: [Float] -> Canvas CanvasGradient
 createLinearGradient = Query . CreateLinearGradient
 
+createPattern :: (Image, String) -> Canvas CanvasPattern
+createPattern = Query . CreatePattern
+
+
 ----------------------------------------------------------------
 
 class JSArg a where
@@ -177,6 +188,9 @@ instance JSArg Image where
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
+
+instance JSArg CanvasPattern where
+  showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
 
 instance JSArg Bool where
   showJS True  = "true"
