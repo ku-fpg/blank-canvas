@@ -5,10 +5,12 @@ import Graphics.Blank.Canvas
 
 instance Show Command where
   show (Arc (a1,a2,a3,a4,a5,a6)) = "c.arc(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showB a6 ++ ")"
+  show (ArcTo (a1,a2,a3,a4,a5)) = "c.arcTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ ")"
   show BeginPath = "c.beginPath()"
   show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "c.bezierCurveTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ")"
   show (QuadraticCurveTo (a1,a2,a3,a4)) = "c.quadraticCurveTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
   show (ClearRect (a1,a2,a3,a4)) = "c.clearRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
+  show Clip = "c.clip()"
   show ClosePath = "c.closePath()"
   show Fill = "c.fill()"
   show (FillRect (a1,a2,a3,a4)) = "c.fillRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
@@ -22,6 +24,7 @@ instance Show Command where
   show (LineWidth (a1)) = "c.lineWidth = (" ++ showJ a1 ++ ")"
   show (MiterLimit (a1)) = "c.miterLimit = (" ++ showJ a1 ++ ")"
   show (MoveTo (a1,a2)) = "c.moveTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ ")"
+  show (Rect (a1,a2,a3,a4)) = "c.rect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
   show Restore = "c.restore()"
   show (Rotate (a1)) = "c.rotate(" ++ showJ a1 ++ ")"
   show (Scale (a1,a2)) = "c.scale(" ++ showJ a1 ++ "," ++ showJ a2 ++ ")"
@@ -44,6 +47,9 @@ instance Show Command where
 arc :: (Float,Float,Float,Float,Float,Bool) -> Canvas ()
 arc = Command . Arc
 
+arcTo :: (Float,Float,Float,Float,Float) -> Canvas ()
+arcTo = Command . ArcTo
+
 beginPath :: () -> Canvas ()
 beginPath () = Command BeginPath
 
@@ -55,6 +61,9 @@ quadraticCurveTo = Command . QuadraticCurveTo
 
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
 clearRect = Command . ClearRect
+
+clip :: () -> Canvas ()
+clip () = Command Clip
 
 closePath :: () -> Canvas ()
 closePath () = Command ClosePath
@@ -94,6 +103,9 @@ miterLimit = Command . MiterLimit
 
 moveTo :: (Float,Float) -> Canvas ()
 moveTo = Command . MoveTo
+
+rect :: (Float,Float,Float,Float) -> Canvas ()
+rect = Command . Rect
 
 restore :: () -> Canvas ()
 restore () = Command Restore

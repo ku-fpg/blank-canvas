@@ -16,6 +16,7 @@ module Graphics.Blank
         , size
         , toDataURL
         , measureText
+        , isPointInPath
         , TextMetrics(..)
          -- * Drawing Utilities
         , module Graphics.Blank.Utils

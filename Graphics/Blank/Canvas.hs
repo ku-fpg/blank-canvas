@@ -6,7 +6,6 @@ import Graphics.Blank.Events
 
 import Data.Aeson (FromJSON(..),Value(..))
 import Data.Aeson.Types (Parser, (.:))
-import Control.Applicative (Applicative(..))
 import Control.Monad (ap)
 import Control.Applicative
 import Numeric
@@ -34,10 +33,12 @@ instance Functor Canvas where
 data Command
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
+        | ArcTo (Float,Float,Float,Float,Float)
         | BeginPath
         | BezierCurveTo (Float,Float,Float,Float,Float,Float)
         | QuadraticCurveTo (Float,Float,Float,Float)
         | ClearRect (Float,Float,Float,Float)
+        | Clip
         | ClosePath
         | Fill
         | FillRect (Float,Float,Float,Float)
@@ -51,6 +52,7 @@ data Command
         | LineWidth Float
         | MiterLimit Float
         | MoveTo (Float,Float)
+        | Rect (Float,Float,Float,Float)
         | Restore
         | Rotate Float
         | Scale (Float,Float)
@@ -72,9 +74,10 @@ data Command
 
 
 data Query :: * -> * where
-        Size                  :: Query (Float,Float)
-        ToDataURL             :: Query String
-        MeasureText :: String -> Query TextMetrics
+        Size                         :: Query (Float,Float)
+        ToDataURL                    :: Query String
+        MeasureText :: String        -> Query TextMetrics
+        IsPointInPath :: (Float,Float) -> Query Bool
 
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -83,12 +86,14 @@ instance Show (Query a) where
   show Size      = "size(c)"
   show ToDataURL = "toDataURL(c)"
   show (MeasureText txt) = "c.measureText(" ++ show txt ++ ")"
+  show (IsPointInPath (x,y)) = "c.isPointInPath(" ++ showJ x ++ "," ++ showJ y ++ ")"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
 parseQueryResult (Size {}) o      = parseJSON o -- default is good
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
+parseQueryResult (IsPointInPath {}) o          = parseJSON o
 parseQueryResult _ _ = fail "no parse"
 
 -- | size of the canvas
@@ -104,6 +109,9 @@ toDataURL = Query ToDataURL
 
 measureText :: String -> Canvas TextMetrics
 measureText = Query . MeasureText
+
+isPointInPath :: (Float,Float) -> Canvas Bool
+isPointInPath = Query . IsPointInPath
 
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
