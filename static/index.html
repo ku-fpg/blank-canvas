@@ -10,6 +10,7 @@
         <script type="text/javascript">
             var session = 0; // global session number
             var images = [];
+            var gradients = [];
             function reply(e) {
                 return function(u) { return $.kc.reply(u,e); }
             }
@@ -21,7 +22,6 @@
                     alert("no canvas");
             }
             function size(c) {
-                    console.log("got to size");
                     return [c.canvas.width, c.canvas.height];
             }
             function toDataURL(c) {
@@ -29,7 +29,6 @@
                     return c.canvas.toDataURL();
             }
             function newImage(src) { 
-              console.log("calling newImage");
                 return function (u) {
                     var img = new Image();
                     var count = images.push(img);
@@ -37,7 +36,6 @@
                            reply(count - 1)(u);
                     };
                     img.src = src; 
-                    console.log("done create image");
                 }        
             }
             function register(name) {

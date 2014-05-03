@@ -29,7 +29,7 @@ instance Applicative Canvas where
 
 instance Functor Canvas where
   fmap f c = c >>= return . f
---forall a . Style ac => 
+
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
 data Command
         -- regular HTML5 canvas commands
@@ -43,7 +43,7 @@ data Command
         | ClosePath
         | Fill
         | FillRect (Float,Float,Float,Float)
-        | FillStyle String
+        | forall a . Style a => FillStyle a
         | FillText (String,Float,Float)
         | Font String
         | GlobalAlpha Float
@@ -81,12 +81,14 @@ data Specials
 
 instance Show Specials where
   show (Trigger (NamedEvent nm ev)) = "/* trigger */"
-  show (AddColorStop (off,rep) (CanvasGradient n))
-     = "gradient[" ++ show n ++ "].addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
+  show (AddColorStop (off,rep) g)
+     = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
 
 
-class Style a where
+class JSArg a => Style a where
 
+instance Style [Char]
+instance Style CanvasGradient
 
 -----------------------------------------------------------------------------
 
@@ -122,7 +124,7 @@ instance Show (Query a) where
   show (MeasureText txt)        = "reply(c.measureText(" ++ showJS txt ++ "))"
   show (IsPointInPath (x,y))    = "reply(c.isPointInPath(" ++ showJS x ++ "," ++ showJS y ++ "))"
   show (NewImage url)           = "newImage(" ++ showJS url ++ ")"
-  show (CreateLinearGradient fs) = "createLinearGradient(" ++ showJS fs ++ ")"
+  show (CreateLinearGradient fs) = "reply(gradients.push(c.createLinearGradient(" ++ showJS fs ++ ")) - 1)"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -169,6 +171,9 @@ instance JSArg Float where
 
 instance JSArg Image where
   showJS (Image n) = "images[" ++ show n ++ "]"
+
+instance JSArg CanvasGradient where
+  showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
 
 instance JSArg Bool where
   showJS True  = "true"

@@ -23,7 +23,25 @@ while(<F>) {
                         $show .= "  show (Specials sp) = show sp\n";
 			next;
 		}
-		if (/[\|=]\s(\S+)\s+(.*)$/) {
+		if (/[\|=]\sforall a \. (\S+) a => (\S+) a$/) {
+                        print "FOUND!\n";
+                        $class = $1;
+                        $cmd = $2;
+
+			$name = $cmd;
+			$name =~ s/(\w+)/\l$1/g;
+                        
+                        $dsl .= "\n";
+			$dsl .= "$name :: $class a => a -> Canvas ()\n";
+			$dsl .= "$name = Command . $cmd\n";
+                        $show .= "  show ($cmd a) = \"c.$name";
+                        
+			if (defined $isAssign{$cmd}) {
+			  $show .= " = ";
+			}
+                        $show .= "(\" ++ showJS a ++ \")\"\n";
+
+		} elsif (/[\|=]\s(\S+)\s+(.*)$/) {
 			print "($1)<$2>\n";
 
 			$cmd = $1;

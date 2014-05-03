@@ -14,7 +14,7 @@ instance Show Command where
   show ClosePath = "c.closePath()"
   show Fill = "c.fill()"
   show (FillRect (a1,a2,a3,a4)) = "c.fillRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show (FillStyle (a1)) = "c.fillStyle = (" ++ showJS a1 ++ ")"
+  show (FillStyle a) = "c.fillStyle = (" ++ showJS a ++ ")"
   show (FillText (a1,a2,a3)) = "c.fillText(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ ")"
   show (Font (a1)) = "c.font = (" ++ showJS a1 ++ ")"
   show (GlobalAlpha (a1)) = "c.globalAlpha = (" ++ showJS a1 ++ ")"
@@ -78,7 +78,7 @@ fill () = Command Fill
 fillRect :: (Float,Float,Float,Float) -> Canvas ()
 fillRect = Command . FillRect
 
-fillStyle :: String -> Canvas ()
+fillStyle :: Style a => a -> Canvas ()
 fillStyle = Command . FillStyle
 
 fillText :: (String,Float,Float) -> Canvas ()

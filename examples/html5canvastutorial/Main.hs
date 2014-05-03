@@ -289,18 +289,14 @@ example_1_6_1 = do
 
 example_1_6_2 = do
         (width,height) <- size
-        todo
-{-
-      context.rect(0, 0, canvas.width, canvas.height);
-
-      var grd = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-      // light blue
-      grd.addColorStop(0, '#8ED6FF');   
-      // dark blue
-      grd.addColorStop(1, '#004CB3');
-      context.fillStyle = grd;
-      context.fill();
--}
+        rect(0, 0, width, height)
+        grd <- createLinearGradient[0, 0, width, height]
+        -- light blue
+        grd # addColorStop(0, "#8ED6FF")
+        -- dark blue
+        grd # addColorStop(1, "#004CB3")
+        fillStyle grd;
+        fill();
 
 example_1_6_3 = do
         (width,height) <- size
