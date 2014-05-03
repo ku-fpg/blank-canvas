@@ -113,8 +113,8 @@ size = Query Size
 -- 
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
-toDataURL :: Canvas String
-toDataURL = Query ToDataURL
+toDataURL :: () -> Canvas String
+toDataURL () = Query ToDataURL
 
 measureText :: String -> Canvas TextMetrics
 measureText = Query . MeasureText

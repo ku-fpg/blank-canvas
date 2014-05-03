@@ -2,7 +2,8 @@ module Main (main) where
 
 import Graphics.Blank
 
-main = blankCanvas 3000 { events = ["mousedown"], debug = True, static = ["images/princess.jpg"] } $ \ canvas -> do
+main = blankCanvas 3000 { events = ["mousedown"], debug = True,
+                          static = ["images/princess.jpg", "images/fan.jpg"] } $ \ canvas -> do
   sequence_ [ -- blank the screeen
               do send canvas $ do
                       (width,height) <- size
@@ -12,7 +13,10 @@ main = blankCanvas 3000 { events = ["mousedown"], debug = True, static = ["image
                  -- run this example
                  send canvas $ do
                       save()
-                      example
+
+                 example canvas
+
+                 send canvas $ do
                       restore()
 
                  -- draw the watermark in corner
@@ -21,9 +25,10 @@ main = blankCanvas 3000 { events = ["mousedown"], debug = True, static = ["image
                  -- wait for a mouse press
                  wait canvas 
 
-            | (example,name) <- cycle examples
+            | (example,name) <- cycle (map wrap examples ++ io_examples)
             ]
-
+  where wrap (example,name) = ( \ canvas -> send canvas example, name)
+          
 examples =
 	 -- Lines
         [ (example_1_2_1,"1.2.1 Line")
@@ -64,8 +69,16 @@ examples =
         -- Transformations 2.1
         -- Composites 2.2
         -- Image Data & URLs 2.3
+--        , (example_2_3_1,"2.3.1 Image Data")
+--        , (example_2_3_2,"2.3.2 Invert Image Colors")
+--        , (example_2_3_3,"2.3.3 Grayscale Image Colors")
         -- Animation 2.4
 	-- Mouse Detection 2.5
+        ]
+
+io_examples = 
+        [ (example_2_3_4,"2.3.4 Get Image Data URL")
+        , (example_2_3_5,"2.3.5 Load Image Data URL")
         ]
 
 -- Examples taken from http://www.html5canvastutorials.com/tutorials/html5-canvas-tutorials-introduction/
@@ -329,13 +342,14 @@ example_1_7_2 = do
         drawImage(img,[69,50,97,129])
 
 example_1_7_3 = do
-        (width,height) <- size
-        todo
+        img <- newImage "/images/princess.jpg"
+        drawImage(img,[400,200,300,400,100,100,150,200])
 
 example_1_7_4 = do
-        (width,height) <- size
-        todo
-
+        img1 <- newImage "/images/princess.jpg"
+        img2 <- newImage "/images/fan.jpg"
+        drawImage(img1,[69,50,97,129])
+        drawImage(img2,[400,50])
 
 example_1_8_1 = do
         font "40pt Calibri"
@@ -390,6 +404,33 @@ example_1_8_6 = do
 example_1_8_7 = do
         (width,height) <- size
         todo
+
+example_2_3_4 canvas = do
+   url <- send canvas $ do
+        beginPath();
+        moveTo(170, 80);
+        bezierCurveTo(130, 100, 130, 150, 230, 150);
+        bezierCurveTo(250, 180, 320, 180, 340, 150);
+        bezierCurveTo(420, 150, 420, 120, 390, 100);
+        bezierCurveTo(430, 40, 370, 30, 340, 50);
+        bezierCurveTo(320, 5, 250, 20, 250, 50);
+        bezierCurveTo(200, 5, 150, 20, 170, 80);
+      -- complete custom shape
+        closePath();
+        lineWidth 5;
+        strokeStyle "blue";
+        stroke();
+        toDataURL();
+
+   send canvas $ do
+        font "18pt Calibri"
+        fillText(show $ take 50 $ url, 10, 300)
+
+example_2_3_5 canvas = do
+   url <- readFile "images/dataURL.txt"
+   send canvas $ do
+           img <- newImage url
+           drawImage (img,[0,0])
 
 ---------------------------------------------------------------------------
 
