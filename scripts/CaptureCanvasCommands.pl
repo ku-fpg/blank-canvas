@@ -65,8 +65,10 @@ while(<F>) {
 				for $arg (@args) {
 				     if ($arg eq "Float") {
 				     	push(@outs,"showJ a$n");
+				     } elsif ($arg eq "[Float]") {
+				     	push(@outs,"showJs a$n");
 				     } elsif ($arg eq "String") {
-				     	push(@outs,"show a$n");
+				     	push(@outs,"showS a$n");
 				     } elsif ($arg eq "Bool") {
 				     	push(@outs,"showB a$n");
                                      } elsif ($arg eq "Image") {

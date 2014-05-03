@@ -51,6 +51,7 @@ import qualified Data.Text.Lazy as T
 import qualified Web.KansasComet as KC
 import Data.Aeson
 import Data.Aeson.Types (parse)
+import Data.String
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -112,11 +113,12 @@ blankCanvas opts actions = do
 
                 actions $ Context kc_doc queue
 
-
         get "/" $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js" $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
         get "/kansas-comet.js" $ file $ kComet
+        sequence_ [ get (fromString ("/" ++ nm)) $ file $ nm | nm <- static opts ]
+        return ()
 
    run (port opts) app
 
@@ -225,6 +227,7 @@ data Options = Options
         , events :: [EventName]    -- ^ which events does the canvas listen to
         , debug  :: Bool           -- ^ turn on debugging (default False)
         , remote :: Bool           -- ^ turn on remote access (default False)
+        , static :: [String]       -- ^ path to images, and other static artifacts
         } deriving Show
         
 instance Num Options where
@@ -233,5 +236,9 @@ instance Num Options where
     (*) = error "no arithmetic for Blank Canvas Options"
     abs = error "no arithmetic for Blank Canvas Options"
     signum = error "no arithmetic for Blank Canvas Options"
-    fromInteger n = Options { port = fromInteger n, events = [], debug = False, remote = False }
+    fromInteger n = Options { port = fromInteger n
+                            , events = []
+                            , debug = False
+                            , remote = False
+                            , static = [] }
 

@@ -6,6 +6,7 @@ import Graphics.Blank.Events
 
 import Data.Aeson (FromJSON(..),Value(..))
 import Data.Aeson.Types (Parser, (.:))
+import Data.List
 import Control.Monad (ap)
 import Control.Applicative
 import Numeric
@@ -36,7 +37,7 @@ data Command
         | ArcTo (Float,Float,Float,Float,Float)
         | BeginPath
         | BezierCurveTo (Float,Float,Float,Float,Float,Float)
-        | DrawImage (Image,Float,Float)
+        | DrawImage (Image,[Float])
         | ClearRect (Float,Float,Float,Float)
         | Clip
         | ClosePath
@@ -85,11 +86,15 @@ data Query :: * -> * where
 data TextMetrics = TextMetrics Float
         deriving Show
 
+-- A handle to the image. Images can not be destroyed.
+data Image = Image Int deriving (Show,Eq,Ord)
+
 instance Show (Query a) where
-  show Size      = "size(c)"
-  show ToDataURL = "toDataURL(c)"
-  show (MeasureText txt) = "c.measureText(" ++ show txt ++ ")"
-  show (IsPointInPath (x,y)) = "c.isPointInPath(" ++ showJ x ++ "," ++ showJ y ++ ")"
+  show Size                     = "reply(size(c))"
+  show ToDataURL                = "reply(toDataURL(c))"
+  show (MeasureText txt)        = "reply(c.measureText(" ++ showS txt ++ "))"
+  show (IsPointInPath (x,y))    = "reply(c.isPointInPath(" ++ showJ x ++ "," ++ showJ y ++ "))"
+  show (NewImage url)           = "newImage(" ++ showS url ++ ")"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -97,6 +102,7 @@ parseQueryResult (Size {}) o      = parseJSON o -- default is good
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o          = parseJSON o
+parseQueryResult (NewImage {}) o             = Image <$> parseJSON o
 parseQueryResult _ _ = fail "no parse"
 
 -- | size of the canvas
@@ -116,9 +122,6 @@ measureText = Query . MeasureText
 isPointInPath :: (Float,Float) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- The number of the image. Images can not be destroyed.
-data Image = Image Int deriving (Show,Eq, Ord)
-
 -- | 'image' takes a URL (perhaps a data URL), and returns the Image handle, after loading.
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: String -> Canvas Image
@@ -133,6 +136,10 @@ newImage = Query . NewImage
 
 showJ :: Float -> String
 showJ a = showFFloat (Just 3) a ""
+
+showJs :: [Float] -> String
+showJs fs = concat $ intersperse "," [ showFFloat (Just 3) a "" | a <- fs ]
+
 
 showB :: Bool -> String
 showB True = "true"

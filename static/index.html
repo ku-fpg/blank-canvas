@@ -22,20 +22,22 @@
             }
             function size(c) {
                     console.log("got to size");
-                    return reply([c.canvas.width, c.canvas.height]);
+                    return [c.canvas.width, c.canvas.height];
             }
             function toDataURL(c) {
                     // Has to go back up one level.
-                    return reply(c.canvas.toDataURL());
+                    return c.canvas.toDataURL();
             }
             function newImage(src) { 
+              console.log("calling newImage");
                 return function (u) {
                     var img = new Image();
-                    var count = images.push(image);
+                    var count = images.push(img);
                     img.onload = function() {
                            reply(count - 1)(u);
                     };
                     img.src = src; 
+                    console.log("done create image");
                 }        
             }
             function register(name) {

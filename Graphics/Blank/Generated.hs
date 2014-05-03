@@ -8,19 +8,19 @@ instance Show Command where
   show (ArcTo (a1,a2,a3,a4,a5)) = "c.arcTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ ")"
   show BeginPath = "c.beginPath()"
   show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "c.bezierCurveTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ")"
-  show (DrawImage (a1,a2,a3)) = "c.drawImage(" ++ showI a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ")"
+  show (DrawImage (a1,a2)) = "c.drawImage(" ++ showI a1 ++ "," ++ showJs a2 ++ ")"
   show (ClearRect (a1,a2,a3,a4)) = "c.clearRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
   show Clip = "c.clip()"
   show ClosePath = "c.closePath()"
   show Fill = "c.fill()"
   show (FillRect (a1,a2,a3,a4)) = "c.fillRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
-  show (FillStyle (a1)) = "c.fillStyle = (" ++ show a1 ++ ")"
-  show (FillText (a1,a2,a3)) = "c.fillText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ")"
-  show (Font (a1)) = "c.font = (" ++ show a1 ++ ")"
+  show (FillStyle (a1)) = "c.fillStyle = (" ++ showS a1 ++ ")"
+  show (FillText (a1,a2,a3)) = "c.fillText(" ++ showS a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ")"
+  show (Font (a1)) = "c.font = (" ++ showS a1 ++ ")"
   show (GlobalAlpha (a1)) = "c.globalAlpha = (" ++ showJ a1 ++ ")"
-  show (GlobalCompositeOperation (a1)) = "c.globalCompositeOperation(" ++ show a1 ++ ")"
-  show (LineCap (a1)) = "c.lineCap = (" ++ show a1 ++ ")"
-  show (LineJoin (a1)) = "c.lineJoin = (" ++ show a1 ++ ")"
+  show (GlobalCompositeOperation (a1)) = "c.globalCompositeOperation(" ++ showS a1 ++ ")"
+  show (LineCap (a1)) = "c.lineCap = (" ++ showS a1 ++ ")"
+  show (LineJoin (a1)) = "c.lineJoin = (" ++ showS a1 ++ ")"
   show (LineTo (a1,a2)) = "c.lineTo(" ++ showJ a1 ++ "," ++ showJ a2 ++ ")"
   show (LineWidth (a1)) = "c.lineWidth = (" ++ showJ a1 ++ ")"
   show (MiterLimit (a1)) = "c.miterLimit = (" ++ showJ a1 ++ ")"
@@ -34,14 +34,14 @@ instance Show Command where
   show (SetTransform (a1,a2,a3,a4,a5,a6)) = "c.setTransform(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ")"
   show Stroke = "c.stroke()"
   show (StrokeRect (a1,a2,a3,a4)) = "c.strokeRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
-  show (StrokeText (a1,a2,a3)) = "c.strokeText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ")"
-  show (StrokeStyle (a1)) = "c.strokeStyle = (" ++ show a1 ++ ")"
+  show (StrokeText (a1,a2,a3)) = "c.strokeText(" ++ showS a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ")"
+  show (StrokeStyle (a1)) = "c.strokeStyle = (" ++ showS a1 ++ ")"
   show (ShadowBlur (a1)) = "c.shadowBlur(" ++ showJ a1 ++ ")"
-  show (ShadowColor (a1)) = "c.shadowColor(" ++ show a1 ++ ")"
+  show (ShadowColor (a1)) = "c.shadowColor(" ++ showS a1 ++ ")"
   show (ShadowOffsetX (a1)) = "c.shadowOffsetX(" ++ showJ a1 ++ ")"
   show (ShadowOffsetY (a1)) = "c.shadowOffsetY(" ++ showJ a1 ++ ")"
-  show (TextAlign (a1)) = "c.textAlign = (" ++ show a1 ++ ")"
-  show (TextBaseline (a1)) = "c.textBaseline = (" ++ show a1 ++ ")"
+  show (TextAlign (a1)) = "c.textAlign = (" ++ showS a1 ++ ")"
+  show (TextBaseline (a1)) = "c.textBaseline = (" ++ showS a1 ++ ")"
   show (Transform (a1,a2,a3,a4,a5,a6)) = "c.transform(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ")"
   show (Translate (a1,a2)) = "c.translate(" ++ showJ a1 ++ "," ++ showJ a2 ++ ")"
 
@@ -59,7 +59,7 @@ beginPath () = Command BeginPath
 bezierCurveTo :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
 bezierCurveTo = Command . BezierCurveTo
 
-drawImage :: (Image,Float,Float) -> Canvas ()
+drawImage :: (Image,[Float]) -> Canvas ()
 drawImage = Command . DrawImage
 
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
