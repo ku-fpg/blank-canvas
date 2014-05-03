@@ -20,6 +20,7 @@ while(<F>) {
 	if ($state == 1) {
 		if (/^$/ || /Specials/) {
 			$state = 2;
+                        $show .= "  show (Specials sp) = show sp\n";
 			next;
 		}
 		if (/[\|=]\s(\S+)\s+(.*)$/) {
@@ -63,18 +64,10 @@ while(<F>) {
 				@outs = ();
 				$n = 1;
 				for $arg (@args) {
-				     if ($arg eq "Float") {
-				     	push(@outs,"showJ a$n");
-				     } elsif ($arg eq "[Float]") {
-				     	push(@outs,"showJs a$n");
-				     } elsif ($arg eq "String") {
-				     	push(@outs,"showS a$n");
-				     } elsif ($arg eq "Bool") {
-				     	push(@outs,"showB a$n");
-                                     } elsif ($arg eq "Image") {
-                                         push(@outs,"showI a$n");
+				     if ($arg eq "String" || $arg =~ /^\[.*\]$/) {
+				     	push(@outs,"showJS a$n");
 				     } else {
-				     	push(@outs,"a$n");
+				     	push(@outs,"showJS a$n");
 				     }
 				     $n++;
 				}

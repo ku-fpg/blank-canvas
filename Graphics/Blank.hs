@@ -20,6 +20,9 @@ module Graphics.Blank
         , TextMetrics(..)
         , newImage
         , Image -- abstract
+        , createLinearGradient
+        , CanvasGradient
+        , addColorStop
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
