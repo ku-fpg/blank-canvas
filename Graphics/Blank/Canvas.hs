@@ -59,6 +59,10 @@ data Command
         | StrokeRect (Float,Float,Float,Float)
         | StrokeText (String,Float,Float)
         | StrokeStyle String
+        | ShadowBlur Float
+        | ShadowColor String
+        | ShadowOffsetX Float
+        | ShadowOffsetY Float
         | TextAlign String
         | TextBaseline String
         | Transform (Float,Float,Float,Float,Float,Float)

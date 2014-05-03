@@ -30,6 +30,10 @@ instance Show Command where
   show (StrokeRect (a1,a2,a3,a4)) = "c.strokeRect(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ ")"
   show (StrokeText (a1,a2,a3)) = "c.strokeText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ")"
   show (StrokeStyle (a1)) = "c.strokeStyle = (" ++ show a1 ++ ")"
+  show (ShadowBlur (a1)) = "c.shadowBlur(" ++ showJ a1 ++ ")"
+  show (ShadowColor (a1)) = "c.shadowColor(" ++ show a1 ++ ")"
+  show (ShadowOffsetX (a1)) = "c.shadowOffsetX(" ++ showJ a1 ++ ")"
+  show (ShadowOffsetY (a1)) = "c.shadowOffsetY(" ++ showJ a1 ++ ")"
   show (TextAlign (a1)) = "c.textAlign = (" ++ show a1 ++ ")"
   show (TextBaseline (a1)) = "c.textBaseline = (" ++ show a1 ++ ")"
   show (Transform (a1,a2,a3,a4,a5,a6)) = "c.transform(" ++ showJ a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ "," ++ showJ a4 ++ "," ++ showJ a5 ++ "," ++ showJ a6 ++ ")"
@@ -114,6 +118,18 @@ strokeText = Command . StrokeText
 
 strokeStyle :: String -> Canvas ()
 strokeStyle = Command . StrokeStyle
+
+shadowBlur :: Float -> Canvas ()
+shadowBlur = Command . ShadowBlur
+
+shadowColor :: String -> Canvas ()
+shadowColor = Command . ShadowColor
+
+shadowOffsetX :: Float -> Canvas ()
+shadowOffsetX = Command . ShadowOffsetX
+
+shadowOffsetY :: Float -> Canvas ()
+shadowOffsetY = Command . ShadowOffsetY
 
 textAlign :: String -> Canvas ()
 textAlign = Command . TextAlign
