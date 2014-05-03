@@ -69,6 +69,8 @@ while(<F>) {
 				     	push(@outs,"show a$n");
 				     } elsif ($arg eq "Bool") {
 				     	push(@outs,"showB a$n");
+                                     } elsif ($arg eq "Image") {
+                                         push(@outs,"showI a$n");
 				     } else {
 				     	push(@outs,"a$n");
 				     }

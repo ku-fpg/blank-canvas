@@ -9,6 +9,10 @@
         <div id="canvas"></div>
         <script type="text/javascript">
             var session = 0; // global session number
+            var images = [];
+            function reply(e) {
+                return function(u) { return $.kc.reply(u,e); }
+            }
             function getContext() {
                     var canvas = document.getElementById("canvas");
                     if (canvas.getContext) {
@@ -17,12 +21,22 @@
                     alert("no canvas");
             }
             function size(c) {
-                    console.log("got to size")
-                    return [c.canvas.width, c.canvas.height];
+                    console.log("got to size");
+                    return reply([c.canvas.width, c.canvas.height]);
             }
             function toDataURL(c) {
                     // Has to go back up one level.
-                    return c.canvas.toDataURL();
+                    return reply(c.canvas.toDataURL());
+            }
+            function newImage(src) { 
+                return function (u) {
+                    var img = new Image();
+                    var count = images.push(image);
+                    img.onload = function() {
+                           reply(count - 1)(u);
+                    };
+                    img.src = src; 
+                }        
             }
             function register(name) {
                 $(document).bind(name,function (e){

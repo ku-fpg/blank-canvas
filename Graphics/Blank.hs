@@ -18,6 +18,8 @@ module Graphics.Blank
         , measureText
         , isPointInPath
         , TextMetrics(..)
+        , newImage
+        , Image -- abstract
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
@@ -131,7 +133,8 @@ send cxt commands =
       send' (Bind (Query query) k) cmds = do
               -- send the com
               uq <- atomically $ getUniq
-              sendToCanvas cxt (cmds .  (("$.kc.reply(" ++ show uq ++ "," ++ show query ++ ");") ++))
+              -- The query function returns a function takes the unique port number of the reply.
+              sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ ");") ++))
               v <- KC.getReply (theComet cxt) uq
               print v
               case parse (parseQueryResult query) v of
