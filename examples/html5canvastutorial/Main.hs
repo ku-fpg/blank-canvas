@@ -1,10 +1,19 @@
 module Main (main) where
 
 import Graphics.Blank
+import Paths_blank_canvas_examples
 
-main = blankCanvas 3000 { events = ["mousedown"], debug = True,
-                          static = ["images/princess.jpg", "images/fan.jpg"] } $ \ canvas -> do
+main = do
+ dat <- getDataDir        
+ blankCanvas 3000 { events = ["mousedown"], 
+                         debug = True,
+                          static = ["images/" ++ img
+                                   | img <- ["fan.jpg", "princess.jpg"]
+                                   ]
+                        , root = dat ++ "/static"
+                        } $ \ canvas -> do
   sequence_ [ -- blank the screeen
+
               do send canvas $ do
                       (width,height) <- size
                       clearRect (0,0,width,height)
@@ -21,7 +30,7 @@ main = blankCanvas 3000 { events = ["mousedown"], debug = True,
 
                  -- draw the watermark in corner
                  send canvas $ message name
-
+                 
                  -- wait for a mouse press
                  wait canvas 
 
@@ -76,7 +85,7 @@ examples =
 	-- Mouse Detection 2.5
         ]
 
-io_examples = 
+io_examples =
         [ (example_2_3_4,"2.3.4 Get Image Data URL")
         , (example_2_3_5,"2.3.5 Load Image Data URL")
         ]
@@ -411,10 +420,14 @@ example_2_3_4 canvas = do
         fillText(show $ take 50 $ url, 10, 300)
 
 example_2_3_5 canvas = do
-   url <- readFile "images/dataURL.txt"
+   fileName <- getDataFileName "static/data/dataURL.txt"
+   url <- readFile fileName
    send canvas $ do
            img <- newImage url
            drawImage (img,[0,0])
+
+example_last = do
+        todo  -- marker for the scanning sof the examples
 
 ---------------------------------------------------------------------------
 
