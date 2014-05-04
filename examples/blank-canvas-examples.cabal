@@ -12,6 +12,10 @@ maintainer:          andygill@ku.edu
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.10
+data-files:
+    static/data/dataURL.txt		
+    static/images/princess.jpg
+    static/images/fan.jpg
 
 executable blank-canvas-example-trivial
   main-is:             Main.hs
