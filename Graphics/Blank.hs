@@ -43,6 +43,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
 import Control.Monad
 import Control.Monad.IO.Class (liftIO)
+import Control.Exception
 import Network.Wai.Handler.Warp (run)
 import Network.Wai (Middleware,remoteHost, responseLBS)
 import qualified Network.HTTP.Types as H
@@ -117,13 +118,16 @@ blankCanvas opts actions = do
                                    atomically $ writeTChan queue event
                            _ -> return ()
 
-                actions $ Context kc_doc queue
+                (actions $ Context kc_doc queue) `catch` \ (e :: SomeException) -> do
+                        print "Exception in blank-canvas application:" 
+                        print e
+                        throw e
 
         get "/" $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js" $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
         get "/kansas-comet.js" $ file $ kComet
-        sequence_ [ get (fromString ("/" ++ nm)) $ file $ nm | nm <- static opts ]
+        sequence_ [ get (fromString ("/" ++ nm)) $ file $ (root opts ++ "/" ++ nm) | nm <- static opts ]
         return ()
 
    run (port opts) app
@@ -144,7 +148,6 @@ send cxt commands =
               -- The query function returns a function takes the unique port number of the reply.
               sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ ");") ++))
               v <- KC.getReply (theComet cxt) uq
-              print v
               case parse (parseQueryResult query) v of
                 Error msg -> fail msg
                 Success a -> do
@@ -234,6 +237,7 @@ data Options = Options
         , debug  :: Bool           -- ^ turn on debugging (default False)
         , remote :: Bool           -- ^ turn on remote access (default False)
         , static :: [String]       -- ^ path to images, and other static artifacts
+        , root   :: String         -- ^ location of the static files (default .)
         } deriving Show
         
 instance Num Options where
@@ -246,5 +250,6 @@ instance Num Options where
                             , events = []
                             , debug = False
                             , remote = False
-                            , static = [] }
+                            , static = []
+                            , root = "." }
 
