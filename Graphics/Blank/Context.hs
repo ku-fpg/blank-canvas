@@ -2,6 +2,7 @@ module Graphics.Blank.Context where
 
 import Control.Concurrent
 import Control.Concurrent.STM
+import Control.Monad
 import qualified Data.Set as Set
 import Data.Set (Set)
 import Data.Char
@@ -25,6 +26,14 @@ sendToCanvas cxt cmds = do
 -- | wait for any event
 wait :: Context -> IO NamedEvent
 wait c = atomically $ readTChan (eventQueue c)
+
+-- | get the next event if it exists
+tryGet :: Context -> IO (Maybe NamedEvent)
+tryGet cxt = atomically $ do
+    b <- isEmptyTChan (eventQueue cxt)
+    if b 
+    then return Nothing
+    else liftM Just $ readTChan (eventQueue cxt)
 
 flush :: Context -> IO [NamedEvent]
 flush cxt = atomically $ loop
