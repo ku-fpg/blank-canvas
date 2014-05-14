@@ -21,7 +21,7 @@ data Context = Context
 -- | internal command to send a message to the canvas.
 sendToCanvas :: Context -> ShowS -> IO ()
 sendToCanvas cxt cmds = do
-        KC.send (theComet cxt) $ "{var c = getContext();" ++ cmds "}"
+        KC.send (theComet cxt) $ "{" ++ cmds "}"
 
 -- | wait for any event
 wait :: Context -> IO NamedEvent

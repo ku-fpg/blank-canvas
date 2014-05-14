@@ -12,6 +12,8 @@
             var images = [];
             var gradients = [];
             var patterns = [];
+            var canvasbuffers = [];
+            var c = null;
             function reply(e) {
                 return function(u) { return $.kc.reply(u,e); }
             }
@@ -58,21 +60,11 @@
                 // Make the canvas the size of the window
                 var w = $(window).width();
                 var h = $(window).height();
-
                 $("#canvas").replaceWith(
                             '<canvas id="canvas" width="' + w + '" height="' + h +
                             '" style="border: blue solid 0px; padding: 0px; margin: 0px"></canvas>');
-
+                c = getContext();
                 $.kc.connect("/blank");
-
-                /*
-                 // start the server-side
-                $.ajax({ url: "/start",
-                         type: "POST",
-                         contentType: "application/json; charset=utf-8",
-                         data: $.toJSON([w,h]),
-                         dataType: "script"}); 
-                */
             });
         </script>
     </body>
