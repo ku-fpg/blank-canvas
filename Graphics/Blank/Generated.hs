@@ -2,6 +2,7 @@
 module Graphics.Blank.Generated where
 
 import Graphics.Blank.Canvas
+import Graphics.Blank.ImageData
 import Graphics.Blank.JavaScript
 
 instance Show Method where
@@ -26,6 +27,7 @@ instance Show Method where
   show (LineWidth (a1)) = "lineWidth = (" ++ showJS a1 ++ ")"
   show (MiterLimit (a1)) = "miterLimit = (" ++ showJS a1 ++ ")"
   show (MoveTo (a1,a2)) = "moveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
+  show (PutImageData (a1,a2)) = "putImageData(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
   show (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
   show (Rect (a1,a2,a3,a4)) = "rect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
   show Restore = "restore()"
@@ -110,6 +112,9 @@ miterLimit = Method . MiterLimit
 
 moveTo :: (Float,Float) -> Canvas ()
 moveTo = Method . MoveTo
+
+putImageData :: (ImageData,[Float]) -> Canvas ()
+putImageData = Method . PutImageData
 
 quadraticCurveTo :: (Float,Float,Float,Float) -> Canvas ()
 quadraticCurveTo = Method . QuadraticCurveTo

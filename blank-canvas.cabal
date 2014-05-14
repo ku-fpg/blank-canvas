@@ -26,6 +26,7 @@ Library
                        Graphics.Blank.Context,
                        Graphics.Blank.Events,
                        Graphics.Blank.Generated,
+                       Graphics.Blank.ImageData,                       
                        Graphics.Blank.JavaScript,
                        Graphics.Blank.Utils,
                        Paths_blank_canvas
@@ -43,7 +44,8 @@ Library
                        transformers     == 0.3.*,
                        wai-extra        == 2.*,
                        warp             == 2.*,
-                       stm              >= 2.2		&& < 2.5
+                       stm              >= 2.2		&& < 2.5,
+                       vector           >= 0.10         && < 0.11
 
   GHC-options:  -Werror -fno-warn-orphans -fno-warn-warnings-deprecations -O2
 

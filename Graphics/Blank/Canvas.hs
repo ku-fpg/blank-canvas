@@ -4,12 +4,13 @@ module Graphics.Blank.Canvas where
 
 import Graphics.Blank.Events
 import Graphics.Blank.JavaScript
+import Graphics.Blank.ImageData
 
 import Data.Aeson (FromJSON(..),Value(..))
 import Data.Aeson.Types (Parser, (.:))
-import Control.Monad (ap)
+import Control.Monad (ap, liftM2)
 import Control.Applicative
-
+import Data.Monoid
 
 data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
@@ -29,6 +30,10 @@ instance Applicative Canvas where
 
 instance Functor Canvas where
   fmap f c = c >>= return . f
+
+instance Monoid a => Monoid (Canvas a) where
+  mappend = liftM2 mappend
+  mempty  = return mempty
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
 data Method
@@ -54,6 +59,7 @@ data Method
         | LineWidth Float
         | MiterLimit Float
         | MoveTo (Float,Float)
+        | PutImageData (ImageData,[Float])
         | QuadraticCurveTo (Float,Float,Float,Float)
         | Rect (Float,Float,Float,Float)
         | Restore
@@ -127,6 +133,8 @@ data Query :: * -> * where
         CreateLinearGradient :: [Float] -> Query CanvasGradient
         CreatePattern :: (CanvasImage,String) -> Query CanvasPattern
         NewCanvas                    :: Query CanvasContext
+        GetImageData :: (Float,Float,Float,Float)
+                                     -> Query ImageData
 
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -140,6 +148,8 @@ instance Show (Query a) where
   show (CreateLinearGradient fs) = "CreateLinearGradient(" ++ showJS fs ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ showJS img ++ "," ++ showJS str ++ ")"
   show NewCanvas                 = "NewCanvas"
+  show (GetImageData (sx,sy,sw,sh)) 
+                                 = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a

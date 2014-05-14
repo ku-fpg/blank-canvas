@@ -111,6 +111,7 @@ print G "{-# OPTIONS_GHC -fno-warn-orphans #-}\n";
 print G "module Graphics.Blank.Generated where\n";
 print G "\n";
 print G "import Graphics.Blank.Canvas\n";
+print G "import Graphics.Blank.ImageData\n";
 print G "import Graphics.Blank.JavaScript\n";
 print G "\n";
 print G "instance Show Method where\n";

@@ -2,7 +2,9 @@
 
 module Graphics.Blank.JavaScript where
 
+import Graphics.Blank.ImageData
 import Data.List
+import Data.Word (Word8)
 import Numeric
 
 -------------------------------------------------------------
@@ -44,6 +46,9 @@ instance JSArg CanvasGradient where
 
 instance JSArg CanvasPattern where
   showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
+
+instance JSArg ImageData where
+  showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[])"
 
 instance JSArg Bool where
   showJS True  = "true"
