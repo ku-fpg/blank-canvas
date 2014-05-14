@@ -28,6 +28,7 @@ module Graphics.Blank
         , createPattern
         , CanvasPattern
          -- * Off Screen Canvas
+        , newCanvas
         , CanvasBuffer
         , top
          -- * Drawing Utilities

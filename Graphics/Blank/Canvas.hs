@@ -128,6 +128,7 @@ data Query :: * -> * where
         NewImage :: String             -> Query CanvasImage
         CreateLinearGradient :: [Float] -> Query CanvasGradient
         CreatePattern :: (CanvasImage,String) -> Query CanvasPattern
+        NewCanvas                    :: Query CanvasBuffer
 
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -140,6 +141,7 @@ instance Show (Query a) where
   show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
   show (CreateLinearGradient fs) = "CreateLinearGradient(" ++ showJS fs ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ showJS img ++ "," ++ showJS str ++ ")"
+  show NewCanvas                 = "NewCanvas"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -150,6 +152,7 @@ parseQueryResult (IsPointInPath {}) o        = parseJSON o
 parseQueryResult (NewImage {}) o             = CanvasImage <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
+parseQueryResult (NewCanvas {}) o = CanvasBuffer <$> parseJSON o
 parseQueryResult _ _ = fail "no parse"
 
 -- | size of the canvas
@@ -181,4 +184,6 @@ createLinearGradient = Query . CreateLinearGradient
 createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
-
+-- | Create a new, off-screen canvas buffer.
+newCanvas :: () -> Canvas CanvasBuffer
+newCanvas () = Query NewCanvas
