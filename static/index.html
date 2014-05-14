@@ -18,28 +18,64 @@
                 return function(u) { return $.kc.reply(u,e); }
             }
             function getContext() {
-                    var canvas = document.getElementById("canvas");
-                    if (canvas.getContext) {
-                        return canvas.getContext("2d");
-                    }
-                    alert("no canvas");
+                var canvas = document.getElementById("canvas");
+                if (canvas.getContext) {
+                    return canvas.getContext("2d");
+                }
+                alert("no canvas");
             }
-            function size(c) {
-                    return [c.canvas.width, c.canvas.height];
+            // These are the Queries
+
+            function Size(u,c) {
+                $.kc.reply(u,[c.canvas.width, c.canvas.height]);
             }
-            function toDataURL(c) {
-                    // Has to go back up one level.
-                    return c.canvas.toDataURL();
+            function ToDataURL(u,c) {
+                $.kc.reply(u,c.canvas.toDataURL());
+                            
             }
-            function newImage(src) { 
-                return function (u) {
+            function NewImage(src) { 
+                return function (u,c) {
                     var img = new Image();
                     var count = images.push(img);
                     img.onload = function() {
-                           reply(count - 1)(u);
+                           $.kc.reply(u,count - 1);
                     };
-                    img.src = src; 
+                    img.src = src;
                 }        
+            }
+
+            function CreateLinearGradient() { 
+                var fs = arguments;
+                return function (u,c) {
+                    // deeper JS hackery going on here.
+                    var count = gradients.push(c.createLinearGradient.apply(c,fs));
+                    $.kc.reply(u,count - 1);
+                }        
+            }
+
+            function CreatePattern(img,src) { 
+                return function (u,c) {
+                    var count = patterns.push(c.createPattern(img,src));
+                    $.kc.reply(u,count - 1);
+                }        
+            }
+
+            function MeasureText(txt) { 
+                return function (u,c) {
+                    $.kc.reply(u,c.measureText(txt));
+                }        
+            }
+            function IsPointInPath(x,y) { 
+                return function (u,c) {
+                    $.kc.reply(u,c.isPointInPath(x,y));
+                }        
+            }
+
+            function newContext(width, height) {
+                var buffer = document.createElement('canvas');
+                buffer.width = width;
+                buffer.height = height;
+                return buffer.getContext('2d');
             }
             function register(name) {
                 $(document).bind(name,function (e){

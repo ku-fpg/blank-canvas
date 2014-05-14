@@ -27,6 +27,9 @@ module Graphics.Blank
         , addColorStop
         , createPattern
         , CanvasPattern
+         -- * Off Screen Canvas
+        , CanvasBuffer
+        , top
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
@@ -139,27 +142,27 @@ blankCanvas opts actions = do
 -- to common up as many commands as possible. Can not crash.
 send :: Context -> Canvas a -> IO a
 send cxt commands = 
-      send' commands id 
+      send' top commands id 
   where
-      send' :: Canvas a -> (String -> String) -> IO a
-      send' (Bind (Return a) k)    cmds = send' (k a) cmds
-      send' (Bind (Bind m k1) k2)  cmds = send' (Bind m (\ r -> Bind (k1 r) k2)) cmds
-      send' (Bind (Method cmd) k) cmds = send' (k ()) (cmds . ("c." ++) . shows cmd . (";" ++))
-      send' (Bind (Command cmd) k) cmds = send' (k ()) (cmds . shows cmd . (";" ++))
-      send' (Bind (Query query) k) cmds = do
+      send' :: CanvasBuffer -> Canvas a -> (String -> String) -> IO a
+      send' c (Bind (Return a) k)    cmds = send' c (k a) cmds
+      send' c (Bind (Bind m k1) k2)  cmds = send' c (Bind m (\ r -> Bind (k1 r) k2)) cmds
+      send' c (Bind (Method cmd) k) cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
+      send' c (Bind (Command cmd) k) cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
+      send' c (Bind (Query query) k) cmds = do
               -- send the com
               uq <- atomically $ getUniq
               -- The query function returns a function takes the unique port number of the reply.
-              sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ ");") ++))
+              sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ "," ++ showJS c ++ ");") ++))
               v <- KC.getReply (theComet cxt) uq
               case parse (parseQueryResult query) v of
                 Error msg -> fail msg
                 Success a -> do
-                        send' (k a) id
-      send' (Return a)             cmds = do
+                        send' c (k a) id
+      send' _ (Return a)           cmds = do
               sendToCanvas cxt cmds
               return a
-      send' cmd                    cmds = send' (Bind cmd Return) cmds
+      send' c cmd                  cmds = send' c (Bind cmd Return) cmds
 
 
 local_only :: Middleware

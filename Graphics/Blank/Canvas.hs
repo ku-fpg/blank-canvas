@@ -17,6 +17,7 @@ data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
         Command :: Command                             -> Canvas ()     -- <command>
         Query   :: (Show a) => Query a                 -> Canvas a
+        With    :: CanvasBuffer -> Canvas a            -> Canvas a
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
 
@@ -87,6 +88,13 @@ instance Show Command where
 
 -----------------------------------------------------------------------------
 
+-- | 'with' runs a set of canvas commands in the context
+-- of a specific canvas buffer.
+with :: CanvasBuffer -> Canvas a -> Canvas a
+with = With
+
+-----------------------------------------------------------------------------
+
 class JSArg a => Image a where
         
 instance Image CanvasImage
@@ -125,13 +133,13 @@ data TextMetrics = TextMetrics Float
         deriving Show
 
 instance Show (Query a) where
-  show Size                     = "reply(size(c))"
-  show ToDataURL                = "reply(toDataURL(c))"
-  show (MeasureText txt)        = "reply(c.measureText(" ++ showJS txt ++ "))"
-  show (IsPointInPath (x,y))    = "reply(c.isPointInPath(" ++ showJS x ++ "," ++ showJS y ++ "))"
-  show (NewImage url)           = "newImage(" ++ showJS url ++ ")"
-  show (CreateLinearGradient fs) = "reply(gradients.push(c.createLinearGradient(" ++ showJS fs ++ ")) - 1)"
-  show (CreatePattern (img,str)) = "reply(patterns.push(c.createPattern(" ++ showJS img ++ "," ++ showJS str ++ ")) - 1)"
+  show Size                     = "Size"
+  show ToDataURL                = "ToDataURL"
+  show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
+  show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
+  show (CreateLinearGradient fs) = "CreateLinearGradient(" ++ showJS fs ++ ")"
+  show (CreatePattern (img,str)) = "CreatePattern(" ++ showJS img ++ "," ++ showJS str ++ ")"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
