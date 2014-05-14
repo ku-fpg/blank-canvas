@@ -159,6 +159,9 @@ send cxt commands =
                 Error msg -> fail msg
                 Success a -> do
                         send' c (k a) id
+      send' c (Bind (With c' m) k) cmds = do
+                a <- send' c' m cmds
+                send' c (k a) id
       send' _ (Return a)           cmds = do
               sendToCanvas cxt cmds
               return a
