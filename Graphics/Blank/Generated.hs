@@ -14,7 +14,7 @@ instance Show Command where
   show ClosePath = "c.closePath()"
   show Fill = "c.fill()"
   show (FillRect (a1,a2,a3,a4)) = "c.fillRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show (FillStyle a) = "c.fillStyle = (" ++ showJS a ++ ")"
+  show (FillStyle (a1)) = "c.fillStyle = (" ++ showJS a1 ++ ")"
   show (FillText (a1,a2,a3)) = "c.fillText(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ ")"
   show (Font (a1)) = "c.font = (" ++ showJS a1 ++ ")"
   show (GlobalAlpha (a1)) = "c.globalAlpha = (" ++ showJS a1 ++ ")"
@@ -60,7 +60,7 @@ beginPath () = Command BeginPath
 bezierCurveTo :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
 bezierCurveTo = Command . BezierCurveTo
 
-drawImage :: (Image,[Float]) -> Canvas ()
+drawImage :: Image image => (image,[Float]) -> Canvas ()
 drawImage = Command . DrawImage
 
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
@@ -78,7 +78,7 @@ fill () = Command Fill
 fillRect :: (Float,Float,Float,Float) -> Canvas ()
 fillRect = Command . FillRect
 
-fillStyle :: Style a => a -> Canvas ()
+fillStyle :: Style style => style -> Canvas ()
 fillStyle = Command . FillStyle
 
 fillText :: (String,Float,Float) -> Canvas ()

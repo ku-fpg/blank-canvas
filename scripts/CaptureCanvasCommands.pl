@@ -23,25 +23,16 @@ while(<F>) {
                         $show .= "  show (Specials sp) = show sp\n";
 			next;
 		}
-		if (/[\|=]\sforall a \. (\S+) a => (\S+) a$/) {
-                        print "FOUND!\n";
-                        $class = $1;
-                        $cmd = $2;
+                foreach(keys %dict) {
+                        delete($dict{$_});
+                }
+                if (/forall\s+(\S+)\s+\.\s+(\S+)\s(\S+)\s\=\>/ && $1 eq $3) {
+                        $_ = $` . $';
+                        $dict{$1} = $2;
+                        print "Adding $2 $1 as dictionary\n";
+                }
 
-			$name = $cmd;
-			$name =~ s/(\w+)/\l$1/g;
-                        
-                        $dsl .= "\n";
-			$dsl .= "$name :: $class a => a -> Canvas ()\n";
-			$dsl .= "$name = Command . $cmd\n";
-                        $show .= "  show ($cmd a) = \"c.$name";
-                        
-			if (defined $isAssign{$cmd}) {
-			  $show .= " = ";
-			}
-                        $show .= "(\" ++ showJS a ++ \")\"\n";
-
-		} elsif (/[\|=]\s(\S+)\s+(.*)$/) {
+                if (/[\|=]\s+(\S+)\s+(.*)$/) {
 			print "($1)<$2>\n";
 
 			$cmd = $1;
@@ -57,6 +48,11 @@ while(<F>) {
 			} else {
 				$type = "$orig_args -> Canvas ()";
 			}
+                        foreach(@args) {
+                                if (defined($dict{$_})) {
+                                        $type = "$dict{$_} $_ => " . $type;
+                                }
+                        }
 
 			$header .= "        , $name\n";
 

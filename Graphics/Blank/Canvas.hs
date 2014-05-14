@@ -37,13 +37,13 @@ data Command
         | ArcTo (Float,Float,Float,Float,Float)
         | BeginPath
         | BezierCurveTo (Float,Float,Float,Float,Float,Float)
-        | DrawImage (Image,[Float])
+        | forall image . Image image => DrawImage (image,[Float])
         | ClearRect (Float,Float,Float,Float)
         | Clip
         | ClosePath
         | Fill
         | FillRect (Float,Float,Float,Float)
-        | forall a . Style a => FillStyle a
+        | forall style . Style style => FillStyle style
         | FillText (String,Float,Float)
         | Font String
         | GlobalAlpha Float
@@ -87,6 +87,14 @@ instance Show Specials where
 
 -----------------------------------------------------------------------------
 
+class JSArg a => Image a where
+        
+instance Image CanvasImage
+--instance Image CanvasElement        
+-- instance Element Video  -- Not supported
+
+-----------------------------------------------------------------------------
+
 class JSArg a => Style a where
 
 instance Style [Char]
@@ -109,15 +117,15 @@ data Query :: * -> * where
         ToDataURL                    :: Query String
         MeasureText :: String        -> Query TextMetrics
         IsPointInPath :: (Float,Float) -> Query Bool
-        NewImage :: String             -> Query Image
+        NewImage :: String             -> Query CanvasImage
         CreateLinearGradient :: [Float] -> Query CanvasGradient
-        CreatePattern :: (Image,String) -> Query CanvasPattern
-        
+        CreatePattern :: (CanvasImage,String) -> Query CanvasPattern
+
 data TextMetrics = TextMetrics Float
         deriving Show
 
--- A handle to the image. Images can not be destroyed.
-data Image = Image Int deriving (Show,Eq,Ord)
+-- A handle to the image. CanvasImages can not be destroyed.
+data CanvasImage = CanvasImage Int deriving (Show,Eq,Ord)
 
 -- A handle to the CanvasGradient. CanvasGradients can not be destroyed.
 data CanvasGradient = CanvasGradient Int deriving (Show,Eq,Ord)
@@ -140,7 +148,7 @@ parseQueryResult (Size {}) o      = parseJSON o -- default is good
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o        = parseJSON o
-parseQueryResult (NewImage {}) o             = Image <$> parseJSON o
+parseQueryResult (NewImage {}) o             = CanvasImage <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult _ _ = fail "no parse"
@@ -162,16 +170,16 @@ measureText = Query . MeasureText
 isPointInPath :: (Float,Float) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- | 'image' takes a URL (perhaps a data URL), and returns the 'Image' handle, 
+-- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle, 
 -- _after_ loading.
 -- The assumption is you are using local images, so loading should be near instant.
-newImage :: String -> Canvas Image
+newImage :: String -> Canvas CanvasImage
 newImage = Query . NewImage 
 
 createLinearGradient :: [Float] -> Canvas CanvasGradient
 createLinearGradient = Query . CreateLinearGradient
 
-createPattern :: (Image, String) -> Canvas CanvasPattern
+createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
 
@@ -183,8 +191,8 @@ class JSArg a where
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""        
 
-instance JSArg Image where
-  showJS (Image n) = "images[" ++ show n ++ "]"
+instance JSArg CanvasImage where
+  showJS (CanvasImage n) = "images[" ++ show n ++ "]"
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
