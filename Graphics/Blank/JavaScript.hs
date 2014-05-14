@@ -7,12 +7,12 @@ import Numeric
 
 -------------------------------------------------------------
 
--- | A handle to an offscreen canvas. HiddenCanvas can not be destroyed.
-data CanvasBuffer = CanvasBuffer Int 
-                  | TopCanvas
+-- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
+data CanvasContext = CanvasContext Int 
+                   | TopCanvas
  deriving (Show,Eq,Ord)                
 
-top :: CanvasBuffer
+top :: CanvasContext
 top = TopCanvas
 
 -- | A handle to the Image. CanvasImages can not be destroyed.
@@ -32,8 +32,8 @@ class JSArg a where
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""        
 
-instance JSArg CanvasBuffer where
-  showJS (CanvasBuffer n) = "canvasbuffers[" ++ show n ++ "]"
+instance JSArg CanvasContext where
+  showJS (CanvasContext n) = "canvasbuffers[" ++ show n ++ "]"
   showJS (TopCanvas)      = "c"
 
 instance JSArg CanvasImage where

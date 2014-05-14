@@ -17,7 +17,7 @@ data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
         Command :: Command                             -> Canvas ()     -- <command>
         Query   :: (Show a) => Query a                 -> Canvas a
-        With    :: CanvasBuffer -> Canvas a            -> Canvas a
+        With    :: CanvasContext -> Canvas a            -> Canvas a
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
 
@@ -90,7 +90,7 @@ instance Show Command where
 
 -- | 'with' runs a set of canvas commands in the context
 -- of a specific canvas buffer.
-with :: CanvasBuffer -> Canvas a -> Canvas a
+with :: CanvasContext -> Canvas a -> Canvas a
 with = With
 
 -----------------------------------------------------------------------------
@@ -98,7 +98,7 @@ with = With
 class JSArg a => Image a where
         
 instance Image CanvasImage
---instance Image CanvasBuffer
+--instance Image CanvasContext
 -- instance Element Video  -- Not supported
 
 -----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ data Query :: * -> * where
         NewImage :: String             -> Query CanvasImage
         CreateLinearGradient :: [Float] -> Query CanvasGradient
         CreatePattern :: (CanvasImage,String) -> Query CanvasPattern
-        NewCanvas                    :: Query CanvasBuffer
+        NewCanvas                    :: Query CanvasContext
 
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -152,7 +152,7 @@ parseQueryResult (IsPointInPath {}) o        = parseJSON o
 parseQueryResult (NewImage {}) o             = CanvasImage <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
-parseQueryResult (NewCanvas {}) o = CanvasBuffer <$> parseJSON o
+parseQueryResult (NewCanvas {}) o = CanvasContext <$> parseJSON o
 parseQueryResult _ _ = fail "no parse"
 
 -- | size of the canvas
@@ -185,5 +185,5 @@ createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
 -- | Create a new, off-screen canvas buffer.
-newCanvas :: () -> Canvas CanvasBuffer
+newCanvas :: () -> Canvas CanvasContext
 newCanvas () = Query NewCanvas

@@ -29,7 +29,7 @@ module Graphics.Blank
         , CanvasPattern
          -- * Off Screen Canvas
         , newCanvas
-        , CanvasBuffer
+        , CanvasContext
         , top
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
@@ -145,7 +145,7 @@ send :: Context -> Canvas a -> IO a
 send cxt commands = 
       send' top commands id 
   where
-      send' :: CanvasBuffer -> Canvas a -> (String -> String) -> IO a
+      send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
       send' c (Bind (Return a) k)    cmds = send' c (k a) cmds
       send' c (Bind (Bind m k1) k2)  cmds = send' c (Bind m (\ r -> Bind (k1 r) k2)) cmds
       send' c (Bind (Method cmd) k) cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
