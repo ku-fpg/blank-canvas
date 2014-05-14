@@ -45,7 +45,7 @@ Library
                        warp             == 2.*,
                        stm              >= 2.2		&& < 2.5
 
-  GHC-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations -O2
+  GHC-options:  -Werror -fno-warn-orphans -fno-warn-warnings-deprecations -O2
 
 source-repository head
   type:     git

@@ -1,11 +1,7 @@
 module Graphics.Blank.Context where
 
-import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
-import qualified Data.Set as Set
-import Data.Set (Set)
-import Data.Char
 
 import qualified Web.KansasComet as KC
 

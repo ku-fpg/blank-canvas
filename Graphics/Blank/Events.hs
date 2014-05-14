@@ -3,15 +3,12 @@ module Graphics.Blank.Events
         ( -- * Events
           Event(..)
         , NamedEvent(..)
-        , EventName(..)
+        , EventName
          -- * Event Queue
         , EventQueue            -- not abstract
         ) where
 
 import Data.Aeson (FromJSON(..), Value)
-import qualified Data.Map as Map
-import Data.Map (Map)
-import Data.Char
 import Control.Applicative((<|>))
 import Control.Concurrent.STM
 

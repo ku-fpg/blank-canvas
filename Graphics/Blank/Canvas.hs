@@ -7,10 +7,8 @@ import Graphics.Blank.JavaScript
 
 import Data.Aeson (FromJSON(..),Value(..))
 import Data.Aeson.Types (Parser, (.:))
-import Data.List
 import Control.Monad (ap)
 import Control.Applicative
-import Numeric
 
 
 data Canvas :: * -> * where
@@ -81,7 +79,7 @@ data Command
   | AddColorStop (Float,String) CanvasGradient
 
 instance Show Command where
-  show (Trigger (NamedEvent nm ev)) = "/* trigger */"
+  show (Trigger (NamedEvent _nm _ev)) = "/* trigger */"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
 

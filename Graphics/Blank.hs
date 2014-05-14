@@ -46,9 +46,7 @@ module Graphics.Blank
 
 import Control.Concurrent
 import Control.Concurrent.STM
-import Control.Concurrent.STM.TVar
 import Control.Monad
-import Control.Monad.IO.Class (liftIO)
 import Control.Exception
 import Network.Wai.Handler.Warp (run)
 import Network.Wai (Middleware,remoteHost, responseLBS)
@@ -56,18 +54,13 @@ import qualified Network.HTTP.Types as H
 import Network.Socket (SockAddr(..))
 import System.IO.Unsafe (unsafePerformIO)
 --import System.Mem.StableName
-import qualified Web.Scotty as S
-import Web.Scotty (scottyApp, middleware, get, file, post, jsonData, text, addHeader, param, json)
+import Web.Scotty (scottyApp, get, file, middleware)
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
-import qualified Data.Text.Lazy as T
 import qualified Web.KansasComet as KC
 import Data.Aeson
 import Data.Aeson.Types (parse)
 import Data.String
-
-import qualified Data.Map as Map
-import qualified Data.Set as Set
 
 import Graphics.Blank.Events
 import Graphics.Blank.Context
@@ -126,7 +119,7 @@ blankCanvas opts actions = do
                            _ -> return ()
 
                 (actions $ Context kc_doc queue) `catch` \ (e :: SomeException) -> do
-                        print "Exception in blank-canvas application:" 
+                        print ("Exception in blank-canvas application:"  :: String)
                         print e
                         throw e
 
