@@ -14,11 +14,11 @@ import Numeric
 
 
 data Canvas :: * -> * where
-        Command :: Command                             -> Canvas ()
+        Method  :: Method                              -> Canvas ()     -- <context>.<method>
+        Command :: Command                             -> Canvas ()     -- <command>
         Query   :: (Show a) => Query a                 -> Canvas a
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
---        Size    ::                                        Canvas (Float,Float)
 
 instance Monad Canvas where
         return = Return
@@ -32,7 +32,7 @@ instance Functor Canvas where
   fmap f c = c >>= return . f
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
-data Command
+data Method
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
         | ArcTo (Float,Float,Float,Float,Float)
@@ -74,13 +74,12 @@ data Command
         | TextBaseline String
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
-        | Specials Specials  -- The Specials have there show instance written by hand
 
-data Specials
+data Command
   = Trigger NamedEvent
   | AddColorStop (Float,String) CanvasGradient
 
-instance Show Specials where
+instance Show Command where
   show (Trigger (NamedEvent nm ev)) = "/* trigger */"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
@@ -106,11 +105,11 @@ instance Style CanvasPattern
 
 -- | trigger a specific named event, please.
 trigger :: NamedEvent -> Canvas ()
-trigger = Command . Specials . Trigger
+trigger = Command . Trigger
 
 -- | add a Color stop to a Canvas Gradient.
 addColorStop :: (Float,String) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) = Command . Specials . AddColorStop (off,rep)
+addColorStop (off,rep) = Command . AddColorStop (off,rep)
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where

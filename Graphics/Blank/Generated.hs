@@ -4,168 +4,167 @@ module Graphics.Blank.Generated where
 import Graphics.Blank.Canvas
 import Graphics.Blank.JavaScript
 
-instance Show Command where
-  show (Arc (a1,a2,a3,a4,a5,a6)) = "c.arc(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
-  show (ArcTo (a1,a2,a3,a4,a5)) = "c.arcTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ ")"
-  show BeginPath = "c.beginPath()"
-  show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "c.bezierCurveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
-  show (DrawImage (a1,a2)) = "c.drawImage(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
-  show (ClearRect (a1,a2,a3,a4)) = "c.clearRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show Clip = "c.clip()"
-  show ClosePath = "c.closePath()"
-  show Fill = "c.fill()"
-  show (FillRect (a1,a2,a3,a4)) = "c.fillRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show (FillStyle (a1)) = "c.fillStyle = (" ++ showJS a1 ++ ")"
-  show (FillText (a1,a2,a3)) = "c.fillText(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ ")"
-  show (Font (a1)) = "c.font = (" ++ showJS a1 ++ ")"
-  show (GlobalAlpha (a1)) = "c.globalAlpha = (" ++ showJS a1 ++ ")"
-  show (GlobalCompositeOperation (a1)) = "c.globalCompositeOperation(" ++ showJS a1 ++ ")"
-  show (LineCap (a1)) = "c.lineCap = (" ++ showJS a1 ++ ")"
-  show (LineJoin (a1)) = "c.lineJoin = (" ++ showJS a1 ++ ")"
-  show (LineTo (a1,a2)) = "c.lineTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
-  show (LineWidth (a1)) = "c.lineWidth = (" ++ showJS a1 ++ ")"
-  show (MiterLimit (a1)) = "c.miterLimit = (" ++ showJS a1 ++ ")"
-  show (MoveTo (a1,a2)) = "c.moveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
-  show (QuadraticCurveTo (a1,a2,a3,a4)) = "c.quadraticCurveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show (Rect (a1,a2,a3,a4)) = "c.rect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show Restore = "c.restore()"
-  show (Rotate (a1)) = "c.rotate(" ++ showJS a1 ++ ")"
-  show (Scale (a1,a2)) = "c.scale(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
-  show Save = "c.save()"
-  show (SetTransform (a1,a2,a3,a4,a5,a6)) = "c.setTransform(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
-  show Stroke = "c.stroke()"
-  show (StrokeRect (a1,a2,a3,a4)) = "c.strokeRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
-  show (StrokeText (a1,a2,a3)) = "c.strokeText(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ ")"
-  show (StrokeStyle (a1)) = "c.strokeStyle = (" ++ showJS a1 ++ ")"
-  show (ShadowBlur (a1)) = "c.shadowBlur(" ++ showJS a1 ++ ")"
-  show (ShadowColor (a1)) = "c.shadowColor(" ++ showJS a1 ++ ")"
-  show (ShadowOffsetX (a1)) = "c.shadowOffsetX(" ++ showJS a1 ++ ")"
-  show (ShadowOffsetY (a1)) = "c.shadowOffsetY(" ++ showJS a1 ++ ")"
-  show (TextAlign (a1)) = "c.textAlign = (" ++ showJS a1 ++ ")"
-  show (TextBaseline (a1)) = "c.textBaseline = (" ++ showJS a1 ++ ")"
-  show (Transform (a1,a2,a3,a4,a5,a6)) = "c.transform(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
-  show (Translate (a1,a2)) = "c.translate(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
-  show (Specials sp) = show sp
+instance Show Method where
+  show (Arc (a1,a2,a3,a4,a5,a6)) = "arc(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
+  show (ArcTo (a1,a2,a3,a4,a5)) = "arcTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ ")"
+  show BeginPath = "beginPath()"
+  show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
+  show (DrawImage (a1,a2)) = "drawImage(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
+  show (ClearRect (a1,a2,a3,a4)) = "clearRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
+  show Clip = "clip()"
+  show ClosePath = "closePath()"
+  show Fill = "fill()"
+  show (FillRect (a1,a2,a3,a4)) = "fillRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
+  show (FillStyle (a1)) = "fillStyle = (" ++ showJS a1 ++ ")"
+  show (FillText (a1,a2,a3)) = "fillText(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ ")"
+  show (Font (a1)) = "font = (" ++ showJS a1 ++ ")"
+  show (GlobalAlpha (a1)) = "globalAlpha = (" ++ showJS a1 ++ ")"
+  show (GlobalCompositeOperation (a1)) = "globalCompositeOperation(" ++ showJS a1 ++ ")"
+  show (LineCap (a1)) = "lineCap = (" ++ showJS a1 ++ ")"
+  show (LineJoin (a1)) = "lineJoin = (" ++ showJS a1 ++ ")"
+  show (LineTo (a1,a2)) = "lineTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
+  show (LineWidth (a1)) = "lineWidth = (" ++ showJS a1 ++ ")"
+  show (MiterLimit (a1)) = "miterLimit = (" ++ showJS a1 ++ ")"
+  show (MoveTo (a1,a2)) = "moveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
+  show (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
+  show (Rect (a1,a2,a3,a4)) = "rect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
+  show Restore = "restore()"
+  show (Rotate (a1)) = "rotate(" ++ showJS a1 ++ ")"
+  show (Scale (a1,a2)) = "scale(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
+  show Save = "save()"
+  show (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
+  show Stroke = "stroke()"
+  show (StrokeRect (a1,a2,a3,a4)) = "strokeRect(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ ")"
+  show (StrokeText (a1,a2,a3)) = "strokeText(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ ")"
+  show (StrokeStyle (a1)) = "strokeStyle = (" ++ showJS a1 ++ ")"
+  show (ShadowBlur (a1)) = "shadowBlur(" ++ showJS a1 ++ ")"
+  show (ShadowColor (a1)) = "shadowColor(" ++ showJS a1 ++ ")"
+  show (ShadowOffsetX (a1)) = "shadowOffsetX(" ++ showJS a1 ++ ")"
+  show (ShadowOffsetY (a1)) = "shadowOffsetY(" ++ showJS a1 ++ ")"
+  show (TextAlign (a1)) = "textAlign = (" ++ showJS a1 ++ ")"
+  show (TextBaseline (a1)) = "textBaseline = (" ++ showJS a1 ++ ")"
+  show (Transform (a1,a2,a3,a4,a5,a6)) = "transform(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"
+  show (Translate (a1,a2)) = "translate(" ++ showJS a1 ++ "," ++ showJS a2 ++ ")"
 
 -- DSL
 
 arc :: (Float,Float,Float,Float,Float,Bool) -> Canvas ()
-arc = Command . Arc
+arc = Method . Arc
 
 arcTo :: (Float,Float,Float,Float,Float) -> Canvas ()
-arcTo = Command . ArcTo
+arcTo = Method . ArcTo
 
 beginPath :: () -> Canvas ()
-beginPath () = Command BeginPath
+beginPath () = Method BeginPath
 
 bezierCurveTo :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
-bezierCurveTo = Command . BezierCurveTo
+bezierCurveTo = Method . BezierCurveTo
 
 drawImage :: Image image => (image,[Float]) -> Canvas ()
-drawImage = Command . DrawImage
+drawImage = Method . DrawImage
 
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
-clearRect = Command . ClearRect
+clearRect = Method . ClearRect
 
 clip :: () -> Canvas ()
-clip () = Command Clip
+clip () = Method Clip
 
 closePath :: () -> Canvas ()
-closePath () = Command ClosePath
+closePath () = Method ClosePath
 
 fill :: () -> Canvas ()
-fill () = Command Fill
+fill () = Method Fill
 
 fillRect :: (Float,Float,Float,Float) -> Canvas ()
-fillRect = Command . FillRect
+fillRect = Method . FillRect
 
 fillStyle :: Style style => style -> Canvas ()
-fillStyle = Command . FillStyle
+fillStyle = Method . FillStyle
 
 fillText :: (String,Float,Float) -> Canvas ()
-fillText = Command . FillText
+fillText = Method . FillText
 
 font :: String -> Canvas ()
-font = Command . Font
+font = Method . Font
 
 globalAlpha :: Float -> Canvas ()
-globalAlpha = Command . GlobalAlpha
+globalAlpha = Method . GlobalAlpha
 
 globalCompositeOperation :: String -> Canvas ()
-globalCompositeOperation = Command . GlobalCompositeOperation
+globalCompositeOperation = Method . GlobalCompositeOperation
 
 lineCap :: String -> Canvas ()
-lineCap = Command . LineCap
+lineCap = Method . LineCap
 
 lineJoin :: String -> Canvas ()
-lineJoin = Command . LineJoin
+lineJoin = Method . LineJoin
 
 lineTo :: (Float,Float) -> Canvas ()
-lineTo = Command . LineTo
+lineTo = Method . LineTo
 
 lineWidth :: Float -> Canvas ()
-lineWidth = Command . LineWidth
+lineWidth = Method . LineWidth
 
 miterLimit :: Float -> Canvas ()
-miterLimit = Command . MiterLimit
+miterLimit = Method . MiterLimit
 
 moveTo :: (Float,Float) -> Canvas ()
-moveTo = Command . MoveTo
+moveTo = Method . MoveTo
 
 quadraticCurveTo :: (Float,Float,Float,Float) -> Canvas ()
-quadraticCurveTo = Command . QuadraticCurveTo
+quadraticCurveTo = Method . QuadraticCurveTo
 
 rect :: (Float,Float,Float,Float) -> Canvas ()
-rect = Command . Rect
+rect = Method . Rect
 
 restore :: () -> Canvas ()
-restore () = Command Restore
+restore () = Method Restore
 
 rotate :: Float -> Canvas ()
-rotate = Command . Rotate
+rotate = Method . Rotate
 
 scale :: (Float,Float) -> Canvas ()
-scale = Command . Scale
+scale = Method . Scale
 
 save :: () -> Canvas ()
-save () = Command Save
+save () = Method Save
 
 setTransform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
-setTransform = Command . SetTransform
+setTransform = Method . SetTransform
 
 stroke :: () -> Canvas ()
-stroke () = Command Stroke
+stroke () = Method Stroke
 
 strokeRect :: (Float,Float,Float,Float) -> Canvas ()
-strokeRect = Command . StrokeRect
+strokeRect = Method . StrokeRect
 
 strokeText :: (String,Float,Float) -> Canvas ()
-strokeText = Command . StrokeText
+strokeText = Method . StrokeText
 
 strokeStyle :: String -> Canvas ()
-strokeStyle = Command . StrokeStyle
+strokeStyle = Method . StrokeStyle
 
 shadowBlur :: Float -> Canvas ()
-shadowBlur = Command . ShadowBlur
+shadowBlur = Method . ShadowBlur
 
 shadowColor :: String -> Canvas ()
-shadowColor = Command . ShadowColor
+shadowColor = Method . ShadowColor
 
 shadowOffsetX :: Float -> Canvas ()
-shadowOffsetX = Command . ShadowOffsetX
+shadowOffsetX = Method . ShadowOffsetX
 
 shadowOffsetY :: Float -> Canvas ()
-shadowOffsetY = Command . ShadowOffsetY
+shadowOffsetY = Method . ShadowOffsetY
 
 textAlign :: String -> Canvas ()
-textAlign = Command . TextAlign
+textAlign = Method . TextAlign
 
 textBaseline :: String -> Canvas ()
-textBaseline = Command . TextBaseline
+textBaseline = Method . TextBaseline
 
 transform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
-transform = Command . Transform
+transform = Method . Transform
 
 translate :: (Float,Float) -> Canvas ()
-translate = Command . Translate
+translate = Method . Translate
 

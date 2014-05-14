@@ -8,7 +8,7 @@ import Numeric
 -------------------------------------------------------------
 
 -- | A handle to an offscreen canvas. HiddenCanvas can not be destroyed.
-newtype HiddenCanvas = HiddenCanvas Int deriving (Show,Eq,Ord)
+newtype CanvasBuffer = CanvasBuffer Int deriving (Show,Eq,Ord)
 
 -- | A handle to the Image. CanvasImages can not be destroyed.
 newtype CanvasImage = CanvasImage Int deriving (Show,Eq,Ord)
@@ -26,6 +26,9 @@ class JSArg a where
 
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""        
+
+instance JSArg CanvasBuffer where
+  showJS (CanvasBuffer n) = "canvasbuffers[" ++ show n ++ "]"
 
 instance JSArg CanvasImage where
   showJS (CanvasImage n) = "images[" ++ show n ++ "]"
