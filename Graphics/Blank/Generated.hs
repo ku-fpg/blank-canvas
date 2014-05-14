@@ -2,6 +2,7 @@
 module Graphics.Blank.Generated where
 
 import Graphics.Blank.Canvas
+import Graphics.Blank.JavaScript
 
 instance Show Command where
   show (Arc (a1,a2,a3,a4,a5,a6)) = "c.arc(" ++ showJS a1 ++ "," ++ showJS a2 ++ "," ++ showJS a3 ++ "," ++ showJS a4 ++ "," ++ showJS a5 ++ "," ++ showJS a6 ++ ")"

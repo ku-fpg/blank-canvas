@@ -26,6 +26,7 @@ Library
                        Graphics.Blank.Context,
                        Graphics.Blank.Events,
                        Graphics.Blank.Generated,
+                       Graphics.Blank.JavaScript,
                        Graphics.Blank.Utils,
                        Paths_blank_canvas
 

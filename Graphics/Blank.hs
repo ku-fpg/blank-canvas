@@ -20,7 +20,8 @@ module Graphics.Blank
         , isPointInPath
         , TextMetrics(..)
         , newImage
-        , Image -- abstract
+        , Image -- abstract class
+        , CanvasImage -- abstract
         , createLinearGradient
         , CanvasGradient
         , addColorStop
@@ -68,6 +69,7 @@ import Graphics.Blank.Events
 import Graphics.Blank.Context
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
+import Graphics.Blank.JavaScript
 import Graphics.Blank.Utils
 import Paths_blank_canvas
 

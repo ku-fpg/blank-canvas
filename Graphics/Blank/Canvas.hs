@@ -3,6 +3,7 @@
 module Graphics.Blank.Canvas where
 
 import Graphics.Blank.Events
+import Graphics.Blank.JavaScript
 
 import Data.Aeson (FromJSON(..),Value(..))
 import Data.Aeson.Types (Parser, (.:))
@@ -90,7 +91,7 @@ instance Show Specials where
 class JSArg a => Image a where
         
 instance Image CanvasImage
---instance Image CanvasElement        
+--instance Image CanvasBuffer
 -- instance Element Video  -- Not supported
 
 -----------------------------------------------------------------------------
@@ -123,15 +124,6 @@ data Query :: * -> * where
 
 data TextMetrics = TextMetrics Float
         deriving Show
-
--- A handle to the image. CanvasImages can not be destroyed.
-data CanvasImage = CanvasImage Int deriving (Show,Eq,Ord)
-
--- A handle to the CanvasGradient. CanvasGradients can not be destroyed.
-data CanvasGradient = CanvasGradient Int deriving (Show,Eq,Ord)
-
--- A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
-data CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
 
 instance Show (Query a) where
   show Size                     = "reply(size(c))"
@@ -183,29 +175,3 @@ createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
 
-----------------------------------------------------------------
-
-class JSArg a where
-  showJS :: a -> String
-
-instance JSArg Float where
-  showJS a = showFFloat (Just 3) a ""        
-
-instance JSArg CanvasImage where
-  showJS (CanvasImage n) = "images[" ++ show n ++ "]"
-
-instance JSArg CanvasGradient where
-  showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
-
-instance JSArg CanvasPattern where
-  showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
-
-instance JSArg Bool where
-  showJS True  = "true"
-  showJS False = "false"
-
-instance JSArg [Char] where 
-  showJS str = show str
-
-instance JSArg a => JSArg [a] where 
-  showJS = concat . intersperse "," . map showJS 
