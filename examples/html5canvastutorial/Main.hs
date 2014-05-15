@@ -76,6 +76,7 @@ examples =
         , (example_1_8_6,"1.8.6 Text Metrics") 
         , (example_1_8_7,"1.8.7 Text Wrap")
         -- Transformations 2.1
+        , (example_2_1_1,"2.1.1 Translate Transform")
         -- Composites 2.2
         -- Image Data & URLs 2.3
 --        , (example_2_3_1,"2.3.1 Image Data")
@@ -412,6 +413,14 @@ example_1_8_7 = do
                      wrapText 0      (drop wc text) x (y + lineHeight) maxWidth lineHeight
              else do wrapText (wc+1) text           x y                maxWidth lineHeight
 
+
+example_2_1_1 = do
+        (width,height) <- size
+        let rectWidth = 150;
+        let rectHeight = 75;
+        translate(width / 2, height / 2);
+        fillStyle "blue";
+        fillRect(rectWidth / (-2), rectHeight / (-2), rectWidth, rectHeight);
 
 example_2_3_4 canvas = do
    url <- send canvas $ do
