@@ -6,7 +6,7 @@ import Paths_blank_canvas_examples
 main = do
  dat <- getDataDir        
  blankCanvas 3000 { events = ["mousedown"], 
-                         debug = False,
+                         debug = True,
                           static = ["images/" ++ img
                                    | img <- ["fan.jpg", "princess.jpg"]
                                    ]
@@ -18,6 +18,7 @@ main = do
                       (width,height) <- size
                       clearRect (0,0,width,height)
                       beginPath()
+                      globalAlpha 1.0 -- reset this global property
 
                  -- run this example
                  send canvas $ do
@@ -78,6 +79,9 @@ examples =
         -- Transformations 2.1
         , (example_2_1_1,"2.1.1 Translate Transform")
         -- Composites 2.2
+        , (example_2_2_1,"2.2.1 Shadow")
+        , (example_2_2_2,"2.2.2 Global Alpha")
+        , (example_2_2_3,"2.2.3 Clipping Region")
         -- Image Data & URLs 2.3
 --        , (example_2_3_1,"2.3.1 Image Data")
 --        , (example_2_3_2,"2.3.2 Invert Image Colors")
@@ -421,6 +425,75 @@ example_2_1_1 = do
         translate(width / 2, height / 2);
         fillStyle "blue";
         fillRect(rectWidth / (-2), rectHeight / (-2), rectWidth, rectHeight);
+
+example_2_2_1 = do
+        rect(188, 40, 200, 100);
+        fillStyle "red";
+        shadowColor "#999";
+        shadowBlur 20;
+        shadowOffsetX 15;
+        shadowOffsetY 15;
+        fill()
+
+example_2_2_2 = do
+      -- draw blue rectangle
+      beginPath();
+      rect(200, 20, 100, 100);
+      fillStyle "blue";
+      fill();
+
+      -- draw transparent red circle
+      globalAlpha 0.5;
+      beginPath();
+      arc(320, 120, 60, 0, 2 * pi, False);
+      fillStyle "red";
+      fill();
+
+example_2_2_3 = do
+      (width,height) <- size
+      let x = width / 2;
+      let y = height / 2;
+      let radius = 75;
+      let offset = 50;
+
+      {-
+       * save() allows us to save the canvas context before
+       * defining the clipping region so that we can return
+       * to the default state later on
+       -}
+      save();
+      beginPath();
+      arc(x, y, radius, 0, 2 * pi, False);
+      clip();
+
+      -- draw blue circle inside clipping region
+      beginPath();
+      arc(x - offset, y - offset, radius, 0, 2 * pi, False);
+      fillStyle "blue";
+      fill();
+
+      -- draw yellow circle inside clipping region
+      beginPath();
+      arc(x + offset, y, radius, 0, 2 * pi, False);
+      fillStyle "yellow";
+      fill();
+
+      -- draw red circle inside clipping region
+      beginPath();
+      arc(x, y + offset, radius, 0, 2 * pi, False);
+      fillStyle "red";
+      fill();
+
+      {-
+       * restore() restores the canvas context to its original state
+       * before we defined the clipping region
+       -}
+      restore();
+      beginPath();
+      arc(x, y, radius, 0, 2 * pi, False);
+      lineWidth 10;
+      strokeStyle "blue";
+      stroke();
 
 example_2_3_4 canvas = do
    url <- send canvas $ do

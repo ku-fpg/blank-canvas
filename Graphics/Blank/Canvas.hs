@@ -34,7 +34,7 @@ instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
   mempty  = return mempty
 
--- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, StrokeStyle, TextAlign, TextBaseline
+-- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
