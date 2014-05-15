@@ -6,7 +6,7 @@ import Paths_blank_canvas_examples
 main = do
  dat <- getDataDir        
  blankCanvas 3000 { events = ["mousedown"], 
-                         debug = True,
+                         debug = False,
                           static = ["images/" ++ img
                                    | img <- ["fan.jpg", "princess.jpg"]
                                    ]
@@ -73,7 +73,7 @@ examples =
         , (example_1_8_3,"1.8.3 Text Stroke")
         , (example_1_8_4,"1.8.4 Text Align")
         , (example_1_8_5,"1.8.5 Text Baseline")
-        , (example_1_8_6,"1.8.6 Text Metrics")
+        , (example_1_8_6,"1.8.6 Text Metrics") 
         , (example_1_8_7,"1.8.7 Text Wrap")
         -- Transformations 2.1
         -- Composites 2.2
@@ -143,7 +143,6 @@ example_1_3_1 = do
         stroke()
 
 example_1_3_2 = do
-        (width,height) <- size
 	beginPath()
 	moveTo(188, 150)
         quadraticCurveTo(288, 0, 388, 150)
@@ -396,7 +395,23 @@ example_1_8_6 = do
 
 example_1_8_7 = do
         (width,height) <- size
-        todo
+        font "lighter 16pt Calibri"
+        fillStyle "#000"
+        let maxWidth = width / 3
+        wrapText 0 (words message) ((width - maxWidth) / 2) 60 maxWidth 25
+    where
+
+        message = "All the world's a stage, and all the men and women merely players. " ++
+                  "They have their exits and their entrances; And one man in his time plays many parts."
+
+        wrapText wc []   x y maxWidth lineHeight = return ()
+        wrapText wc text x y maxWidth lineHeight = do
+             TextMetrics testWidth <- measureText $ unwords $ take (wc+1) $ text
+             if (testWidth > maxWidth && wc > 0) || length text <= wc
+             then do fillText(unwords $ take wc $ text,x,y)
+                     wrapText 0      (drop wc text) x (y + lineHeight) maxWidth lineHeight
+             else do wrapText (wc+1) text           x y                maxWidth lineHeight
+
 
 example_2_3_4 canvas = do
    url <- send canvas $ do
