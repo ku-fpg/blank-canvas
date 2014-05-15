@@ -70,7 +70,19 @@
                     $.kc.reply(u,c.isPointInPath(x,y));
                 }        
             }
+            function GetImageData(sx,sy,sw,sh) { 
+                return function (u,c) {
+                    var img = c.getImageData(sx,sy,sw,sh);
+                    var arr = [];
+//                    for(var i = 0;i < img.data.length;i+=4) {
+//                    }
+                    $.kc.reply(u,{ width: img.width
+                                 , height: img.height
+                                 });
+                }        
+            }
 
+            /* -------------------- */
             function newContext(width, height) {
                 var buffer = document.createElement('canvas');
                 buffer.width = width;
