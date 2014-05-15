@@ -2,10 +2,12 @@
 
 module Graphics.Blank.JavaScript where
 
-import Graphics.Blank.ImageData
 import Data.List
 import Data.Word (Word8)
 import Numeric
+
+import qualified Data.Vector.Unboxed as V
+import Data.Vector.Unboxed (Vector)
 
 -------------------------------------------------------------
 
@@ -25,6 +27,11 @@ newtype CanvasGradient = CanvasGradient Int deriving (Show,Eq,Ord)
 
 -- | A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
 newtype CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
+
+-------------------------------------------------------------
+
+-- | 'ImageData' lives on the server, not the client.
+data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
 
 -------------------------------------------------------------
 

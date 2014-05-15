@@ -2,7 +2,6 @@
 module Graphics.Blank.Generated where
 
 import Graphics.Blank.Canvas
-import Graphics.Blank.ImageData
 import Graphics.Blank.JavaScript
 
 instance Show Method where

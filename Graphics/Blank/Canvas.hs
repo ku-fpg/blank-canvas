@@ -4,7 +4,6 @@ module Graphics.Blank.Canvas where
 
 import Graphics.Blank.Events
 import Graphics.Blank.JavaScript
-import Graphics.Blank.ImageData
 
 import Data.Aeson (FromJSON(..),Value(..))
 import Data.Aeson.Types (Parser, (.:))
