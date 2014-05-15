@@ -83,12 +83,13 @@ data Method
 data Command
   = Trigger NamedEvent
   | AddColorStop (Float,String) CanvasGradient
+  | forall msg . JSArg msg => Log msg
 
 instance Show Command where
   show (Trigger (NamedEvent _nm _ev)) = "/* trigger */"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
-
+  show (Log msg) = "console.log(" ++ showJS msg ++ ")" 
 
 -----------------------------------------------------------------------------
 
@@ -122,6 +123,10 @@ trigger = Command . Trigger
 -- | add a Color stop to a Canvas Gradient.
 addColorStop :: (Float,String) -> CanvasGradient -> Canvas ()
 addColorStop (off,rep) = Command . AddColorStop (off,rep)
+
+-- | 'console_log' aids debugging by sending the argument to the browser console.log.
+console_log :: JSArg msg => msg -> Canvas ()
+console_log = Command . Log
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where

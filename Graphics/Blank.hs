@@ -31,6 +31,8 @@ module Graphics.Blank
         , newCanvas
         , CanvasContext
         , top
+         -- * Debugging
+        , console_log
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
