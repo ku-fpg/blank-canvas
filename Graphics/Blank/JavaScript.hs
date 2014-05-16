@@ -41,6 +41,9 @@ class JSArg a where
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""        
 
+instance JSArg Int where
+  showJS a = show a
+
 instance JSArg CanvasContext where
   showJS (CanvasContext n) = "canvasbuffers[" ++ show n ++ "]"
   showJS (TopCanvas)      = "c"

@@ -70,6 +70,18 @@
                     $.kc.reply(u,c.isPointInPath(x,y));
                 }        
             }
+
+            function NewCanvas(w,h) { 
+                return function (u,c) {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    var count = canvasbuffers.push(canvas.getContext("2d"));
+                    $.kc.reply(u,count - 1);
+                }        
+            }
+
+
             function GetImageData(sx,sy,sw,sh) { 
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);

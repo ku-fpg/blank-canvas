@@ -15,7 +15,7 @@ data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
         Command :: Command                             -> Canvas ()     -- <command>
         Query   :: (Show a) => Query a                 -> Canvas a
-        With    :: CanvasContext -> Canvas a            -> Canvas a
+        With    :: CanvasContext -> Canvas a           -> Canvas a
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
 
@@ -129,16 +129,15 @@ console_log = Command . Log
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where
-        Size                         :: Query (Float,Float)
-        ToDataURL                    :: Query String
-        MeasureText :: String        -> Query TextMetrics
-        IsPointInPath :: (Float,Float) -> Query Bool
-        NewImage :: String             -> Query CanvasImage
-        CreateLinearGradient :: [Float] -> Query CanvasGradient
-        CreatePattern :: (CanvasImage,String) -> Query CanvasPattern
-        NewCanvas                    :: Query CanvasContext
-        GetImageData :: (Float,Float,Float,Float)
-                                     -> Query ImageData
+        Size                                              :: Query (Float,Float)
+        ToDataURL                                         :: Query String
+        MeasureText          :: String                    -> Query TextMetrics
+        IsPointInPath        :: (Float,Float)             -> Query Bool
+        NewImage             :: String                    -> Query CanvasImage
+        CreateLinearGradient :: [Float]                   -> Query CanvasGradient
+        CreatePattern        :: (CanvasImage,String)      -> Query CanvasPattern
+        NewCanvas            :: (Int,Int)                 -> Query CanvasContext
+        GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
 
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -151,7 +150,7 @@ instance Show (Query a) where
   show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
   show (CreateLinearGradient fs) = "CreateLinearGradient(" ++ showJS fs ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ showJS img ++ "," ++ showJS str ++ ")"
-  show NewCanvas                 = "NewCanvas"
+  show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh)) 
                                  = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
 
@@ -167,7 +166,8 @@ parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o = CanvasContext <$> parseJSON o
 parseQueryResult _ _ = fail "no parse"
 
--- | size of the canvas
+-- | 'size' of the canvas. 'size' always returns integral values, but typically is used
+-- in position computations, which are floating point (aka JavaScript number).
 size :: Canvas (Float,Float)
 size = Query Size
 
@@ -196,6 +196,6 @@ createLinearGradient = Query . CreateLinearGradient
 createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
--- | Create a new, off-screen canvas buffer.
-newCanvas :: () -> Canvas CanvasContext
-newCanvas () = Query NewCanvas
+-- | Create a new, off-screen canvas buffer. Takes width and height.
+newCanvas :: (Int,Int) -> Canvas CanvasContext
+newCanvas = Query . NewCanvas

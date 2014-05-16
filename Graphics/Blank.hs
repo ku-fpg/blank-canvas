@@ -29,6 +29,7 @@ module Graphics.Blank
         , CanvasPattern
          -- * Off Screen Canvas
         , newCanvas
+        , with
         , CanvasContext
         , top
          -- * Debugging
