@@ -34,7 +34,7 @@ instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
   mempty  = return mempty
 
--- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
+-- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
         -- regular HTML5 canvas commands
         = Arc (Float,Float,Float,Float,Float,Bool)
@@ -99,19 +99,6 @@ with = With
 
 -----------------------------------------------------------------------------
 
-class JSArg a => Image a where
-        
-instance Image CanvasImage
---instance Image CanvasContext
--- instance Element Video  -- Not supported
-
------------------------------------------------------------------------------
-
-class JSArg a => Style a where
-
-instance Style [Char]
-instance Style CanvasGradient
-instance Style CanvasPattern
 
 -----------------------------------------------------------------------------
 

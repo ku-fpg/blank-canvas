@@ -11,11 +11,35 @@ import Data.Vector.Unboxed (Vector)
 
 -------------------------------------------------------------
 
+-- TODO: close off 
+class Image a where
+  jsImage :: a -> String
+        
+instance Image CanvasImage   where { jsImage = jsCanvasImage }
+-- The Image of a canvas is the DOM entry, not the canvas context, so
+-- you need to indirect back to the canvas DOM here.
+instance Image CanvasContext where { jsImage = (++ ".canvas") . jsCanvasContext }
+-- instance Element Video  -- Not supported
+
+
+-----------------------------------------------------------------------------
+
+-- TODO: close off 
+class Style a where
+  jsStyle :: a -> String
+
+instance Style [Char]         where { jsStyle = jsString }
+instance Style CanvasGradient where { jsStyle = jsCanvasGradient }
+instance Style CanvasPattern  where { jsStyle = jsCanvasPattern }
+
+-------------------------------------------------------------
+
 -- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
 data CanvasContext = CanvasContext Int 
                    | TopCanvas
  deriving (Show,Eq,Ord)                
 
+-- | 'top' is the main Canvas.
 top :: CanvasContext
 top = TopCanvas
 
@@ -41,31 +65,52 @@ class JSArg a where
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""        
 
+jsFloat = showJS :: Float -> String
+
 instance JSArg Int where
   showJS a = show a
+
+jsInt = showJS :: Int -> String
 
 instance JSArg CanvasContext where
   showJS (CanvasContext n) = "canvasbuffers[" ++ show n ++ "]"
   showJS (TopCanvas)      = "c"
 
+jsCanvasContext = showJS :: CanvasContext -> String
+
 instance JSArg CanvasImage where
   showJS (CanvasImage n) = "images[" ++ show n ++ "]"
+
+jsCanvasImage = showJS :: CanvasImage -> String
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
 
+jsCanvasGradient = showJS :: CanvasGradient -> String
+
 instance JSArg CanvasPattern where
   showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
 
+jsCanvasPattern = showJS :: CanvasPattern -> String
+
 instance JSArg ImageData where
   showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[])"
+
+jsImageData = showJS :: ImageData -> String
 
 instance JSArg Bool where
   showJS True  = "true"
   showJS False = "false"
 
+jsBool = showJS :: Bool -> String
+
 instance JSArg [Char] where 
   showJS str = show str
 
+jsString = showJS :: String -> String
+
 instance JSArg a => JSArg [a] where 
   showJS = concat . intersperse "," . map showJS 
+
+jsList :: (a -> String) -> [a] -> String
+jsList js = concat . intersperse "," . map js 

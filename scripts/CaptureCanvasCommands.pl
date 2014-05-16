@@ -77,11 +77,13 @@ while(<F>) {
 				@outs = ();
 				$n = 1;
 				for $arg (@args) {
-				     if ($arg eq "String" || $arg =~ /^\[.*\]$/) {
-				     	push(@outs,"showJS a$n");
-				     } else {
-				     	push(@outs,"showJS a$n");
-				     }
+                                     if ($arg =~ /^\[(.*)\]$/) {
+                                             push(@outs,"jsList js$1 a$n");
+                                     } elsif ($arg =~ /^([a-z])(.*)$/) {
+                                             push(@outs,"js". uc($1) . $2 . " a$n");
+                                     } else {
+                                             push(@outs,"js$arg a$n"); 
+                                     }
 				     $n++;
 				}
 				$show .= join(" ++ \",\" ++ ",@outs);
