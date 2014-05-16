@@ -157,7 +157,8 @@ send cxt commands =
                 Success a -> do
                         send' c (k a) id
       send' c (Bind (With c' m) k) cmds = send' c' (Bind m (With c . k)) cmds
-      send' c (With _ (Return a)) cmds = send' c (Return a) cmds
+
+      send' _ (With c m)           cmds = send' c m cmds
       send' _ (Return a)           cmds = do
               sendToCanvas cxt cmds
               return a
