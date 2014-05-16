@@ -35,9 +35,9 @@ main = do
                  -- wait for a mouse press
                  wait canvas 
 
-            | (example,name) <- cycle (map wrap examples ++ io_examples)
+            | (example,name) <- drop 33 $ cycle (map wrap examples ++ io_examples)
             ]
-  where wrap (example,name) = ( \ canvas -> send canvas example, name)
+  where wrap (example,name) = ( \ canvas -> do send canvas example, name)
           
 examples =
 	 -- Lines
@@ -82,6 +82,7 @@ examples =
         , (example_2_2_1,"2.2.1 Shadow")
         , (example_2_2_2,"2.2.2 Global Alpha")
         , (example_2_2_3,"2.2.3 Clipping Region")
+        , (example_2_2_4,"2.2.4 Global Composite Operations")
         -- Image Data & URLs 2.3
 --        , (example_2_3_1,"2.3.1 Image Data")
 --        , (example_2_3_2,"2.3.2 Invert Image Colors")
@@ -494,6 +495,69 @@ example_2_2_3 = do
       lineWidth 10;
       strokeStyle "blue";
       stroke();
+
+sync = do _ <- size
+          return ()
+
+example_2_2_4 = do
+        (width,height) <- size
+        tempCanvas <- newCanvas (round width,round height)
+        console_log tempCanvas
+        (w,h) <- with tempCanvas $ size
+        console_log $ show $ (w,h)
+
+        sync
+        
+        let squareWidth = 55;
+        let circleRadius = 35;
+        let shapeOffset = 50;
+        let operationOffset = 150;
+
+        let compss = 
+             [["source-atop", "source-in", "source-out", "source-over"]
+             ,["destination-atop","destination-in","destination-out","destination-over"]
+             ,["lighter","darker","xor","copy"]
+             ]
+
+        -- translate context to add 10px padding
+        translate(10, 10);
+
+
+        sequence_ [
+             do
+
+                -- clear temp context
+                with tempCanvas $ do
+                        save();
+
+                        clearRect(0, 0, width, height);
+                        -- draw rectangle (destination)
+                        beginPath();
+                        rect(0, 0, squareWidth, squareWidth);
+                        fillStyle "blue";
+                        fill();
+
+                        -- set global composite
+                        globalCompositeOperation thisOperation;
+
+                        -- draw circle (source)
+                        beginPath();
+                        arc(shapeOffset, shapeOffset, circleRadius, 0, 2 * pi, False);
+                        fillStyle "red";
+                        fill();
+
+                        restore();
+
+                        font "10pt Verdana";
+                        fillStyle "black";
+                        fillText(thisOperation, 0, squareWidth + 45);
+
+                drawImage(tempCanvas, [x * 125, y * 125]);
+
+
+              | (comps,y)         <- compss `zip` [0..]
+              , (thisOperation,x) <- comps  `zip` [0..]
+              ]
 
 example_2_3_4 canvas = do
    url <- send canvas $ do
