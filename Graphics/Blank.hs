@@ -37,6 +37,7 @@ module Graphics.Blank
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff
+        , trigger 
         , eventQueue
         , wait
         , tryGet

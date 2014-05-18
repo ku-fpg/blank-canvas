@@ -81,7 +81,6 @@
                 }        
             }
 
-
             function GetImageData(sx,sy,sw,sh) { 
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);
@@ -94,6 +93,13 @@
                 }        
             }
 
+            function Trigger(e) { 
+                $.kc.event({ eMetaKey: e.eMetaKey,
+                             ePageXY : e.ePageXY,
+                             eType   : e.eType,
+                             eWhich  : e.eWwhich
+                            });
+            }
             /* -------------------- */
             function newContext(width, height) {
                 var buffer = document.createElement('canvas');

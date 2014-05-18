@@ -5,12 +5,13 @@ module Graphics.Blank.Canvas where
 import Graphics.Blank.Events
 import Graphics.Blank.JavaScript
 
-import Data.Aeson (FromJSON(..),Value(..))
+import Data.Aeson (FromJSON(..),Value(..), toJSON, encode)
 import Data.Aeson.Types (Parser, (.:))
+import Data.Char (chr)
 import Control.Monad (ap, liftM2)
 import Control.Applicative
 import Data.Monoid
-
+import qualified Data.ByteString.Lazy as DBL
 data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
         Command :: Command                             -> Canvas ()     -- <command>
@@ -85,7 +86,7 @@ data Command
   | forall msg . JSArg msg => Log msg
 
 instance Show Command where
-  show (Trigger (Event {})) = "/* trigger */"
+  show (Trigger e) = "Trigger(" ++ map (chr . fromEnum) (DBL.unpack (encode e)) ++ ")"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
   show (Log msg) = "console.log(" ++ showJS msg ++ ")" 

@@ -1,8 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables, OverloadedStrings #-}
 module Graphics.Blank.Events where
 
-import Data.Aeson (FromJSON(..), Value(..))
-import Data.Aeson.Types (Parser, (.:))
+import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
+import Data.Aeson.Types (Parser, (.:), (.=), object)
 import Control.Applicative((<|>),(<$>),(<*>))
 import Control.Concurrent.STM
 
@@ -23,7 +23,19 @@ instance FromJSON Event where
                                 <*> (Just <$> (v .: "eWhich")       <|> return Nothing)
    parseJSON _ = fail "no parse of Event"    
 
-{-
+instance ToJSON Event where
+   toJSON e = object 
+            $ ((:) ("eMetaKey" .=  eMetaKey e))
+            $ (case ePageXY e of
+                 Nothing -> id
+                 Just (x,y) -> (:) ("ePageXY" .= (x,y)))
+            $ ((:) ("eType" .= eType e))
+            $ (case eWhich e of
+                 Nothing -> id
+                 Just w -> (:) ("eWhich" .= w))
+            $ []
+
+        {-
    parseJSON o = do
            (str::String,_::Value,_::Value,_::Value) <- parseJSON o
            fmap (NamedEvent str) (opt1 <|> opt2)
