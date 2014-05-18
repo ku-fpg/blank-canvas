@@ -9,7 +9,7 @@ import Control.Concurrent.STM
 -- | Basic Event from Browser; see http://api.jquery.com/category/events/event-object/ for details.
 data Event = Event
         { eMetaKey :: Bool
-        , ePageXY  :: Maybe (Int,Int)
+        , ePageXY  :: Maybe (Float,Float)
         , eType    :: EventName          -- "Describes the nature of the event." jquery
         , eWhich   :: Maybe Int          -- magic code for key presses
         }
