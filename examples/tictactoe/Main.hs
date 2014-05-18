@@ -55,9 +55,9 @@ loop context board turn = do
                     if r `elem` [-1..1] then Just (signum r) else Nothing
                 where r = round (x * 3.3333)
 
-        NamedEvent _ event <- wait context
+        event <- wait context
 --        print event
-        case jsMouse event of
+        case ePageXY event of
            -- if no mouse location, ignore, and redraw
            Nothing -> loop context board turn
            Just (x',y') -> case pointToSq (fromIntegral x',fromIntegral y') of

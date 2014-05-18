@@ -80,12 +80,12 @@ data Method
         | Translate (Float,Float)
 
 data Command
-  = Trigger NamedEvent
+  = Trigger Event
   | AddColorStop (Float,String) CanvasGradient
   | forall msg . JSArg msg => Log msg
 
 instance Show Command where
-  show (Trigger (NamedEvent _nm _ev)) = "/* trigger */"
+  show (Trigger (Event {})) = "/* trigger */"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
   show (Log msg) = "console.log(" ++ showJS msg ++ ")" 
@@ -103,7 +103,7 @@ with = With
 -----------------------------------------------------------------------------
 
 -- | trigger a specific named event, please.
-trigger :: NamedEvent -> Canvas ()
+trigger :: Event -> Canvas ()
 trigger = Command . Trigger
 
 -- | add a Color stop to a Canvas Gradient.

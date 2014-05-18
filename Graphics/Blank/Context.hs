@@ -20,18 +20,18 @@ sendToCanvas cxt cmds = do
         KC.send (theComet cxt) $ "try{" ++ cmds "}catch(e){alert('JavaScript Failure: '+e.message);}"
 
 -- | wait for any event
-wait :: Context -> IO NamedEvent
+wait :: Context -> IO Event
 wait c = atomically $ readTChan (eventQueue c)
 
 -- | get the next event if it exists
-tryGet :: Context -> IO (Maybe NamedEvent)
+tryGet :: Context -> IO (Maybe Event)
 tryGet cxt = atomically $ do
     b <- isEmptyTChan (eventQueue cxt)
     if b 
     then return Nothing
     else liftM Just $ readTChan (eventQueue cxt)
 
-flush :: Context -> IO [NamedEvent]
+flush :: Context -> IO [Event]
 flush cxt = atomically $ loop
   where loop = do 
           b <- isEmptyTChan (eventQueue cxt)

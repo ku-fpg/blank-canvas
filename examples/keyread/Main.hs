@@ -30,8 +30,12 @@ loop context state = do
 
 control context state = do
         event <- wait context
-        let down_keys = case event of { (NamedEvent "keydown" e) -> [jsCode e] ; _ -> [] }
-        let up_keys = case event of { (NamedEvent "keyup" e) -> [jsCode e] ; _ -> []}
+        let down_keys = case (eType event,eWhich event) of
+	    	          ("keydown",Just c) -> [c]
+			  _ -> []
+        let up_keys = case (eType event,eWhich event) of
+	    	          ("keyup",Just c) -> [c]
+			  _ -> []
         let current_keys = [ k | k <- nub (keys state ++ down_keys), not (k `elem` up_keys) ]
         let state' = state { step = step state + 1, keys = current_keys }
         loop context state'

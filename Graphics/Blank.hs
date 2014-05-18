@@ -43,7 +43,6 @@ module Graphics.Blank
         , flush
         , Event(..)
         , EventName
-        , NamedEvent(..)
         , EventQueue
         ) where
 
@@ -117,7 +116,7 @@ blankCanvas opts actions = do
                 _ <- forkIO $ forever $ do
                         val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
                         case fromJSON val of
-                           Success (event :: NamedEvent) -> do
+                           Success (event :: Event) -> do
                                    atomically $ writeTChan queue event
                            _ -> return ()
 

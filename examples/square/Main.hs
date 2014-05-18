@@ -18,8 +18,8 @@ main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
                         stroke()
                         restore()
 
-		NamedEvent _ event <- wait context
-                case jsMouse event of
+		event <- wait context
+                case ePageXY event of
                         Nothing -> loop (x,y) colors
                         Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
 

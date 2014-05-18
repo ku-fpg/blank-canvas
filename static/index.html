@@ -103,7 +103,11 @@
             }
             function register(name) {
                 $(document).bind(name,function (e){
-                        $.kc.event([name,e.which,e.pageX, e.pageY]);
+                        $.kc.event({ eMetaKey: e.metaKey,
+                                     ePageXY : [e.pageX,e.pageY],
+                                     eType   : e.type,
+                                     eWhich  : e.which
+                                    });
                 });
             }  
             function redraw() {

@@ -1,29 +1,29 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-module Graphics.Blank.Events
-        ( -- * Events
-          Event(..)
-        , NamedEvent(..)
-        , EventName
-         -- * Event Queue
-        , EventQueue            -- not abstract
-        ) where
+{-# LANGUAGE ScopedTypeVariables, OverloadedStrings #-}
+module Graphics.Blank.Events where
 
-import Data.Aeson (FromJSON(..), Value)
-import Control.Applicative((<|>))
+import Data.Aeson (FromJSON(..), Value(..))
+import Data.Aeson.Types (Parser, (.:))
+import Control.Applicative((<|>),(<$>),(<*>))
 import Control.Concurrent.STM
 
--- | Basic Event from Browser, the code is event-type specific.
+-- | Basic Event from Browser; see http://api.jquery.com/category/events/event-object/ for details.
 data Event = Event
-        { jsCode  :: Int
-        , jsMouse :: Maybe (Int,Int)
+        { eMetaKey :: Bool
+        , ePageXY  :: Maybe (Int,Int)
+        , eType    :: EventName          -- "Describes the nature of the event." jquery
+        , eWhich   :: Maybe Int          -- magic code for key presses
         }
         deriving (Show)
 
--- | When an event is sent to the application, it always has a name.
-data NamedEvent = NamedEvent EventName Event
-        deriving (Show)
 
-instance FromJSON NamedEvent where
+instance FromJSON Event where
+   parseJSON (Object v) = Event <$> ((v .: "eMetaKey")              <|> return False)
+                                <*> (Just <$> (v .: "ePageXY")      <|> return Nothing)
+                                <*> (v .: "eType")
+                                <*> (Just <$> (v .: "eWhich")       <|> return Nothing)
+   parseJSON _ = fail "no parse of Event"    
+
+{-
    parseJSON o = do
            (str::String,_::Value,_::Value,_::Value) <- parseJSON o
            fmap (NamedEvent str) (opt1 <|> opt2)
@@ -32,7 +32,7 @@ instance FromJSON NamedEvent where
                      return $ Event code (Just (x,y))
            opt2 = do (_::String,code,_::Value,_::Value) <- parseJSON o
                      return $ Event code Nothing
-
+-}
 -- | 'EventName' mirrors event names from jquery, and use lower case.
 --   Possible named events
 --    * keypress, keydown, keyup
@@ -41,21 +41,5 @@ type EventName = String
 
 -- | EventQueue is a STM channel ('TChan') of 'Event's.
 -- Intentionally, 'EventQueue' is not abstract.
-type EventQueue = TChan NamedEvent
+type EventQueue = TChan Event
 
-{-
-    DEPRECATED EventQueue, readEventQueue, tryReadEventQueue "use readEvent(s) or tryReadEvent(s)" 
-readEventQueue :: EventQueue -> IO NamedEvent
-readEventQueue q = atomically $ readTChan q
-
-
-tryReadEventQueue :: EventQueue -> IO (Maybe NamedEvent)
-tryReadEventQueue q = atomically $ do
-        b <- isEmptyTChan q
-        if b then return Nothing
-             else liftM Just (readTChan q)
-
-newEventQueue :: IO EventQueue
-newEventQueue = atomically newTChan
-
--}
