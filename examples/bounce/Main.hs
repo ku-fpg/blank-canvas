@@ -60,8 +60,8 @@ go context = do
              es <- flush context
              if (null es) then return () else print es
 
-             let newBalls = [ ((fromIntegral x,fromIntegral y),0,head cols) 
-                            | NamedEvent _ (Event _ (Just (x,y))) <- es 
+             let newBalls = [ ((x,y),0,head cols) 
+                            | Just (x,y) <- map ePageXY es
                             ]
                       
              loop (map bounce $ map moveBall $ balls ++ newBalls, tail cols)
