@@ -60,7 +60,7 @@ loop context board turn = do
         case ePageXY event of
            -- if no mouse location, ignore, and redraw
            Nothing -> loop context board turn
-           Just (x',y') -> case pointToSq (fromIntegral x',fromIntegral y') of
+           Just (x',y') -> case pointToSq (x',y') of
                              Nothing -> loop context board turn
                              Just pos -> case Map.lookup pos board of
                                            Nothing -> loop context
