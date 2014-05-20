@@ -21,7 +21,7 @@ main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
 		event <- wait context
                 case ePageXY event of
                         Nothing -> loop (x,y) colors
-                        Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
+                        Just (x',y') -> loop (x',y') colors
 
           print "calling size"                
           (width,height) <- send context size
