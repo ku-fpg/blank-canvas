@@ -52,7 +52,7 @@ executable blank-canvas-example-keyread
   if flag(examples)
     buildable:	       True
   else
-    buildable:	       False
+    buildable:	       True
   main-is:             Main.hs
   build-depends:       base >=4.6 && <4.8, blank-canvas == 0.4.0
   hs-source-dirs:      keyread

@@ -94,7 +94,9 @@ instance JSArg CanvasPattern where
 jsCanvasPattern = showJS :: CanvasPattern -> String
 
 instance JSArg ImageData where
-  showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[])"
+  showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[" ++ vs ++ "])"
+     where
+          vs = jsList (\ x -> "0x" ++ showHex x "") $ V.toList d
 
 jsImageData = showJS :: ImageData -> String
 
@@ -110,7 +112,7 @@ instance JSArg [Char] where
 jsString = showJS :: String -> String
 
 instance JSArg a => JSArg [a] where 
-  showJS = concat . intersperse "," . map showJS 
+  showJS = jsList showJS
 
 jsList :: (a -> String) -> [a] -> String
 jsList js = concat . intersperse "," . map js 
