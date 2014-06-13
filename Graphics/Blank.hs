@@ -22,6 +22,8 @@ module Graphics.Blank
         , newImage
         , Image -- abstract class
         , CanvasImage -- abstract
+        , createImageData
+        , getImageData
         , createLinearGradient
         , CanvasGradient
         , addColorStop

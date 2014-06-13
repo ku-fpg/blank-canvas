@@ -12,6 +12,8 @@ import Control.Monad (ap, liftM2)
 import Control.Applicative
 import Data.Monoid
 import qualified Data.ByteString.Lazy as DBL
+import qualified Data.Vector.Unboxed as V
+
 data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
         Command :: Command                             -> Canvas ()     -- <command>
@@ -187,3 +189,11 @@ createPattern = Query . CreatePattern
 -- | Create a new, off-screen canvas buffer. Takes width and height.
 newCanvas :: (Int,Int) -> Canvas CanvasContext
 newCanvas = Query . NewCanvas
+
+-- | Create a blank ImageDate. Note that ImageData lives Haskell-side.
+createImageData :: (Int,Int) -> ImageData
+createImageData (w,h) = ImageData w h $ V.fromList $ take (w * h) $ repeat 0
+
+-- | Capture ImageDate from the Canvas
+getImageData :: (Float,Float,Float,Float) -> Canvas ImageData
+getImageData = Query . GetImageData        
