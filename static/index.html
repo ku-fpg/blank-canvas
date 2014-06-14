@@ -14,6 +14,13 @@
             var patterns = [];
             var canvasbuffers = [];
             var c = null;
+
+            var urlQuery = {};
+            // From http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+            location.search.substr(1).split("&").forEach(function(item) {
+                    urlQuery[item.split("=")[0]] = item.split("=")[1];
+            });
+
             function reply(e) {
                 return function(u) { return $.kc.reply(u,e); }
             }
@@ -84,11 +91,12 @@
             function GetImageData(sx,sy,sw,sh) { 
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);
-                    var arr = [];
+                    var arr = []; // empty for now
 //                    for(var i = 0;i < img.data.length;i+=4) {
 //                    }
                     $.kc.reply(u,{ width: img.width
                                  , height: img.height
+                                 , data: arr
                                  });
                 }        
             }
@@ -130,6 +138,12 @@
                 // Make the canvas the size of the window
                 var w = $(window).width();
                 var h = $(window).height();
+                if (urlQuery.width) {
+                  w = urlQuery.width;
+                }
+                if (urlQuery.height) {
+                  h = urlQuery.height;
+                }
                 $("#canvas").replaceWith(
                             '<canvas id="canvas" width="' + w + '" height="' + h +
                             '" style="border: blue solid 0px; padding: 0px; margin: 0px"></canvas>');
