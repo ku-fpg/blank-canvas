@@ -13,6 +13,10 @@ import Control.Applicative
 import Data.Monoid
 import qualified Data.ByteString.Lazy as DBL
 import qualified Data.Vector.Unboxed as V
+import Data.Vector.Unboxed (Vector)
+import Data.Word
+
+
 
 data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
@@ -160,6 +164,10 @@ parseQueryResult (NewImage {}) o             = CanvasImage <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o = CanvasContext <$> parseJSON o
+parseQueryResult (GetImageData {}) (Object o) = ImageData 
+                                         <$> (o .: "width")
+                                         <*> (o .: "height")
+                                         <*> (o .: "data")
 parseQueryResult _ _ = fail "no parse"
 
 -- | 'size' of the canvas. 'size' always returns integral values, but typically is used
@@ -200,6 +208,6 @@ newCanvas = Query . NewCanvas
 createImageData :: (Int,Int) -> ImageData
 createImageData (w,h) = ImageData w h $ V.fromList $ take (w * h) $ repeat 0
 
--- | Capture ImageDate from the Canvas
+-- | Capture ImageDate from the Canvas.
 getImageData :: (Float,Float,Float,Float) -> Canvas ImageData
 getImageData = Query . GetImageData        
