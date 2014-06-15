@@ -4,42 +4,100 @@ module Graphics.Blank
         (
          -- * Starting blank-canvas
           blankCanvas
-        , splatCanvas
         , Options(..)
-        -- * Graphics 'Context'
+          -- ** 'send'ing to the Graphics 'Context'
         , Context       -- abstact
         , send
-         -- * Drawing pictures using the Canvas DSL
+          -- * HTML5 Canvas API
+          -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript 
+          --   version of this API.
         , Canvas        -- abstact
-        , Style         -- abstact class
-        , module Graphics.Blank.Generated
-         -- * Reading from 'Canvas'
+          -- ** Canvas element
         , size
         , toDataURL
-        , measureText
+          -- ** 2D Context
+        , save
+        , restore
+          -- ** Transformation
+        , scale
+        , rotate
+        , translate
+        , transform
+        , setTransform
+          -- ** Image drawing
+        , drawImage
+          -- ** Compositing
+        , globalAlpha
+        , globalCompositeOperation
+          -- ** Line styles
+        , lineWidth
+        , lineCap
+        , lineJoin
+        , miterLimit
+          -- ** Colors, styles and shadows
+        , strokeStyle
+        , fillStyle
+        , shadowOffsetX
+        , shadowOffsetY
+        , shadowBlur
+        , shadowColor
+        , createLinearGradient
+--  TODO       , createRadialGradient
+        , createPattern
+        , addColorStop
+        , CanvasGradient
+        , CanvasPattern
+        , Style         -- abstact class
+          -- ** Paths
+        , beginPath
+        , closePath
+        , fill
+        , stroke
+        , clip
+        , moveTo
+        , lineTo
+        , quadraticCurveTo
+        , bezierCurveTo
+        , arcTo
+        , arc
+        , rect
         , isPointInPath
+          -- ** Text
+        , font 
+        , textAlign
+        , textBaseline
+        , fillText
+        , strokeText
+        , measureText
+          -- | ('width' of 'TextMetrics' can trivially be projected from the no-abstract 'TextMetrics'.)
         , TextMetrics(..)
+          -- ** Rectangles
+        , clearRect
+        , fillRect
+        , strokeRect
+          -- ** Pixel manipulation
+        , createImageData
+        , getImageData
+        , putImageData
+          -- | width, height, data, and length can be projected from 'ImageData'.
+        , ImageData(..)
+        -- * blank-canvas Extensions
+        -- ** Reading from 'Canvas'
         , newImage
         , Image -- abstract class
         , CanvasImage -- abstract
-        , createImageData
-        , getImageData
-        , createLinearGradient
-        , CanvasGradient
-        , addColorStop
-        , createPattern
-        , CanvasPattern
-         -- * Off Screen Canvas
+         -- ** 'CanvasContext', and off-screen Canvas.
         , newCanvas
         , with
         , CanvasContext
         , top
-         -- * Debugging
+         -- ** Debugging
         , console_log
         , eval
-         -- * Drawing Utilities
+        , JSArg(..)
+         -- ** Drawing Utilities
         , module Graphics.Blank.Utils
-         -- * Event Stuff
+         -- ** Events
         , trigger 
         , eventQueue
         , wait
@@ -48,6 +106,8 @@ module Graphics.Blank
         , Event(..)
         , EventName
         , EventQueue
+         -- ** GHCi API
+        , splatCanvas
         ) where
 
 import Control.Concurrent
@@ -139,7 +199,8 @@ blankCanvas opts actions = do
    run (port opts) app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
--- to common up as many commands as possible. Can not crash.
+-- to common up as many commands as possible. Should not crash.
+
 send :: Context -> Canvas a -> IO a
 send cxt commands = 
       send' top commands id 

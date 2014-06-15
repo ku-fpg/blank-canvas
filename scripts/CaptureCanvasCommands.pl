@@ -31,12 +31,13 @@ while(<F>) {
                         print "Adding $2 $1 as dictionary\n";
                 }
 
-                if (/[\|=]\s+(\S+)\s+(.*)$/) {
-			print "($1)<$2>\n";
+                if (/[\|=]\s+(\S+)\s+(.*\S)\s+\-\-\s+(\S.*)$/ || /[\|=]\s+(\S+)\s+(.*)$/) {
+			print "($1)<$2>($3)\n";
 
 			$cmd = $1;
 			$args = $2;
 			$orig_args = $2;
+                        $comment = $3;
 			$args =~ s/\((.*)\)/$1/;
 			@args = split(/[\(\),]/,$args);
 			# name is the lower case version
@@ -54,9 +55,10 @@ while(<F>) {
                         }
 
 			$header .= "        , $name\n";
-
-#			$dsl .= "-- | '$name'\n";
 			$dsl .= "\n";
+                        if ($comment ne "") {
+                                $dsl .= "-- | $comment\n";
+                        }
 			$dsl .= "$name :: $type\n";
 			if ($args eq "") {
 				$dsl .= "$name () = Method $cmd\n";

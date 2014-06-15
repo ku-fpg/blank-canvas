@@ -8,6 +8,10 @@ import qualified Web.KansasComet as KC
 import Graphics.Blank.Events
 
 -- | 'Context' is our abstact handle into a specific 2d-context inside a browser.
+-- Note that the JavaScript API concepts of 2D-Context and Canvas
+-- are conflated in blank-canvas. Therefore, there is no 'getContext' method,
+-- rather 'getContext' is implied (when using 'send').
+
 data Context = Context
         { theComet    :: KC.Document                -- ^ The mechansims for sending commands
         , eventQueue  :: EventQueue                 -- ^ A single (typed) event queue
@@ -31,6 +35,7 @@ tryGet cxt = atomically $ do
     then return Nothing
     else liftM Just $ readTChan (eventQueue cxt)
 
+-- | 'flush' all the current events, returning them all to the user.
 flush :: Context -> IO [Event]
 flush cxt = atomically $ loop
   where loop = do 

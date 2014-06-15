@@ -54,7 +54,10 @@ newtype CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
 
 -------------------------------------------------------------
 
--- | 'ImageData' lives on the server, not the client.
+-- | 'ImageData' is a transliteration of the JavaScript ImageData,
+--   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
+-- 
+--   Note: 'ImageData' lives on the server, not the client.
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
 
 -------------------------------------------------------------

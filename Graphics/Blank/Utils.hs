@@ -10,7 +10,7 @@ clearCanvas = do
   (width,height) <- size
   clearRect (0,0,width,height)
 
--- | Wrap a canvas computation in save / restore.
+-- | Wrap a canvas computation in 'save' / 'restore'.
 saveRestore :: Canvas () -> Canvas ()
 saveRestore m = do
     save ()
@@ -25,6 +25,6 @@ infixr 0 #
 --
 -- > grd # addColorStop(0, "#8ED6FF");
 --
---   This can be seen as equivalent of @document.getElementById(\"bla\")@.
+--   This can be seen as equivalent of @document.addColorStop(0, "#8ED6FF")@.
 (#) :: a -> (a -> Canvas b) -> Canvas b
 (#) obj act = act obj

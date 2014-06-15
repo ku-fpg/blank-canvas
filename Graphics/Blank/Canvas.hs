@@ -17,7 +17,6 @@ import Data.Vector.Unboxed (Vector)
 import Data.Word
 
 
-
 data Canvas :: * -> * where
         Method  :: Method                              -> Canvas ()     -- <context>.<method>
         Command :: Command                             -> Canvas ()     -- <command>
@@ -48,7 +47,7 @@ data Method
         | ArcTo (Float,Float,Float,Float,Float)
         | BeginPath
         | BezierCurveTo (Float,Float,Float,Float,Float,Float)
-        | forall image . Image image => DrawImage (image,[Float])
+        | forall image . Image image => DrawImage (image,[Float]) -- 'drawImage' takes 2, 4 or 8 floats arguments
         | ClearRect (Float,Float,Float,Float)
         | Clip
         | ClosePath
@@ -172,6 +171,14 @@ parseQueryResult _ _ = fail "no parse"
 
 -- | 'size' of the canvas. 'size' always returns integral values, but typically is used
 -- in position computations, which are floating point (aka JavaScript number).
+-- 
+-- Typical usage is
+--
+-- >   (width,height) <- size
+-- >   ... (width and height are now defined) ...
+--
+-- Note that this call always returns the same values; we do not support dynamic re-sizing.
+
 size :: Canvas (Float,Float)
 size = Query Size
 
@@ -204,9 +211,9 @@ createPattern = Query . CreatePattern
 newCanvas :: (Int,Int) -> Canvas CanvasContext
 newCanvas = Query . NewCanvas
 
--- | Create a blank ImageDate. Note that ImageData lives Haskell-side.
+-- | Create a blank 'ImageData'. Note that 'ImageData' lives Haskell-side, and does not require the 'Canvas' monad.
 createImageData :: (Int,Int) -> ImageData
-createImageData (w,h) = ImageData w h $ V.fromList $ take (w * h) $ repeat 0
+createImageData (w,h) = ImageData w h $ V.fromList $ take (w * h * 4) $ repeat 0
 
 -- | Capture ImageDate from the Canvas.
 getImageData :: (Float,Float,Float,Float) -> Canvas ImageData

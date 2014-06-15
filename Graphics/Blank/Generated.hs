@@ -61,6 +61,7 @@ beginPath () = Method BeginPath
 bezierCurveTo :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
 bezierCurveTo = Method . BezierCurveTo
 
+-- | 'drawImage' takes 2, 4 or 8 floats arguments
 drawImage :: Image image => (image,[Float]) -> Canvas ()
 drawImage = Method . DrawImage
 

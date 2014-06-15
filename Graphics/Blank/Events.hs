@@ -6,7 +6,7 @@ import Data.Aeson.Types (Parser, (.:), (.=), object)
 import Control.Applicative((<|>),(<$>),(<*>))
 import Control.Concurrent.STM
 
--- | Basic Event from Browser; see http://api.jquery.com/category/events/event-object/ for details.
+-- | Basic Event from Browser; see <http://api.jquery.com/category/events/event-object/> for details.
 data Event = Event
         { eMetaKey :: Bool
         , ePageXY  :: Maybe (Float,Float)
@@ -47,8 +47,10 @@ instance ToJSON Event where
 -}
 -- | 'EventName' mirrors event names from jquery, and use lower case.
 --   Possible named events
---    * keypress, keydown, keyup
---    * mouseDown, mouseenter, mousemove, mouseout, mouseover, mouseup
+--
+--     * keypress, keydown, keyup
+--     * mouseDown, mouseenter, mousemove, mouseout, mouseover, mouseup
+-- 
 type EventName = String
 
 -- | EventQueue is a STM channel ('TChan') of 'Event's.
