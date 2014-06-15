@@ -116,6 +116,8 @@ print G "module Graphics.Blank.Generated where\n";
 print G "\n";
 print G "import Graphics.Blank.Canvas\n";
 print G "import Graphics.Blank.JavaScript\n";
+print G "import Data.Text (Text)\n";
+
 print G "\n";
 print G "instance Show Method where\n";
 print G "$show\n";

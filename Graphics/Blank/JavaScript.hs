@@ -5,6 +5,8 @@ module Graphics.Blank.JavaScript where
 import Data.List
 import Data.Word (Word8)
 import Numeric
+import qualified Data.Text as Text
+import Data.Text (Text)
 
 import qualified Data.Vector.Unboxed as V
 import Data.Vector.Unboxed (Vector)
@@ -28,7 +30,7 @@ instance Image CanvasContext where { jsImage = (++ ".canvas") . jsCanvasContext 
 class Style a where
   jsStyle :: a -> String
 
-instance Style [Char]         where { jsStyle = jsString }
+instance Style Text           where { jsStyle = jsText }
 instance Style CanvasGradient where { jsStyle = jsCanvasGradient }
 instance Style CanvasPattern  where { jsStyle = jsCanvasPattern }
 
@@ -112,10 +114,11 @@ instance JSArg Bool where
 
 jsBool = showJS :: Bool -> String
 
-instance JSArg [Char] where 
+instance JSArg Text where 
   showJS str = show str
 
-jsString = showJS :: String -> String
+jsText :: Text -> String
+jsText = showJS
 
 instance JSArg a => JSArg [a] where 
   showJS = jsList showJS

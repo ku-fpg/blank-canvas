@@ -47,7 +47,6 @@ module Graphics.Blank
         , addColorStop
         , CanvasGradient
         , CanvasPattern
-        , Style         -- abstact class
           -- ** Paths
         , beginPath
         , closePath
@@ -104,8 +103,10 @@ module Graphics.Blank
         , Event(..)
         , EventName
         , EventQueue
-         -- ** GHCi API
+        -- ** GHCi API
         , splatCanvas
+        -- ** Non-Prelude Data
+        , Text
         ) where
 
 import Control.Concurrent
@@ -125,11 +126,13 @@ import qualified Web.KansasComet as KC
 import Data.Aeson
 import Data.Aeson.Types (parse)
 import Data.String
+import Data.Text (Text)
 
 import Graphics.Blank.Events
 import Graphics.Blank.Context
 import Graphics.Blank.Canvas
-import Graphics.Blank.Generated
+import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
+import qualified Graphics.Blank.Generated as Generated
 import Graphics.Blank.JavaScript
 import Graphics.Blank.Utils
 import Paths_blank_canvas
@@ -322,3 +325,12 @@ instance Num Options where
                             , static = []
                             , root = "." }
 
+
+-------------------------------------------------
+-- This is the monomorphic version, to stop "ambiguous" errors.
+
+fillStyle :: Text -> Canvas ()
+fillStyle = Generated.fillStyle
+
+strokeStyle :: Text -> Canvas ()
+strokeStyle = Generated.strokeStyle

@@ -15,6 +15,8 @@ import qualified Data.ByteString.Lazy as DBL
 import qualified Data.Vector.Unboxed as V
 import Data.Vector.Unboxed (Vector)
 import Data.Word
+import qualified Data.Text as Text
+import Data.Text (Text)
 
 
 data Canvas :: * -> * where
@@ -54,12 +56,12 @@ data Method
         | Fill
         | FillRect (Float,Float,Float,Float)
         | forall style . Style style => FillStyle style
-        | FillText (String,Float,Float)
-        | Font String
+        | FillText (Text,Float,Float)
+        | Font Text
         | GlobalAlpha Float
-        | GlobalCompositeOperation String
-        | LineCap String
-        | LineJoin String
+        | GlobalCompositeOperation Text
+        | LineCap Text
+        | LineJoin Text
         | LineTo (Float,Float)
         | LineWidth Float
         | MiterLimit Float
@@ -74,29 +76,29 @@ data Method
         | SetTransform (Float,Float,Float,Float,Float,Float)
         | Stroke
         | StrokeRect (Float,Float,Float,Float)
-        | StrokeText (String,Float,Float)
-        | StrokeStyle String
+        | StrokeText (Text,Float,Float)
+        | forall style . Style style => StrokeStyle style
         | ShadowBlur Float
-        | ShadowColor String
+        | ShadowColor Text
         | ShadowOffsetX Float
         | ShadowOffsetY Float
-        | TextAlign String
-        | TextBaseline String
+        | TextAlign Text
+        | TextBaseline Text
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
 
 data Command
   = Trigger Event
-  | AddColorStop (Float,String) CanvasGradient
+  | AddColorStop (Float,Text) CanvasGradient
   | forall msg . JSArg msg => Log msg
-  | Eval String
+  | Eval Text
 
 instance Show Command where
   show (Trigger e) = "Trigger(" ++ map (chr . fromEnum) (DBL.unpack (encode e)) ++ ")"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
   show (Log msg) = "console.log(" ++ showJS msg ++ ")" 
-  show (Eval cmd) = cmd -- no escaping or interpretation
+  show (Eval cmd) = jsText cmd -- no escaping or interpretation
 
 -----------------------------------------------------------------------------
 
@@ -115,7 +117,7 @@ trigger :: Event -> Canvas ()
 trigger = Command . Trigger
 
 -- | add a Color stop to a Canvas Gradient.
-addColorStop :: (Float,String) -> CanvasGradient -> Canvas ()
+addColorStop :: (Float,Text) -> CanvasGradient -> Canvas ()
 addColorStop (off,rep) = Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser console.log.
@@ -123,19 +125,19 @@ console_log :: JSArg msg => msg -> Canvas ()
 console_log = Command . Log
 
 -- | 'eval' executes the argument in JavaScript directly.
-eval :: String -> Canvas ()
+eval :: Text -> Canvas ()
 eval = Command . Eval
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where
         Size                                              :: Query (Float,Float)
         ToDataURL                                         :: Query String
-        MeasureText          :: String                    -> Query TextMetrics
+        MeasureText          :: Text                      -> Query TextMetrics
         IsPointInPath        :: (Float,Float)             -> Query Bool
-        NewImage             :: String                    -> Query CanvasImage
+        NewImage             :: Text                      -> Query CanvasImage
         CreateLinearGradient :: (Float,Float,Float,Float)             -> Query CanvasGradient
         CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Query CanvasGradient
-        CreatePattern        :: (CanvasImage,String)      -> Query CanvasPattern
+        CreatePattern        :: (CanvasImage,Text)        -> Query CanvasPattern
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
 
@@ -193,7 +195,7 @@ size = Query Size
 toDataURL :: () -> Canvas String
 toDataURL () = Query ToDataURL
 
-measureText :: String -> Canvas TextMetrics
+measureText :: Text -> Canvas TextMetrics
 measureText = Query . MeasureText
 
 isPointInPath :: (Float,Float) -> Canvas Bool
@@ -202,7 +204,7 @@ isPointInPath = Query . IsPointInPath
 -- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle, 
 -- _after_ loading.
 -- The assumption is you are using local images, so loading should be near instant.
-newImage :: String -> Canvas CanvasImage
+newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage 
 
 createLinearGradient :: (Float,Float,Float,Float) -> Canvas CanvasGradient
@@ -211,7 +213,7 @@ createLinearGradient = Query . CreateLinearGradient
 createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
 createRadialGradient = Query . CreateRadialGradient
 
-createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
+createPattern :: (CanvasImage, Text) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height.

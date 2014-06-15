@@ -1,9 +1,12 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Graphics.Blank
 import Debug.Trace
 import Control.Concurrent
 import Data.List (nub)
+import qualified Data.Text as Text
+import Data.Monoid((<>))
 
 data State = State
      	     { keys :: [Int]    -- key *codes* for pressed keys
@@ -21,8 +24,8 @@ loop context state = do
                 lineWidth 1
                 strokeStyle "red"
                 font "30pt Calibri"
-                fillText("Keys currently pressed: " ++ show (keys state),50,50)
-                fillText("Counter: " ++ show (step state),50,150)
+                fillText("Keys currently pressed: " <> Text.pack (show (keys state)),50,50)
+                fillText("Counter: " <> Text.pack (show (step state)),50,150)
 
 --        print state
 

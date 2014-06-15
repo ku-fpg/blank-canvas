@@ -21,7 +21,7 @@ data-files:
     static/jquery-json.js
 
 Library
-  Exposed-modules:     Graphics.Blank
+  Exposed-modules:     Graphics.Blank, Graphics.Blank.Style
   other-modules:       Graphics.Blank.Canvas,
                        Graphics.Blank.Context,
                        Graphics.Blank.Events,

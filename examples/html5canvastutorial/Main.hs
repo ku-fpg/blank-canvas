@@ -1,7 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
 import Graphics.Blank
+import qualified Graphics.Blank.Style as Style
 import Paths_blank_canvas_examples
+import qualified Data.Text as Text
+import qualified Data.Text.IO  as Text.IO
+import Data.Text (Text)
+import Data.Monoid((<>))
 
 main = do
  dat <- getDataDir        
@@ -309,7 +315,7 @@ example_1_6_2 = do
         grd # addColorStop(0, "#8ED6FF")
         -- dark blue
         grd # addColorStop(1, "#004CB3")
-        fillStyle grd;
+        Style.fillStyle grd;
         fill();
 
 example_1_6_3 = do
@@ -320,7 +326,7 @@ example_1_6_3 = do
         grd # addColorStop(0, "#8ED6FF")
         -- dark blue
         grd # addColorStop(1, "#004CB3")
-        fillStyle grd;
+        Style.fillStyle grd;
         fill();
 
 example_1_6_4 = do
@@ -328,7 +334,7 @@ example_1_6_4 = do
         imageObj <- newImage "/images/fan.jpg"
         pattern <- createPattern (imageObj,"repeat")
         rect(0, 0, width, height);
-        fillStyle pattern;
+        Style.fillStyle pattern;
         fill();
 
 example_1_7_1 = do
@@ -397,24 +403,24 @@ example_1_8_6 = do
         font "20pt Calibri"
         textAlign "center"
         fillStyle "#555"
-        fillText("(" ++ show w ++ "px wide)", x, y + 40)
+        fillText("(" <> Text.pack (show w) <> "px wide)", x, y + 40)
 
 example_1_8_7 = do
         (width,height) <- size
         font "lighter 16pt Calibri"
         fillStyle "#000"
         let maxWidth = width / 3
-        wrapText 0 (words message) ((width - maxWidth) / 2) 60 maxWidth 25
+        wrapText 0 (Text.words message) ((width - maxWidth) / 2) 60 maxWidth 25
     where
 
-        message = "All the world's a stage, and all the men and women merely players. " ++
+        message = "All the world's a stage, and all the men and women merely players. " <>
                   "They have their exits and their entrances; And one man in his time plays many parts."
 
         wrapText wc []   x y maxWidth lineHeight = return ()
         wrapText wc text x y maxWidth lineHeight = do
-             TextMetrics testWidth <- measureText $ unwords $ take (wc+1) $ text
+             TextMetrics testWidth <- measureText $ Text.unwords $ take (wc+1) $ text
              if (testWidth > maxWidth && wc > 0) || length text <= wc
-             then do fillText(unwords $ take wc $ text,x,y)
+             then do fillText(Text.unwords $ take wc $ text,x,y)
                      wrapText 0      (drop wc text) x (y + lineHeight) maxWidth lineHeight
              else do wrapText (wc+1) text           x y                maxWidth lineHeight
 
@@ -504,7 +510,7 @@ example_2_2_4 = do
         tempCanvas <- newCanvas (round width,round height)
         console_log tempCanvas
         (w,h) <- with tempCanvas $ size
-        console_log $ show $ (w,h)
+        console_log $ Text.pack $ show $ (w,h)
 
         sync
         
@@ -578,11 +584,11 @@ example_2_3_4 canvas = do
 
    send canvas $ do
         font "18pt Calibri"
-        fillText(show $ take 50 $ url, 10, 300)
+        fillText(Text.pack $ show $ take 50 $ url, 10, 300)
 
 example_2_3_5 canvas = do
    fileName <- getDataFileName "static/data/dataURL.txt"
-   url <- readFile fileName
+   url <- Text.IO.readFile fileName
    send canvas $ do
            img <- newImage url
            drawImage (img,[0,0])
@@ -598,7 +604,7 @@ todo = do
         fillText("(TODO)", 150, 100)
 
 -- Small "watermark-like text in the bottom corner"
-message :: String -> Canvas ()
+message :: Text -> Canvas ()
 message msg = do
         save()
         (width,height) <- size

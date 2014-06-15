@@ -3,6 +3,7 @@ module Graphics.Blank.Generated where
 
 import Graphics.Blank.Canvas
 import Graphics.Blank.JavaScript
+import Data.Text (Text)
 
 instance Show Method where
   show (Arc (a1,a2,a3,a4,a5,a6)) = "arc(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsBool a6 ++ ")"
@@ -16,12 +17,12 @@ instance Show Method where
   show Fill = "fill()"
   show (FillRect (a1,a2,a3,a4)) = "fillRect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
   show (FillStyle (a1)) = "fillStyle = (" ++ jsStyle a1 ++ ")"
-  show (FillText (a1,a2,a3)) = "fillText(" ++ jsString a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
-  show (Font (a1)) = "font = (" ++ jsString a1 ++ ")"
+  show (FillText (a1,a2,a3)) = "fillText(" ++ jsText a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
+  show (Font (a1)) = "font = (" ++ jsText a1 ++ ")"
   show (GlobalAlpha (a1)) = "globalAlpha = (" ++ jsFloat a1 ++ ")"
-  show (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" ++ jsString a1 ++ ")"
-  show (LineCap (a1)) = "lineCap = (" ++ jsString a1 ++ ")"
-  show (LineJoin (a1)) = "lineJoin = (" ++ jsString a1 ++ ")"
+  show (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" ++ jsText a1 ++ ")"
+  show (LineCap (a1)) = "lineCap = (" ++ jsText a1 ++ ")"
+  show (LineJoin (a1)) = "lineJoin = (" ++ jsText a1 ++ ")"
   show (LineTo (a1,a2)) = "lineTo(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ ")"
   show (LineWidth (a1)) = "lineWidth = (" ++ jsFloat a1 ++ ")"
   show (MiterLimit (a1)) = "miterLimit = (" ++ jsFloat a1 ++ ")"
@@ -36,14 +37,14 @@ instance Show Method where
   show (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsFloat a6 ++ ")"
   show Stroke = "stroke()"
   show (StrokeRect (a1,a2,a3,a4)) = "strokeRect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
-  show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsString a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
-  show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsString a1 ++ ")"
+  show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsText a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
+  show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsStyle a1 ++ ")"
   show (ShadowBlur (a1)) = "shadowBlur = (" ++ jsFloat a1 ++ ")"
-  show (ShadowColor (a1)) = "shadowColor = (" ++ jsString a1 ++ ")"
+  show (ShadowColor (a1)) = "shadowColor = (" ++ jsText a1 ++ ")"
   show (ShadowOffsetX (a1)) = "shadowOffsetX = (" ++ jsFloat a1 ++ ")"
   show (ShadowOffsetY (a1)) = "shadowOffsetY = (" ++ jsFloat a1 ++ ")"
-  show (TextAlign (a1)) = "textAlign = (" ++ jsString a1 ++ ")"
-  show (TextBaseline (a1)) = "textBaseline = (" ++ jsString a1 ++ ")"
+  show (TextAlign (a1)) = "textAlign = (" ++ jsText a1 ++ ")"
+  show (TextBaseline (a1)) = "textBaseline = (" ++ jsText a1 ++ ")"
   show (Transform (a1,a2,a3,a4,a5,a6)) = "transform(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsFloat a6 ++ ")"
   show (Translate (a1,a2)) = "translate(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ ")"
 
@@ -83,22 +84,22 @@ fillRect = Method . FillRect
 fillStyle :: Style style => style -> Canvas ()
 fillStyle = Method . FillStyle
 
-fillText :: (String,Float,Float) -> Canvas ()
+fillText :: (Text,Float,Float) -> Canvas ()
 fillText = Method . FillText
 
-font :: String -> Canvas ()
+font :: Text -> Canvas ()
 font = Method . Font
 
 globalAlpha :: Float -> Canvas ()
 globalAlpha = Method . GlobalAlpha
 
-globalCompositeOperation :: String -> Canvas ()
+globalCompositeOperation :: Text -> Canvas ()
 globalCompositeOperation = Method . GlobalCompositeOperation
 
-lineCap :: String -> Canvas ()
+lineCap :: Text -> Canvas ()
 lineCap = Method . LineCap
 
-lineJoin :: String -> Canvas ()
+lineJoin :: Text -> Canvas ()
 lineJoin = Method . LineJoin
 
 lineTo :: (Float,Float) -> Canvas ()
@@ -143,16 +144,16 @@ stroke () = Method Stroke
 strokeRect :: (Float,Float,Float,Float) -> Canvas ()
 strokeRect = Method . StrokeRect
 
-strokeText :: (String,Float,Float) -> Canvas ()
+strokeText :: (Text,Float,Float) -> Canvas ()
 strokeText = Method . StrokeText
 
-strokeStyle :: String -> Canvas ()
+strokeStyle :: Style style => style -> Canvas ()
 strokeStyle = Method . StrokeStyle
 
 shadowBlur :: Float -> Canvas ()
 shadowBlur = Method . ShadowBlur
 
-shadowColor :: String -> Canvas ()
+shadowColor :: Text -> Canvas ()
 shadowColor = Method . ShadowColor
 
 shadowOffsetX :: Float -> Canvas ()
@@ -161,10 +162,10 @@ shadowOffsetX = Method . ShadowOffsetX
 shadowOffsetY :: Float -> Canvas ()
 shadowOffsetY = Method . ShadowOffsetY
 
-textAlign :: String -> Canvas ()
+textAlign :: Text -> Canvas ()
 textAlign = Method . TextAlign
 
-textBaseline :: String -> Canvas ()
+textBaseline :: Text -> Canvas ()
 textBaseline = Method . TextBaseline
 
 transform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()

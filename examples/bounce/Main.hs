@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Graphics.Blank
@@ -18,7 +19,7 @@ epoch = []
 type State = ([Ball Color])
 
 
-showBall :: (Float,Float) -> String -> Canvas ()
+showBall :: (Float,Float) -> Text -> Canvas ()
 showBall (x,y) col = do
 --	save()
 --	translate (x,y)
