@@ -36,6 +36,7 @@ module Graphics.Blank
         , top
          -- * Debugging
         , console_log
+        , eval
          -- * Drawing Utilities
         , module Graphics.Blank.Utils
          -- * Event Stuff

@@ -86,12 +86,14 @@ data Command
   = Trigger Event
   | AddColorStop (Float,String) CanvasGradient
   | forall msg . JSArg msg => Log msg
+  | Eval String
 
 instance Show Command where
   show (Trigger e) = "Trigger(" ++ map (chr . fromEnum) (DBL.unpack (encode e)) ++ ")"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
   show (Log msg) = "console.log(" ++ showJS msg ++ ")" 
+  show (Eval cmd) = cmd -- no escaping or interpretation
 
 -----------------------------------------------------------------------------
 
@@ -116,6 +118,10 @@ addColorStop (off,rep) = Command . AddColorStop (off,rep)
 -- | 'console_log' aids debugging by sending the argument to the browser console.log.
 console_log :: JSArg msg => msg -> Canvas ()
 console_log = Command . Log
+
+-- | 'eval' executes the argument in JavaScript directly.
+eval :: String -> Canvas ()
+eval = Command . Eval
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where
