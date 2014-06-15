@@ -51,11 +51,16 @@
                 }        
             }
 
-            function CreateLinearGradient() { 
-                var fs = arguments;
+            function CreateLinearGradient(x0,y0,x1,y1) { 
                 return function (u,c) {
-                    // deeper JS hackery going on here.
-                    var count = gradients.push(c.createLinearGradient.apply(c,fs));
+                    var count = gradients.push(c.createLinearGradient(x0,y0,x1,y1));
+                    $.kc.reply(u,count - 1);
+                }        
+            }
+
+            function CreateRadialGradient(x0,y0,r0,x1,y1,r1) { 
+                return function (u,c) {
+                    var count = gradients.push(c.createRadialGradient(x0,y0,r0,x1,y1,r1));
                     $.kc.reply(u,count - 1);
                 }        
             }
@@ -92,8 +97,9 @@
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);
                     var arr = []; // empty for now
-//                    for(var i = 0;i < img.data.length;i+=4) {
-//                    }
+                    for(var i = 0;i < img.data.length;i++) {
+                            arr[i] = img.data[i];
+                    }
                     $.kc.reply(u,{ width: img.width
                                  , height: img.height
                                  , data: arr

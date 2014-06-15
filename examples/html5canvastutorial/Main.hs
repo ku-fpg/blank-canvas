@@ -35,7 +35,7 @@ main = do
                  -- wait for a mouse press
                  wait canvas 
 
-            | (example,name) <- drop 33 $ cycle (map wrap examples ++ io_examples)
+            | (example,name) <- drop 15 $ cycle (map wrap examples ++ io_examples)
             ]
   where wrap (example,name) = ( \ canvas -> do send canvas example, name)
           
@@ -304,7 +304,7 @@ example_1_6_1 = do
 example_1_6_2 = do
         (width,height) <- size
         rect(0, 0, width, height)
-        grd <- createLinearGradient[0, 0, width, height]
+        grd <- createLinearGradient(0, 0, width, height)
         -- light blue
         grd # addColorStop(0, "#8ED6FF")
         -- dark blue
@@ -315,7 +315,7 @@ example_1_6_2 = do
 example_1_6_3 = do
         (width,height) <- size
         rect(0, 0, width, height)
-        grd <- createLinearGradient[238, 50, 10, 238, 50, 300]
+        grd <- createRadialGradient (238, 50, 10, 238, 50, 300)
         -- light blue
         grd # addColorStop(0, "#8ED6FF")
         -- dark blue

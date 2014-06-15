@@ -42,7 +42,7 @@ module Graphics.Blank
         , shadowBlur
         , shadowColor
         , createLinearGradient
---  TODO       , createRadialGradient
+        , createRadialGradient
         , createPattern
         , addColorStop
         , CanvasGradient

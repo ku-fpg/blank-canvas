@@ -133,7 +133,8 @@ data Query :: * -> * where
         MeasureText          :: String                    -> Query TextMetrics
         IsPointInPath        :: (Float,Float)             -> Query Bool
         NewImage             :: String                    -> Query CanvasImage
-        CreateLinearGradient :: [Float]                   -> Query CanvasGradient
+        CreateLinearGradient :: (Float,Float,Float,Float)             -> Query CanvasGradient
+        CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Query CanvasGradient
         CreatePattern        :: (CanvasImage,String)      -> Query CanvasPattern
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
@@ -148,7 +149,8 @@ instance Show (Query a) where
   show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
   show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
-  show (CreateLinearGradient fs) = "CreateLinearGradient(" ++ showJS fs ++ ")"
+  show (CreateLinearGradient (x0,y0,x1,y1)) = "CreateLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
+  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "CreateRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ showJS img ++ "," ++ showJS str ++ ")"
   show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh)) 
@@ -162,13 +164,14 @@ parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o        = parseJSON o
 parseQueryResult (NewImage {}) o             = CanvasImage <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
+parseQueryResult (CreateRadialGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o = CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData 
                                          <$> (o .: "width")
                                          <*> (o .: "height")
                                          <*> (o .: "data")
-parseQueryResult _ _ = fail "no parse"
+parseQueryResult _ _ = fail "no parse in blank-canvas server (internal error)"
 
 -- | 'size' of the canvas. 'size' always returns integral values, but typically is used
 -- in position computations, which are floating point (aka JavaScript number).
@@ -202,8 +205,11 @@ isPointInPath = Query . IsPointInPath
 newImage :: String -> Canvas CanvasImage
 newImage = Query . NewImage 
 
-createLinearGradient :: [Float] -> Canvas CanvasGradient
+createLinearGradient :: (Float,Float,Float,Float) -> Canvas CanvasGradient
 createLinearGradient = Query . CreateLinearGradient
+
+createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
+createRadialGradient = Query . CreateRadialGradient
 
 createPattern :: (CanvasImage, String) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
