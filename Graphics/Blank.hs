@@ -69,7 +69,6 @@ module Graphics.Blank
         , fillText
         , strokeText
         , measureText
-          -- | ('width' of 'TextMetrics' can trivially be projected from the no-abstract 'TextMetrics'.)
         , TextMetrics(..)
           -- ** Rectangles
         , clearRect
@@ -79,7 +78,6 @@ module Graphics.Blank
         , createImageData
         , getImageData
         , putImageData
-          -- | width, height, data, and length can be projected from 'ImageData'.
         , ImageData(..)
         -- * blank-canvas Extensions
         -- ** Reading from 'Canvas'

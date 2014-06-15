@@ -138,6 +138,7 @@ data Query :: * -> * where
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
 
+-- | The 'width' argument of 'TextMetrics' can trivially be projected out.
 data TextMetrics = TextMetrics Float
         deriving Show
 
