@@ -138,6 +138,12 @@
                 // Make the canvas the size of the window
                 var w = $(window).width();
                 var h = $(window).height();
+                var b = "0";
+                if (urlQuery.border && !isNaN(parseInt(urlQuery.border))) {
+                  b = parseInt(urlQuery.border);
+                  w -= b * 2;
+                  h -= b * 2;
+                }
                 if (urlQuery.width) {
                   w = urlQuery.width;
                 }
@@ -146,7 +152,7 @@
                 }
                 $("#canvas").replaceWith(
                             '<canvas id="canvas" width="' + w + '" height="' + h +
-                            '" style="border: blue solid 0px; padding: 0px; margin: 0px"></canvas>');
+                            '" style="border: black solid ' + b + 'px; padding: 0px; margin: 0px"></canvas>');
                 c = getContext();
                 $.kc.connect("/blank");
             });
