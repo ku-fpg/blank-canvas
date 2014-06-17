@@ -131,7 +131,7 @@ eval = Command . Eval
 -----------------------------------------------------------------------------
 data Query :: * -> * where
         Size                                              :: Query (Float,Float)
-        ToDataURL                                         :: Query String
+        ToDataURL                                         :: Query Text
         MeasureText          :: Text                      -> Query TextMetrics
         IsPointInPath        :: (Float,Float)             -> Query Bool
         NewImage             :: Text                      -> Query CanvasImage
@@ -192,7 +192,7 @@ size = Query Size
 -- 
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
-toDataURL :: () -> Canvas String
+toDataURL :: () -> Canvas Text
 toDataURL () = Query ToDataURL
 
 measureText :: Text -> Canvas TextMetrics
