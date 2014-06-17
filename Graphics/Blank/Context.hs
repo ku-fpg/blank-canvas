@@ -1,11 +1,14 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Context where
 
 import Control.Concurrent.STM
 import Control.Monad
 
-import qualified Web.KansasComet as KC
+import qualified Web.Scotty.Comet as KC
 
 import Graphics.Blank.Events
+import Data.Monoid((<>))
+import qualified Data.Text as T
 
 -- | 'Context' is our abstact handle into a specific 2d-context inside a browser.
 -- Note that the JavaScript API concepts of 2D-Context and Canvas
@@ -21,7 +24,7 @@ data Context = Context
 -- | internal command to send a message to the canvas.
 sendToCanvas :: Context -> ShowS -> IO ()
 sendToCanvas cxt cmds = do
-        KC.send (theComet cxt) $ "try{" ++ cmds "}catch(e){alert('JavaScript Failure: '+e.message);}"
+        KC.send (theComet cxt) $ "try{" <> T.pack (cmds "}catch(e){alert('JavaScript Failure: '+e.message);}")
 
 -- | wait for any event
 wait :: Context -> IO Event

@@ -21,7 +21,8 @@ data-files:
     static/jquery-json.js
 
 Library
-  Exposed-modules:     Graphics.Blank, Graphics.Blank.Style
+  Exposed-modules:     Graphics.Blank, 
+                       Graphics.Blank.Style
   other-modules:       Graphics.Blank.Canvas,
                        Graphics.Blank.Context,
                        Graphics.Blank.Events,
@@ -35,19 +36,19 @@ Library
                        bytestring       == 0.10.*,
                        aeson            == 0.7.*,
                        containers       == 0.5.*,
-                       kansas-comet     >= 0.2.2        && < 0.3,
-                       scotty           == 0.7.*,
-                       wai              == 2.*,
+                       kansas-comet     == 0.3.*,
+                       scotty           == 0.8.*,
                        http-types       == 0.8.*,
-                       text             >= 0.11.0	&& < 1.2,
+                       text             >= 1.1		&& < 1.2,
                        network          >= 2.4    	&& < 2.6,
                        transformers     == 0.3.*,
-                       wai-extra        == 2.*,
-                       warp             == 2.*,
+                       wai              == 3.*,
+                       wai-extra        == 3.*,
+                       warp             == 3.*,
                        stm              >= 2.2		&& < 2.5,
                        vector           >= 0.10         && < 0.11
 
-  GHC-options:  -Werror -fno-warn-orphans -fno-warn-warnings-deprecations -O2
+  GHC-options:  -Werror -fno-warn-orphans -fno-warn-warnings-deprecations
 
 source-repository head
   type:     git

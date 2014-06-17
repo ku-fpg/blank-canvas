@@ -5,6 +5,7 @@ import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
 import Data.Aeson.Types (Parser, (.:), (.=), object)
 import Control.Applicative((<|>),(<$>),(<*>))
 import Control.Concurrent.STM
+import Data.Text (Text)
 
 -- | Basic Event from Browser; see <http://api.jquery.com/category/events/event-object/> for details.
 data Event = Event
@@ -35,23 +36,13 @@ instance ToJSON Event where
                  Just w -> (:) ("eWhich" .= w))
             $ []
 
-        {-
-   parseJSON o = do
-           (str::String,_::Value,_::Value,_::Value) <- parseJSON o
-           fmap (NamedEvent str) (opt1 <|> opt2)
-    where
-           opt1 = do (_::String,code,x,y) <- parseJSON o
-                     return $ Event code (Just (x,y))
-           opt2 = do (_::String,code,_::Value,_::Value) <- parseJSON o
-                     return $ Event code Nothing
--}
 -- | 'EventName' mirrors event names from jquery, and use lower case.
 --   Possible named events
 --
 --     * keypress, keydown, keyup
 --     * mouseDown, mouseenter, mousemove, mouseout, mouseover, mouseup
 -- 
-type EventName = String
+type EventName = Text
 
 -- | EventQueue is a STM channel ('TChan') of 'Event's.
 -- Intentionally, 'EventQueue' is not abstract.

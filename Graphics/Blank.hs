@@ -122,11 +122,13 @@ import System.IO.Unsafe (unsafePerformIO)
 import Web.Scotty (scottyApp, get, file, middleware)
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
-import qualified Web.KansasComet as KC
+import qualified Web.Scotty.Comet as KC
 import Data.Aeson
 import Data.Aeson.Types (parse)
 import Data.String
+import qualified Data.Text as T
 import Data.Text (Text)
+import Data.Monoid((<>))
 
 import Graphics.Blank.Events
 import Graphics.Blank.Context
@@ -140,6 +142,7 @@ import Paths_blank_canvas
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
 --
+-- >{-# LANGUAGE OverloadedStrings #-}
 -- >module Main where
 -- >
 -- >import Graphics.Blank
@@ -172,8 +175,8 @@ blankCanvas opts actions = do
 
         KC.connect kc_opts $ \ kc_doc -> do
                 -- register the events we want to watch for
-                KC.send kc_doc $ unlines
-                   [ "register(" ++ show nm ++ ");"
+                KC.send kc_doc $ T.unlines
+                   [ "register(" <> T.pack(show nm) <> ");"
                    | nm <- events opts
                    ]
 
@@ -231,15 +234,15 @@ send cxt commands =
 
 
 local_only :: Middleware
-local_only f r = case remoteHost r of
+local_only f r k = case remoteHost r of
                    SockAddrInet _  h | h == fromIntegral home
-                                    -> f r
+                                    -> f r k
 #if !defined(mingw32_HOST_OS) && !defined(_WIN32)
-                   SockAddrUnix _   -> f r
+                   SockAddrUnix _   -> f r k
 #endif
-                   _                ->  return $ responseLBS H.status403
-                                                             [("Content-Type", "text/plain")]
-                                                             "local access only"
+                   _                ->  k $ responseLBS H.status403
+                                                        [("Content-Type", "text/plain")]
+							 "local access only"
  where
         home :: Integer
         home = 127 + (256 * 256 * 256) * 1
