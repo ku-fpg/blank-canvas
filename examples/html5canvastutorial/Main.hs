@@ -584,7 +584,7 @@ example_2_3_4 canvas = do
 
    send canvas $ do
         font "18pt Calibri"
-        fillText(Text.pack $ show $ take 50 $ url, 10, 300)
+        fillText(Text.pack $ show $ Text.take 50 $ url, 10, 300)
 
 example_2_3_5 canvas = do
    fileName <- getDataFileName "static/data/dataURL.txt"
