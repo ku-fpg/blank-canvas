@@ -193,10 +193,10 @@ blankCanvas opts actions = do
                         print e
                         throw e
 
-        get "/" $ file $ dataDir ++ "/static/index.html"
-        get "/jquery.js" $ file $ dataDir ++ "/static/jquery.js"
-        get "/jquery-json.js" $ file $ dataDir ++ "/static/jquery-json.js"
-        get "/kansas-comet.js" $ file $ kComet
+        get "/"                 $ file $ dataDir ++ "/static/index.html"
+        get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
+        get "/jquery-json.js"   $ file $ dataDir ++ "/static/jquery-json.js"
+        get "/kansas-comet.js"  $ file $ kComet
         sequence_ [ get (fromString ("/" ++ nm)) $ file $ (root opts ++ "/" ++ nm) | nm <- static opts ]
         return ()
 
