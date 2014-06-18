@@ -9,10 +9,11 @@ License:             BSD3
 License-file:        LICENSE
 Author:              Andy Gill
 Maintainer:          andygill@ku.edu
-Copyright:           Copyright (c) 2013 The University of Kansas
-Homepage:            http://ittc.ku.edu/csdl/fpg/Tools/BlankCanvas
+Copyright:           Copyright (c) 2014 The University of Kansas
+Homepage:            https://github.com/ku-fpg/blank-canvas
 Category:            Graphics
 Build-type:          Simple
+Stability:           beta
 Extra-source-files:  README
 Cabal-version:       >= 1.10
 data-files:
