@@ -33,9 +33,16 @@ For more details about this example, see [Red Line](https://github.com/ku-fpg/bl
 | [Installation](https://github.com/ku-fpg/blank-canvas/wiki/Installation) | How to install blank-canvas |
 | [Hackage](https://hackage.haskell.org/package/blank-canvas) | Current release is 0.4.0 |
 | [API](https://github.com/ku-fpg/blank-canvas/wiki/API) | Discussion of API, compared with the original JavaScript API |
-| [Canvas Tutorial](https://github.com/ku-fpg/blank-canvas/wiki/Canvas%20Tutorial) | Transliterated from <http://www.html5canvastutorials.com/> into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
+| [Canvas Examples](https://github.com/ku-fpg/blank-canvas/wiki/Canvas%20Examples) | Transliterated from <http://www.html5canvastutorials.com/> into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
+| [FAQ](https://github.com/ku-fpg/blank-canvas/wiki/FAQ) | F.A.Q. |
 
 #### Other Links
 
  * <http://www.html5canvastutorials.com/>
  * <http://www.webcodeapp.com/>
+
+### Credits
+
+Thank you to Eric Rowell, for allowing blank-canvas to base our Canvas examples on his JavaScript Canvas examples.
+
+The "Haskell" picture is taken by [Mandy Lackey](https://www.flickr.com/photos/mandaloo/), from link <<http://www.flickr.com/photos/77649176@N00/3776224595/>.> This picture allows sharing, under the [creative commons license](https://creativecommons.org/licenses/by-nc-sa/2.0/).
