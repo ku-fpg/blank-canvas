@@ -48,6 +48,7 @@
                     img.onload = function() {
                            $.kc.reply(u,count - 1);
                     };
+                    img.onerror = function() { alert("Image " + src + " not found.\nAdd as a static file to fix this."); };
                     img.src = src;
                 }        
             }
