@@ -21,19 +21,19 @@ main = blankCanvas 3000 $ \ context -> do -- start blank canvas on port 3000
 
 Running this program, and going to <http://localhost:3000/> gives
 
-![](https://github.com/ku-fpg/blank-canvas/wiki/images/Red_Line.png)
+![images/Red_Line.png](https://github.com/ku-fpg/blank-canvas/wiki/images/Red_Line.png)
 
-For more details about this example, see <wiki/Red%20Line>.
+For more details about this example, see [Red Line](https://github.com/ku-fpg/blank-canvas/wiki/Red%20Line).
 
 ### Documentation
 
 | Link  | Notes |
 |-------|-------|
 | [Examples](https://github.com/ku-fpg/blank-canvas/wiki/Examples) | Various complete examples of using blank-canvas |
-| <wiki/Installation> | How to install blank-canvas |
+| [Installation](https://github.com/ku-fpg/blank-canvas/wiki/Installation) | How to install blank-canvas |
 | [Hackage](https://hackage.haskell.org/package/blank-canvas) | Current release is 0.4.0 |
-| <wiki/API> | Discussion of API, compared with the original JavaScript API |
-| <wiki/Canvas%20Tutorial> | Transliterated from <http://www.html5canvastutorials.com/> into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
+| [API](https://github.com/ku-fpg/blank-canvas/wiki/API) | Discussion of API, compared with the original JavaScript API |
+| [Canvas Tutorial](https://github.com/ku-fpg/blank-canvas/wiki/Canvas%20Tutorial) | Transliterated from <http://www.html5canvastutorials.com/> into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
 
 #### Other Links
 
