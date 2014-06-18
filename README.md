@@ -21,21 +21,21 @@ main = blankCanvas 3000 $ \ context -> do -- start blank canvas on port 3000
 
 Running this program, and going to <http://localhost:3000/> gives
 
-[[images/Red_Line.png]]
+<wiki/images/Red_Line.png>
 
-For more details about this example, see [[Red Line]].
+For more details about this example, see <wiki/Red%20Line>.
 
 ### Documentation
 
 | Link  | Notes |
 |-------|-------|
-| [[Examples]] | Various complete examples of using blank-canvas |
-| [[Installation]] | How to install blank-canvas |
+| <wiki/Examples> | Various complete examples of using blank-canvas |
+| <wiki/Installation> | How to install blank-canvas |
 | [Hackage](https://hackage.haskell.org/package/blank-canvas) | Current release is 0.4.0 |
-| [[API]] | Discussion of API, compared with the original JavaScript API |
-| [[Canvas Tutorial]] | Transliterated from http://www.html5canvastutorials.com/ into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
+| <wiki/API> | Discussion of API, compared with the original JavaScript API |
+| <wiki/Canvas%20Tutorial> | Transliterated from <http://www.html5canvastutorials.com/> into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
 
 #### Other Links
 
- * http://www.html5canvastutorials.com/
- * http://www.webcodeapp.com/
+ * <http://www.html5canvastutorials.com/>
+ * <http://www.webcodeapp.com/>
