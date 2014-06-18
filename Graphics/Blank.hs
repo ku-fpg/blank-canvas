@@ -119,7 +119,8 @@ import qualified Network.HTTP.Types as H
 import Network.Socket (SockAddr(..))
 import System.IO.Unsafe (unsafePerformIO)
 --import System.Mem.StableName
-import Web.Scotty (scottyApp, get, file, middleware)
+import Web.Scotty (scottyApp, get, file)
+import qualified Web.Scotty as Scotty
 --import Network.Wai.Middleware.RequestLogger -- Used when debugging
 --import Network.Wai.Middleware.Static
 import qualified Web.Scotty.Comet as KC
@@ -168,7 +169,7 @@ blankCanvas opts actions = do
 
    app <- scottyApp $ do
 --        middleware logStdoutDev
-        middleware local_only
+        Scotty.middleware local_only
         -- use the comet
         let kc_opts :: KC.Options
             kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
@@ -307,13 +308,14 @@ getUniq = do
 -------------------------------------------------
 
 data Options = Options 
-        { port   :: Int            -- ^ which port do we issue the blank canvas using
-        , events :: [EventName]    -- ^ which events does the canvas listen to
-        , debug  :: Bool           -- ^ turn on debugging (default False)
-        , remote :: Bool           -- ^ turn on remote access (default False)
-        , static :: [String]       -- ^ path to images, and other static artifacts
-        , root   :: String         -- ^ location of the static files (default .)
-        } deriving Show
+        { port   :: Int              -- ^ which port do we issue the blank canvas using
+        , events :: [EventName]      -- ^ which events does the canvas listen to
+        , debug  :: Bool             -- ^ turn on debugging (default False)
+        , remote :: Bool             -- ^ turn on remote access (default False)
+        , static :: [String]         -- ^ path to images, and other static artifacts
+        , root   :: String           -- ^ location of the static files (default .)
+        , middleware :: [Middleware] -- ^ extra middleware(s) to be executed
+        }
         
 instance Num Options where
     (+) = error "no arithmetic for Blank Canvas Options"
@@ -326,7 +328,9 @@ instance Num Options where
                             , debug = False
                             , remote = False
                             , static = []
-                            , root = "." }
+                            , root = "."
+                            , middleware = []
+                            }
 
 
 -------------------------------------------------
