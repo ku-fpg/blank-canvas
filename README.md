@@ -19,7 +19,7 @@ main = blankCanvas 3000 $ \ context -> do -- start blank canvas on port 3000
                 stroke()                  -- this draws the ink into the canvas
 ````
 
-Running this program, and going to http://localhost:3000/ gives
+Running this program, and going to <http://localhost:3000/> gives
 
 [[images/Red_Line.png]]
 
