@@ -143,7 +143,7 @@ data Query :: * -> * where
         NewImage             :: Text                      -> Query CanvasImage
         CreateLinearGradient :: (Float,Float,Float,Float)             -> Query CanvasGradient
         CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Query CanvasGradient
-        CreatePattern        :: (CanvasImage,Text)        -> Query CanvasPattern
+        CreatePattern        :: Image image => (image,Text) -> Query CanvasPattern
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
 
@@ -163,7 +163,7 @@ instance Show (Query a) where
   show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
   show (CreateLinearGradient (x0,y0,x1,y1)) = "CreateLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
   show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "CreateRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
-  show (CreatePattern (img,str)) = "CreatePattern(" ++ showJS img ++ "," ++ showJS str ++ ")"
+  show (CreatePattern (img,str)) = "CreatePattern(" ++ jsImage img ++ "," ++ showJS str ++ ")"
   show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh)) 
                                  = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
