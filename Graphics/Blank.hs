@@ -107,6 +107,8 @@ module Graphics.Blank
         , splatCanvas
         -- ** Non-Prelude Data
         , Text
+        -- ** Middleware
+        , local_only
         ) where
 
 import Control.Concurrent
@@ -169,7 +171,9 @@ blankCanvas opts actions = do
 
    app <- scottyApp $ do
 --        middleware logStdoutDev
-        Scotty.middleware local_only
+        sequence_ [ Scotty.middleware ware 
+                  | ware <- middleware opts 
+                  ]
         -- use the comet
         let kc_opts :: KC.Options
             kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
@@ -189,7 +193,14 @@ blankCanvas opts actions = do
                                    atomically $ writeTChan queue event
                            _ -> return ()
 
-                (actions $ Context kc_doc queue) `catch` \ (e :: SomeException) -> do
+                let cxt0 = Context kc_doc queue
+                
+                -- A bit of bootstrapping 
+                DeviceAttributes w h dpr <- send cxt0 device
+                print (DeviceAttributes w h dpr)
+
+
+                (actions $ cxt0) `catch` \ (e :: SomeException) -> do
                         print ("Exception in blank-canvas application:"  :: String)
                         print e
                         throw e
@@ -311,10 +322,9 @@ data Options = Options
         { port   :: Int              -- ^ which port do we issue the blank canvas using
         , events :: [EventName]      -- ^ which events does the canvas listen to
         , debug  :: Bool             -- ^ turn on debugging (default False)
-        , remote :: Bool             -- ^ turn on remote access (default False)
         , static :: [String]         -- ^ path to images, and other static artifacts
         , root   :: String           -- ^ location of the static files (default .)
-        , middleware :: [Middleware] -- ^ extra middleware(s) to be executed
+        , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
         }
         
 instance Num Options where
@@ -326,10 +336,9 @@ instance Num Options where
     fromInteger n = Options { port = fromInteger n
                             , events = []
                             , debug = False
-                            , remote = False
                             , static = []
                             , root = "."
-                            , middleware = []
+                            , middleware = [local_only]
                             }
 
 

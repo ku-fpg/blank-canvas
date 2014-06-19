@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Context where
 
+import Graphics.Blank.Size
 import Control.Concurrent.STM
 import Control.Monad
 
@@ -20,6 +21,14 @@ data Context = Context
         , eventQueue  :: EventQueue                 -- ^ A single (typed) event queue
         }
 
+--instance Size Context where {}
+
+-- ** 'devicePixelRatio' returns the Device Pixel Ratio as used. Typically, the browser ignore devicePixelRatio in the canvas,
+--   which can make fine details and text look fuzzy. Using the query "?hd" on the URL, blank-canvas attempts
+--   to use the native devicePixelRatio, and if successful, 'devicePixelRatio' will return a number other than 1.
+--   You can think of devicePixelRatio as the line width to use to make lines look one pixel wide.
+--devicePixelRatio ::  () -> Canvas Int
+--devicePixelRatio () = Query DevicePixelRatio        
 
 -- | internal command to send a message to the canvas.
 sendToCanvas :: Context -> ShowS -> IO ()

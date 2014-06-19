@@ -15,6 +15,7 @@
             var patterns = [];
             var canvasbuffers = [];
             var c = null;
+            var myDevicePixelRatio = 1; // "my" because this would nameclass with the window.* version
 
             var urlQuery = {};
             // From http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
@@ -34,6 +35,9 @@
             }
             // These are the Queries
 
+            function Device(u,c) {
+                $.kc.reply(u,[c.canvas.width, c.canvas.height,myDevicePixelRatio]);
+            }
             function Size(u,c) {
                 $.kc.reply(u,[c.canvas.width, c.canvas.height]);
             }
@@ -158,9 +162,14 @@
                 if (urlQuery.height) {
                   h = urlQuery.height;
                 }
+                if ('hd' in urlQuery && 'devicePixelRatio' in window) {
+                  myDevicePixelRatio = window.devicePixelRatio;
+                }
                 $("#canvas").replaceWith(
-                            '<canvas id="canvas" width="' + w + '" height="' + h +
+                            '<canvas id="canvas" width="' + (w * myDevicePixelRatio) + '" height="' + (h * myDevicePixelRatio) +
                             '" style="border: black solid ' + b + 'px; padding: 0px; margin: 0px"></canvas>');
+                $("#canvas").css("width",w + "px");            
+                $("#canvas").css("height",h + "px");            
                 c = getContext();
                 $.kc.connect("/blank");
             });

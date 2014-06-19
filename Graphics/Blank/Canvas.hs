@@ -130,6 +130,7 @@ eval = Command . Eval
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where
+        Device                                            :: Query DeviceAttributes
         Size                                              :: Query (Float,Float)
         ToDataURL                                         :: Query Text
         MeasureText          :: Text                      -> Query TextMetrics
@@ -141,11 +142,15 @@ data Query :: * -> * where
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
 
+data DeviceAttributes = DeviceAttributes Int Int Int 
+        deriving Show
+        
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
 data TextMetrics = TextMetrics Float
         deriving Show
 
 instance Show (Query a) where
+  show Device                   = "Device"
   show Size                     = "Size"
   show ToDataURL                = "ToDataURL"
   show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
@@ -160,6 +165,7 @@ instance Show (Query a) where
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
+parseQueryResult (Device {}) o    = (\ (w,h,dpr) -> DeviceAttributes w h dpr) <$> parseJSON o
 parseQueryResult (Size {}) o      = parseJSON o -- default is good
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
@@ -174,6 +180,9 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                          <*> (o .: "height")
                                          <*> (o .: "data")
 parseQueryResult _ _ = fail "no parse in blank-canvas server (internal error)"
+
+device :: Canvas DeviceAttributes
+device = Query Device
 
 -- | 'size' of the canvas. 'size' always returns integral values, but typically is used
 -- in position computations, which are floating point (aka JavaScript number).
@@ -227,3 +236,4 @@ createImageData (w,h) = ImageData w h $ V.fromList $ take (w * h * 4) $ repeat 0
 -- | Capture ImageDate from the Canvas.
 getImageData :: (Float,Float,Float,Float) -> Canvas ImageData
 getImageData = Query . GetImageData        
+
