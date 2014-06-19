@@ -193,14 +193,19 @@ blankCanvas opts actions = do
                                    atomically $ writeTChan queue event
                            _ -> return ()
 
-                let cxt0 = Context kc_doc queue
+                let cxt0 = Context kc_doc queue 300 300 1
                 
                 -- A bit of bootstrapping 
                 DeviceAttributes w h dpr <- send cxt0 device
                 print (DeviceAttributes w h dpr)
 
-
-                (actions $ cxt0) `catch` \ (e :: SomeException) -> do
+                let cxt1 = cxt0 
+                         { ctx_width = w
+                         , ctx_height = h
+                         , ctx_devicePixelRatio = dpr
+                         }
+                
+                (actions $ cxt1) `catch` \ (e :: SomeException) -> do
                         print ("Exception in blank-canvas application:"  :: String)
                         print e
                         throw e
