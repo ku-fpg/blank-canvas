@@ -13,7 +13,9 @@ module Graphics.Blank
           --   version of this API.
         , Canvas        -- abstact
           -- ** Canvas element
-        , size
+        , Size()  -- abstact
+        , height
+        , width
         , toDataURL
           -- ** 2D Context
         , save
@@ -139,6 +141,7 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
 import qualified Graphics.Blank.Generated as Generated
 import Graphics.Blank.JavaScript
+import Graphics.Blank.Size
 import Graphics.Blank.Utils
 import Paths_blank_canvas
 
@@ -197,7 +200,7 @@ blankCanvas opts actions = do
                 
                 -- A bit of bootstrapping 
                 DeviceAttributes w h dpr <- send cxt0 device
-                print (DeviceAttributes w h dpr)
+                -- print (DeviceAttributes w h dpr)
 
                 let cxt1 = cxt0 
                          { ctx_width = w
@@ -276,8 +279,9 @@ local_only f r k = case remoteHost r of
 -- >splatCanvas 3000 $ (\ _ -> do { .. canvas commands .. })
 
 
-splatCanvas :: Options -> (Canvas () -> Canvas ()) -> IO ()
-splatCanvas opts cmds = do
+splatCanvas :: Options -> (Context -> Canvas () -> Canvas ()) -> IO ()
+splatCanvas opts cmds = return ()
+{-
     optCh <- atomically $ do
         ports <- readTVar usedPorts
         uq <- getUniq
@@ -289,7 +293,7 @@ splatCanvas opts cmds = do
                         return (Just ch)
 
     let full cmd = do
-            clearCanvas
+            clearCanvas 
             cmd
 
 
@@ -301,11 +305,11 @@ splatCanvas opts cmds = do
                         (uq',cmd) <- readTVar ch
                         check (uq' /= uq)     -- must be a new command
                         return (uq',cmd)
-                send cxt $ full cmd -- issue the screen command (should check for failure)
+                send cxt $ do { clearCanvas cxt ; cmds  } -- issue the screen command (should check for failure)
                 callback uq' cxt
          _ <- forkIO $ blankCanvas opts $ callback (-1)
          return ()
-
+-}
 -- common TVar for all ports in use.
 {-# NOINLINE usedPorts #-}
 usedPorts :: TVar [(Int,TVar (Int,Canvas ()))]

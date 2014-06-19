@@ -25,8 +25,8 @@ data Context = Context
         }
 
 instance Size Context where
-        width  = ctx_width
-        height = ctx_height
+        width  = fromIntegral . ctx_width
+        height = fromIntegral . ctx_height
 
 -- ** 'devicePixelRatio' returns the Device Pixel Ratio as used. Typically, the browser ignore devicePixelRatio in the canvas,
 --   which can make fine details and text look fuzzy. Using the query "?hd" on the URL, blank-canvas attempts
