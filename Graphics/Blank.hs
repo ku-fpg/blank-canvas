@@ -13,7 +13,6 @@ module Graphics.Blank
           --   version of this API.
         , Canvas        -- abstact
           -- ** Canvas element
-        , Size()  -- abstact
         , height
         , width
         , toDataURL
@@ -27,6 +26,7 @@ module Graphics.Blank
         , transform
         , setTransform
           -- ** Image drawing
+        , Image -- abstract class
         , drawImage
           -- ** Compositing
         , globalAlpha
@@ -83,7 +83,6 @@ module Graphics.Blank
         -- * blank-canvas Extensions
         -- ** Reading from 'Canvas'
         , newImage
-        , Image -- abstract class
         , CanvasImage -- abstract
          -- ** 'DeviceContext' attributes
         , devicePixelRatio
@@ -142,7 +141,7 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
 import qualified Graphics.Blank.Generated as Generated
 import Graphics.Blank.JavaScript
-import Graphics.Blank.Size
+--import Graphics.Blank.Size
 import Graphics.Blank.Utils
 import Paths_blank_canvas
 

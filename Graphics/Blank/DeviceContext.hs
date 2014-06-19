@@ -25,11 +25,10 @@ data DeviceContext = DeviceContext
         , ctx_devicePixelRatio :: !Int
         }
 
-instance Size DeviceContext where
-        width  = fromIntegral . ctx_width
-        height = fromIntegral . ctx_height
-
-instance Image DeviceContext where { jsImage = jsImage . deviceCanvasContext }
+instance Image DeviceContext where 
+  jsImage = jsImage . deviceCanvasContext
+  width  = fromIntegral . ctx_width
+  height = fromIntegral . ctx_height
 
 deviceCanvasContext :: DeviceContext -> CanvasContext
 deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)

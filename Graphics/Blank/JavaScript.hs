@@ -15,15 +15,24 @@ import Graphics.Blank.Size
 -------------------------------------------------------------
 
 -- TODO: close off 
-class Size a => Image a where
+class Image a where
   jsImage :: a -> String
+  width  :: Num b => a -> b
+  height :: Num b => a -> b
 
-instance Image CanvasImage   where { jsImage = jsCanvasImage }
--- The Image of a canvas is the DOM entry, not the canvas context, so
--- you need to indirect back to the canvas DOM here.
-instance Image CanvasContext where { jsImage = (++ ".canvas") . jsCanvasContext }
+instance Image CanvasImage where 
+  jsImage = jsCanvasImage
+  width  (CanvasImage _ w _) = fromIntegral w 
+  height (CanvasImage _ _ h) = fromIntegral h
+  
+-- The Image of a canvas is the the canvas context, not the DOM entry, so
+-- you need to indirect back to the DOM here.
+instance Image CanvasContext where
+  jsImage = (++ ".canvas") . jsCanvasContext
+  width  (CanvasContext _ w _) = fromIntegral w 
+  height (CanvasContext _ _ h) = fromIntegral h
+
 -- instance Element Video  -- Not supported
-
 
 -----------------------------------------------------------------------------
 
@@ -34,16 +43,6 @@ class Style a where
 instance Style Text           where { jsStyle = jsText }
 instance Style CanvasGradient where { jsStyle = jsCanvasGradient }
 instance Style CanvasPattern  where { jsStyle = jsCanvasPattern }
-
--------------------------------------------------------------
-
-instance Size CanvasContext where
-  width  (CanvasContext _ w _) = fromIntegral w 
-  height (CanvasContext _ _ h) = fromIntegral h
-
-instance Size CanvasImage where
-  width  (CanvasImage _ w _) = fromIntegral w 
-  height (CanvasImage _ _ h) = fromIntegral h
 
 -------------------------------------------------------------
 
@@ -70,10 +69,6 @@ newtype CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
 --   Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
-
-instance Size ImageData where
-  width  (ImageData w _ _) = fromIntegral w 
-  height (ImageData _ h _) = fromIntegral h
 
 -------------------------------------------------------------
 
