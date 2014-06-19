@@ -88,8 +88,8 @@ module Graphics.Blank
          -- ** 'CanvasContext', and off-screen Canvas.
         , newCanvas
         , with
+        , myContext
         , CanvasContext
-        , top
          -- ** Debugging
         , console_log
         , eval
@@ -105,8 +105,6 @@ module Graphics.Blank
         , Event(..)
         , EventName
         , EventQueue
-        -- ** GHCi API
-        , splatCanvas
         -- ** Non-Prelude Data
         , Text
         -- ** Middleware
@@ -227,7 +225,7 @@ blankCanvas opts actions = do
 
 send :: Context -> Canvas a -> IO a
 send cxt commands = 
-      send' top commands id 
+      send' (canvasContext cxt) commands id 
   where
       send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
       send' c (Bind (Return a) k)    cmds = send' c (k a) cmds
@@ -245,8 +243,10 @@ send cxt commands =
                 Success a -> do
                         send' c (k a) id
       send' c (Bind (With c' m) k) cmds = send' c' (Bind m (With c . k)) cmds
+      send' c (Bind MyContext k)   cmds = send' c (k c) cmds
 
       send' _ (With c m)           cmds = send' c m cmds
+      send' c MyContext            cmds = return c
       send' _ (Return a)           cmds = do
               sendToCanvas cxt cmds
               return a
@@ -267,53 +267,6 @@ local_only f r k = case remoteHost r of
         home :: Integer
         home = 127 + (256 * 256 * 256) * 1
 
--- | splitCanvas is the GHCi entry point into blank-canvas.
--- A typical invocation would be
---
--- >
--- >
--- >import Graphics.Blank
--- > -- Adding commands to the canvas buffer
--- >splatCanvas 3000 $ (>> do { .. canvas commands .. })
--- > -- Replacing the buffer with some commands
--- >splatCanvas 3000 $ (\ _ -> do { .. canvas commands .. })
-
-
-splatCanvas :: Options -> (Context -> Canvas () -> Canvas ()) -> IO ()
-splatCanvas opts cmds = return ()
-{-
-    optCh <- atomically $ do
-        ports <- readTVar usedPorts
-        uq <- getUniq
-        case lookup (port opts) ports of
-          Just ch -> do modifyTVar ch $ \ (_,orig) -> (uq,cmds orig)
-                        return Nothing
-          Nothing -> do ch <- newTVar (uq,cmds (return ()))
-                        writeTVar usedPorts ((port opts,ch):ports)
-                        return (Just ch)
-
-    let full cmd = do
-            clearCanvas 
-            cmd
-
-
-    case optCh of
-      Nothing -> return ()
-      Just ch -> do
-         let callback uq cxt = do
-                (uq',cmd) <- atomically $ do
-                        (uq',cmd) <- readTVar ch
-                        check (uq' /= uq)     -- must be a new command
-                        return (uq',cmd)
-                send cxt $ do { clearCanvas cxt ; cmds  } -- issue the screen command (should check for failure)
-                callback uq' cxt
-         _ <- forkIO $ blankCanvas opts $ callback (-1)
-         return ()
--}
--- common TVar for all ports in use.
-{-# NOINLINE usedPorts #-}
-usedPorts :: TVar [(Int,TVar (Int,Canvas ()))]
-usedPorts = unsafePerformIO $ newTVarIO []
 
 {-# NOINLINE uniqVar #-}
 uniqVar :: TVar Int

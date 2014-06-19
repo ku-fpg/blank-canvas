@@ -170,7 +170,8 @@
                             '" style="border: black solid ' + b + 'px; padding: 0px; margin: 0px"></canvas>');
                 $("#canvas").css("width",w + "px");            
                 $("#canvas").css("height",h + "px");            
-                c = getContext();
+                c = getContext("2d");
+                canvasbuffers.push(c);
                 $.kc.connect("/blank");
             });
         </script>

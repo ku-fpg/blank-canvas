@@ -24,6 +24,7 @@ data Canvas :: * -> * where
         Command :: Command                             -> Canvas ()     -- <command>
         Query   :: (Show a) => Query a                 -> Canvas a
         With    :: CanvasContext -> Canvas a           -> Canvas a
+        MyContext ::                                      Canvas CanvasContext
         Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
         Return  :: a                                   -> Canvas a
 
@@ -107,6 +108,10 @@ instance Show Command where
 with :: CanvasContext -> Canvas a -> Canvas a
 with = With
 
+-- | 'myContext' returns the current 'CanvasContent'.
+myContext :: Canvas CanvasContext
+myContext = MyContext
+
 -----------------------------------------------------------------------------
 
 
@@ -165,21 +170,24 @@ instance Show (Query a) where
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
-parseQueryResult (Device {}) o    = (\ (w,h,dpr) -> DeviceAttributes w h dpr) <$> parseJSON o
+parseQueryResult (Device {}) o    = uncurry3 DeviceAttributes <$> parseJSON o
 parseQueryResult (Size {}) o      = parseJSON o -- default is good
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o        = parseJSON o
-parseQueryResult (NewImage {}) o             = CanvasImage <$> parseJSON o
+parseQueryResult (NewImage {}) o             = uncurry3 CanvasImage <$> parseJSON o
 parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreateRadialGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
-parseQueryResult (NewCanvas {}) o = CanvasContext <$> parseJSON o
+parseQueryResult (NewCanvas {}) o = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData 
                                          <$> (o .: "width")
                                          <*> (o .: "height")
                                          <*> (o .: "data")
 parseQueryResult _ _ = fail "no parse in blank-canvas server (internal error)"
+
+uncurry3 :: (t0 -> t1 -> t2 -> t3) -> (t0, t1, t2) -> t3
+uncurry3 f (a,b,c) = f a b c 
 
 device :: Canvas DeviceAttributes
 device = Query Device
