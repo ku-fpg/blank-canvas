@@ -10,7 +10,6 @@ import Data.Text (Text)
 
 import qualified Data.Vector.Unboxed as V
 import Data.Vector.Unboxed (Vector)
-import Graphics.Blank.Size
 
 -------------------------------------------------------------
 

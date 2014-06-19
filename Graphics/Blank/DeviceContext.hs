@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.DeviceContext where
 
-import Graphics.Blank.Size
 import Graphics.Blank.JavaScript
 import Control.Concurrent.STM
 import Control.Monad

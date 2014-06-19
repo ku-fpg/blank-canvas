@@ -141,7 +141,6 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
 import qualified Graphics.Blank.Generated as Generated
 import Graphics.Blank.JavaScript
---import Graphics.Blank.Size
 import Graphics.Blank.Utils
 import Paths_blank_canvas
 

@@ -30,7 +30,6 @@ Library
                        Graphics.Blank.Events,
                        Graphics.Blank.Generated,
                        Graphics.Blank.JavaScript,
-                       Graphics.Blank.Size,
                        Graphics.Blank.Utils,
                        Paths_blank_canvas
 
