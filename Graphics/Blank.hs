@@ -137,7 +137,7 @@ import Data.Text (Text)
 import Data.Monoid((<>))
 
 import Graphics.Blank.Events
-import Graphics.Blank.Context
+import Graphics.Blank.DeviceContext
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
 import qualified Graphics.Blank.Generated as Generated

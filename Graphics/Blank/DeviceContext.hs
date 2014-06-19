@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Graphics.Blank.Context where
+module Graphics.Blank.DeviceContext where
 
 import Graphics.Blank.Size
 import Graphics.Blank.JavaScript

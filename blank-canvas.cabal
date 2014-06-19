@@ -26,7 +26,7 @@ Library
                        Graphics.Blank.GHCi,
                        Graphics.Blank.Style
   other-modules:       Graphics.Blank.Canvas,
-                       Graphics.Blank.Context,
+                       Graphics.Blank.DeviceContext,
                        Graphics.Blank.Events,
                        Graphics.Blank.Generated,
                        Graphics.Blank.JavaScript,
