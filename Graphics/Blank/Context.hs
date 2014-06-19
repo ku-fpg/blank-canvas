@@ -29,8 +29,10 @@ instance Size Context where
         width  = fromIntegral . ctx_width
         height = fromIntegral . ctx_height
 
-canvasContext :: Context -> CanvasContext
-canvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
+instance Image Context where { jsImage = jsImage . deviceCanvasContext }
+
+deviceCanvasContext :: Context -> CanvasContext
+deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 
 -- ** 'devicePixelRatio' returns the Device Pixel Ratio as used. Typically, the browser ignore devicePixelRatio in the canvas,
 --   which can make fine details and text look fuzzy. Using the query "?hd" on the URL, blank-canvas attempts

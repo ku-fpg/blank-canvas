@@ -88,10 +88,11 @@ module Graphics.Blank
          -- ** 'Context' attributes
         , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
+        , CanvasContext
         , newCanvas
         , with
         , myContext
-        , CanvasContext
+        , deviceCanvasContext
          -- ** Debugging
         , console_log
         , eval
@@ -227,7 +228,7 @@ blankCanvas opts actions = do
 
 send :: Context -> Canvas a -> IO a
 send cxt commands = 
-      send' (canvasContext cxt) commands id 
+      send' (deviceCanvasContext cxt) commands id 
   where
       send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
       send' c (Bind (Return a) k)    cmds = send' c (k a) cmds
