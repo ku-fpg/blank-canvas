@@ -85,6 +85,8 @@ module Graphics.Blank
         , newImage
         , Image -- abstract class
         , CanvasImage -- abstract
+         -- ** 'Context' attributes
+        , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
         , newCanvas
         , with
