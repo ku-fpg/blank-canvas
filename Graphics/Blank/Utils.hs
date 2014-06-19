@@ -9,7 +9,7 @@ import Graphics.Blank.DeviceContext
 clearCanvas :: Canvas ()
 clearCanvas = do
   setTransform (1, 0, 0, 1, 0, 0)
-  me <- myContext
+  me <- myCanvasContext
   clearRect (0,0,width me,height me)
 
 -- | Wrap a canvas computation in 'save' / 'restore'.

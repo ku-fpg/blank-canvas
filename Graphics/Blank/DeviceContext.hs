@@ -17,7 +17,7 @@ import qualified Data.Text as T
 -- are conflated in blank-canvas. Therefore, there is no 'getContext' method,
 -- rather 'getContext' is implied (when using 'send').
 
-data Context = Context
+data DeviceContext = DeviceContext
         { theComet    :: KC.Document                -- ^ The mechansims for sending commands
         , eventQueue  :: EventQueue                 -- ^ A single (typed) event queue
         , ctx_width   :: !Int
@@ -25,13 +25,13 @@ data Context = Context
         , ctx_devicePixelRatio :: !Int
         }
 
-instance Size Context where
+instance Size DeviceContext where
         width  = fromIntegral . ctx_width
         height = fromIntegral . ctx_height
 
-instance Image Context where { jsImage = jsImage . deviceCanvasContext }
+instance Image DeviceContext where { jsImage = jsImage . deviceCanvasContext }
 
-deviceCanvasContext :: Context -> CanvasContext
+deviceCanvasContext :: DeviceContext -> CanvasContext
 deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 
 -- ** 'devicePixelRatio' returns the Device Pixel Ratio as used. Typically, the browser ignore devicePixelRatio in the canvas,
@@ -39,20 +39,20 @@ deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 --   to use the native devicePixelRatio, and if successful, 'devicePixelRatio' will return a number other than 1.
 --   You can think of devicePixelRatio as the line width to use to make lines look one pixel wide.
 
-devicePixelRatio ::  Context -> Int
+devicePixelRatio ::  DeviceContext -> Int
 devicePixelRatio = ctx_devicePixelRatio
 
 -- | internal command to send a message to the canvas.
-sendToCanvas :: Context -> ShowS -> IO ()
+sendToCanvas :: DeviceContext -> ShowS -> IO ()
 sendToCanvas cxt cmds = do
         KC.send (theComet cxt) $ "try{" <> T.pack (cmds "}catch(e){alert('JavaScript Failure: '+e.message);}")
 
 -- | wait for any event
-wait :: Context -> IO Event
+wait :: DeviceContext -> IO Event
 wait c = atomically $ readTChan (eventQueue c)
 
 -- | get the next event if it exists
-tryGet :: Context -> IO (Maybe Event)
+tryGet :: DeviceContext -> IO (Maybe Event)
 tryGet cxt = atomically $ do
     b <- isEmptyTChan (eventQueue cxt)
     if b 
@@ -60,7 +60,7 @@ tryGet cxt = atomically $ do
     else liftM Just $ readTChan (eventQueue cxt)
 
 -- | 'flush' all the current events, returning them all to the user.
-flush :: Context -> IO [Event]
+flush :: DeviceContext -> IO [Event]
 flush cxt = atomically $ loop
   where loop = do 
           b <- isEmptyTChan (eventQueue cxt)

@@ -5,8 +5,8 @@ module Graphics.Blank
          -- * Starting blank-canvas
           blankCanvas
         , Options(..)
-          -- ** 'send'ing to the Graphics 'Context'
-        , Context       -- abstact
+          -- ** 'send'ing to the Graphics 'DeviceContext'
+        , DeviceContext       -- abstact
         , send
           -- * HTML5 Canvas API
           -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript 
@@ -85,13 +85,13 @@ module Graphics.Blank
         , newImage
         , Image -- abstract class
         , CanvasImage -- abstract
-         -- ** 'Context' attributes
+         -- ** 'DeviceContext' attributes
         , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
         , with
-        , myContext
+        , myCanvasContext
         , deviceCanvasContext
          -- ** Debugging
         , console_log
@@ -164,7 +164,7 @@ import Paths_blank_canvas
 -- >
 
 
-blankCanvas :: Options -> (Context -> IO ()) -> IO ()
+blankCanvas :: Options -> (DeviceContext -> IO ()) -> IO ()
 blankCanvas opts actions = do
    dataDir <- getDataDir
 
@@ -197,7 +197,7 @@ blankCanvas opts actions = do
                                    atomically $ writeTChan queue event
                            _ -> return ()
 
-                let cxt0 = Context kc_doc queue 300 300 1
+                let cxt0 = DeviceContext kc_doc queue 300 300 1
                 
                 -- A bit of bootstrapping 
                 DeviceAttributes w h dpr <- send cxt0 device
@@ -226,7 +226,7 @@ blankCanvas opts actions = do
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible. Should not crash.
 
-send :: Context -> Canvas a -> IO a
+send :: DeviceContext -> Canvas a -> IO a
 send cxt commands = 
       send' (deviceCanvasContext cxt) commands id 
   where

@@ -108,9 +108,9 @@ instance Show Command where
 with :: CanvasContext -> Canvas a -> Canvas a
 with = With
 
--- | 'myContext' returns the current 'CanvasContent'.
-myContext :: Canvas CanvasContext
-myContext = MyContext
+-- | 'myCanvasContext' returns the current 'CanvasContent'.
+myCanvasContext :: Canvas CanvasContext
+myCanvasContext = MyContext
 
 -----------------------------------------------------------------------------
 
