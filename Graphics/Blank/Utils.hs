@@ -6,10 +6,11 @@ import Graphics.Blank.Size
 import Graphics.Blank.Context
 
 -- | Clear the screen. Restores the default transformation matrix.
-clearCanvas :: Context -> Canvas ()
-clearCanvas context = do
+clearCanvas :: Canvas ()
+clearCanvas = do
   setTransform (1, 0, 0, 1, 0, 0)
-  clearRect (0,0,width context,height context)
+  me <- myContext
+  clearRect (0,0,width me,height me)
 
 -- | Wrap a canvas computation in 'save' / 'restore'.
 saveRestore :: Canvas () -> Canvas ()

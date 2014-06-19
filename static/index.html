@@ -50,7 +50,7 @@
                     var img = new Image();
                     var count = images.push(img);
                     img.onload = function() {
-                           $.kc.reply(u,count - 1);
+                           $.kc.reply(u,[count - 1,img.width,img.height]);
                     };
                     img.onerror = function() { alert("Image " + src + " not found.\nAdd as a static file to fix this."); };
                     img.src = src;
@@ -95,7 +95,7 @@
                     canvas.width = w;
                     canvas.height = h;
                     var count = canvasbuffers.push(canvas.getContext("2d"));
-                    $.kc.reply(u,count - 1);
+                    $.kc.reply(u,[count - 1,w,h]);              
                 }        
             }
 
@@ -119,13 +119,6 @@
                              eType   : e.eType,
                              eWhich  : e.eWhich
                             });
-            }
-            /* -------------------- */
-            function newContext(width, height) {
-                var buffer = document.createElement('canvas');
-                buffer.width = width;
-                buffer.height = height;
-                return buffer.getContext('2d');
             }
             function register(name) {
                 $(document).bind(name,function (e){
