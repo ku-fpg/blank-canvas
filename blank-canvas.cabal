@@ -23,6 +23,7 @@ data-files:
 
 Library
   Exposed-modules:     Graphics.Blank, 
+                       Graphics.Blank.GHCi,
                        Graphics.Blank.Style
   other-modules:       Graphics.Blank.Canvas,
                        Graphics.Blank.Context,
