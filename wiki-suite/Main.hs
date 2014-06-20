@@ -7,8 +7,9 @@ import qualified Clipping_Region
 import qualified Color_Fill
 import qualified Color_Square
 import qualified Custom_Shape
-import qualified Draw_Image
 import qualified Draw_Canvas
+import qualified Draw_Device
+import qualified Draw_Image
 import qualified Favicon
 import qualified Font_Size_and_Style
 import qualified Get_Image_Data_URL
@@ -65,8 +66,9 @@ main2 ["Clipping_Region"] = Clipping_Region.main
 main2 ["Color_Fill"] = Color_Fill.main
 main2 ["Color_Square"] = Color_Square.main
 main2 ["Custom_Shape"] = Custom_Shape.main
-main2 ["Draw_Image"] = Draw_Image.main
 main2 ["Draw_Canvas"] = Draw_Canvas.main
+main2 ["Draw_Device"] = Draw_Device.main
+main2 ["Draw_Image"] = Draw_Image.main
 main2 ["Favicon"] = Favicon.main
 main2 ["Font_Size_and_Style"] = Font_Size_and_Style.main
 main2 ["Get_Image_Data_URL"] = Get_Image_Data_URL.main

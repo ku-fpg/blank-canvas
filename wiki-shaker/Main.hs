@@ -19,14 +19,14 @@ import System.Directory
 movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples = ["Red_Line","Favicon"]
-	++ ["Color_Square", "Draw_Canvas"]
+	++ ["Color_Square"] 
 
 tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Arc","Quadratic_Curve","Bezier_Curve"]
         ++ ["Path","Line_Join","Rounded_Corners","Is_Point_In_Path"]
         ++ ["Custom_Shape","Rectangle","Circle","Semicircle"]
 	++ ["Color_Fill","Linear_Gradient","Radial_Gradient","Pattern"]
-	++ ["Draw_Image","Image_Size","Image_Crop","Image_Loader"]
+	++ ["Draw_Image","Image_Size","Image_Crop","Image_Loader", "Draw_Canvas", "Draw_Device"]
         ++ ["Font_Size_and_Style","Text_Color","Text_Stroke","Text_Align","Text_Baseline","Text_Metrics","Text_Wrap"]
 	++ ["Translate_Transform","Scale_Transform","Rotate_Transform","Custom_Transform"]
         ++ ["Shadow","Global_Alpha","Clipping_Region","Global_Composite_Operations"]
