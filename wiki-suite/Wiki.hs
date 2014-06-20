@@ -85,11 +85,11 @@ close context = do
 	let tix' = filter (\ t -> ("Graphics.Blank" `isPrefixOf` tixModuleName t)) 
 	         $ tix
         writeFile ("tix/tix_" ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".tix") $ show $ Tix tix'
+        send context $ eval "open(location, '_self').close()"
+        threadDelay (1000 * 1000);
         print "dieing"
         p <- getProcessID 
         callProcess "kill" [show p]
---        send context $ eval "open(location, '_self').close()"
---        threadDelay (1000 * 1000)
         quit
 
 quit :: IO a
