@@ -7,12 +7,14 @@ import Data.Monoid
 import Wiki -- (578,200)
 
 main = blankCanvas 3000 $ \ context -> do
+    let r = devicePixelRatio context
     send context $ do
-        font "lighter 16pt Calibri"
+        font $ Text.pack $ "lighter " ++ show (16 * r) ++ "pt Calibri"
         fillStyle "#000"
-        let maxWidth = 400
-        wrapText 0 (Text.words message) ((width context - maxWidth) / 2) 60 maxWidth 25
-    wiki $ snapShot context "images/Text_Wrap.png"
+        let maxWidth = 400 * r
+        wrapText 0 (Text.words message) ((width context - maxWidth) / 2) 60 maxWidth (25 * r)
+    let ex = wiki $ if r > 1.5 then "@2x" else ""
+    wiki $ snapShot context $ "images/Text_Wrap" ++ ex ++ ".png"
     wiki $ close context
     where
 
