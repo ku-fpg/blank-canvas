@@ -23,7 +23,7 @@ examples = ["Red_Line","Favicon"]
 
 tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Arc","Quadratic_Curve","Bezier_Curve"]
-        ++ ["Path","Line_Join","Rounded_Corners"]
+        ++ ["Path","Line_Join","Rounded_Corners","Is_Point_In_Path"]
         ++ ["Custom_Shape","Rectangle","Circle","Semicircle"]
 	++ ["Color_Fill","Linear_Gradient","Radial_Gradient","Pattern"]
 	++ ["Draw_Image","Image_Size","Image_Crop","Image_Loader"]

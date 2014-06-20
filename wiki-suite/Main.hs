@@ -18,6 +18,7 @@ import qualified Grayscale
 import qualified Image_Crop
 import qualified Image_Loader
 import qualified Image_Size
+import qualified Is_Point_In_Path
 import qualified Key_Read
 import qualified Line
 import qualified Line_Cap
@@ -76,6 +77,7 @@ main2 ["Image_Crop"] = Image_Crop.main
 main2 ["Image_Loader"] = Image_Loader.main
 main2 ["Miter_Limit"] = Miter_Limit.main
 main2 ["Image_Size"] = Image_Size.main
+main2 ["Is_Point_In_Path"] = Is_Point_In_Path.main
 main2 ["Key_Read"] = Key_Read.main
 main2 ["Line"] = Line.main
 main2 ["Line_Cap"] = Line_Cap.main
