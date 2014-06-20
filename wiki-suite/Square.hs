@@ -6,8 +6,7 @@ import Wiki -- (512,512)
 
 main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
           let loop (x,y) (color:colors) = do
-                send context $ do
-                        save()
+                send context $ saveRestore $ do
                         translate (x,y)
                         beginPath()
                         moveTo(-100,-100)
@@ -18,7 +17,6 @@ main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
                         lineWidth 10
                         strokeStyle color
                         stroke()
-                        restore()
 
 
                 wiki $ counter (\ _ -> True) $ \ n -> do
