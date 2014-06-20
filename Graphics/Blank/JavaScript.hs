@@ -121,8 +121,5 @@ instance JSArg Text where
 jsText :: Text -> String
 jsText = showJS
 
-instance JSArg a => JSArg [a] where 
-  showJS = jsList showJS
-
 jsList :: (a -> String) -> [a] -> String
 jsList js = concat . intersperse "," . map js 
