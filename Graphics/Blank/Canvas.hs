@@ -218,10 +218,6 @@ createPattern = Query . CreatePattern
 newCanvas :: (Int,Int) -> Canvas CanvasContext
 newCanvas = Query . NewCanvas
 
--- | Create a blank 'ImageData'. Note that 'ImageData' lives Haskell-side, and does not require the 'Canvas' monad.
-createImageData :: (Int,Int) -> ImageData
-createImageData (w,h) = ImageData w h $ V.fromList $ take (w * h * 4) $ repeat 0
-
 -- | Capture ImageDate from the Canvas.
 getImageData :: (Float,Float,Float,Float) -> Canvas ImageData
 getImageData = Query . GetImageData        

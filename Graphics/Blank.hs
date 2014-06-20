@@ -76,7 +76,6 @@ module Graphics.Blank
         , fillRect
         , strokeRect
           -- ** Pixel manipulation
-        , createImageData
         , getImageData
         , putImageData
         , ImageData(..)
