@@ -12,9 +12,16 @@ main = blankCanvas 3000 $ \ context -> do
         let startingAngle = 1.1 * pi
         let endingAngle = 1.9 * pi
         let counterclockwise = False
-        arc(centerX, centerY, radius, startingAngle, endingAngle, counterclockwise)
         lineWidth 15
         strokeStyle "black"
+
+	beginPath()
+        arc(centerX - 50, centerY, radius, startingAngle, endingAngle, False)
+        stroke()
+
+	beginPath()
+        strokeStyle "blue"
+        arc(centerX + 50, centerY, radius, startingAngle, endingAngle, True)
         stroke()
 
 
