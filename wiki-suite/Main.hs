@@ -15,7 +15,6 @@ import qualified Get_Image_Data_URL
 import qualified Global_Alpha
 import qualified Global_Composite_Operations
 import qualified Grayscale
-import qualified HPCTEST
 import qualified Image_Crop
 import qualified Image_Loader
 import qualified Image_Size
@@ -47,6 +46,9 @@ import qualified Text_Stroke
 import qualified Text_Wrap
 import qualified Tic_Tac_Toe
 import qualified Translate_Transform
+import qualified Scale_Transform
+import qualified Rotate_Transform
+import qualified Custom_Transform
 
 import System.Environment
 
@@ -70,7 +72,6 @@ main2 ["Get_Image_Data_URL"] = Get_Image_Data_URL.main
 main2 ["Global_Alpha"] = Global_Alpha.main
 main2 ["Global_Composite_Operations"] = Global_Composite_Operations.main
 main2 ["Grayscale"] = Grayscale.main
-main2 ["HPCTEST"] = HPCTEST.main
 main2 ["Image_Crop"] = Image_Crop.main
 main2 ["Image_Loader"] = Image_Loader.main
 main2 ["Miter_Limit"] = Miter_Limit.main
@@ -102,5 +103,8 @@ main2 ["Text_Stroke"] = Text_Stroke.main
 main2 ["Text_Wrap"] = Text_Wrap.main
 main2 ["Tic_Tac_Toe"] = Tic_Tac_Toe.main
 main2 ["Translate_Transform"] = Translate_Transform.main
+main2 ["Scale_Transform"] = Scale_Transform.main
+main2 ["Rotate_Transform"] = Rotate_Transform.main
+main2 ["Custom_Transform"] = Custom_Transform.main
 
 

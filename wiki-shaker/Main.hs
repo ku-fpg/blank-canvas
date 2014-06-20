@@ -28,7 +28,7 @@ tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
 	++ ["Color_Fill","Linear_Gradient","Radial_Gradient","Pattern"]
 	++ ["Draw_Image","Image_Size","Image_Crop","Image_Loader"]
         ++ ["Font_Size_and_Style","Text_Color","Text_Stroke","Text_Align","Text_Baseline","Text_Metrics","Text_Wrap"]
-	++ ["Translate_Transform"]
+	++ ["Translate_Transform","Scale_Transform","Rotate_Transform","Custom_Transform"]
         ++ ["Shadow","Global_Alpha","Clipping_Region","Global_Composite_Operations"]
         ++ ["Grayscale","Get_Image_Data_URL","Load_Image_Data_URL"]
 
