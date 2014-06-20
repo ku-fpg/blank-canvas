@@ -9,3 +9,8 @@ notes/
 tmp/
 *#
 blank-canvas.wiki/
+.hpc/
+html/
+tix/
+.shake.database
+*tix

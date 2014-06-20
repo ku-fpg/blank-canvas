@@ -14,7 +14,7 @@ Homepage:            https://github.com/ku-fpg/blank-canvas
 Category:            Graphics
 Build-type:          Simple
 Stability:           beta
-Extra-source-files:  README
+Extra-source-files:  README.md
 Cabal-version:       >= 1.10
 data-files:
     static/index.html
@@ -50,8 +50,46 @@ Library
                        stm              >= 2.2		&& < 2.5,
                        vector           >= 0.10         && < 0.11
 
-  GHC-options:  -Werror -fno-warn-orphans -fno-warn-warnings-deprecations
+  GHC-options:  -Werror -fno-warn-orphans -fno-warn-warnings-deprecations -fhpc
 
 source-repository head
   type:     git
   location: git://github.com/ku-fpg/blank-canvas.git
+
+executable wiki-suite
+    build-depends:    base,
+                      hpc == 0.6.*,
+                      time == 1.4.*,
+                      process == 1.2.*,
+                      base64-bytestring == 1.*,
+                      unix == 2.7.*,
+                       bytestring       == 0.10.*,
+                       aeson            == 0.7.*,
+                       containers       == 0.5.*,
+                       kansas-comet     == 0.3.*,
+                       scotty           == 0.8.*,
+                       http-types       == 0.8.*,
+                       text             >= 1.1          && < 1.2,
+                       network          >= 2.4          && < 2.6,
+                       transformers     >= 0.3          && < 0.5,
+                       wai              == 3.*,
+                       wai-extra        == 3.*,
+                       warp             == 3.*,
+                       stm              >= 2.2          && < 2.5,
+                       vector           >= 0.10         && < 0.11
+
+    default-language: Haskell2010
+    GHC-options: -fhpc -threaded
+    hs-source-dirs:   wiki-suite,.
+    main-is:          Main.hs
+
+executable wiki-shaker
+    build-depends:    base,
+                      hpc == 0.6.*,
+                      directory == 1.2.*,
+                      shake == 0.13.*,                
+                      process == 1.2.*
+    default-language: Haskell2010
+    GHC-options: 
+    hs-source-dirs:   wiki-shaker,.
+    main-is:          Main.hs
