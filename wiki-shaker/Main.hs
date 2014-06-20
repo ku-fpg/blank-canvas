@@ -86,7 +86,9 @@ main = shakeArgs shakeOptions $ do
         let new = reverse
                 $ dropWhile (all isSpace)
                 $ reverse
-                [ ln 
+                [ if "module" `isPrefixOf` ln 
+		  then "module Main where"
+		  else ln
                 | ln <- lines txt 
                 , not ("wiki $" `isInfixOf` ln)         -- remove the wiki stuff
                 , not ("import Wiki" `isPrefixOf` ln)
