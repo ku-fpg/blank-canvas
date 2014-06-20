@@ -114,9 +114,6 @@ myCanvasContext = MyContext
 
 -----------------------------------------------------------------------------
 
-
------------------------------------------------------------------------------
-
 -- | trigger a specific named event, please.
 trigger :: Event -> Canvas ()
 trigger = Command . Trigger
@@ -136,7 +133,6 @@ eval = Command . Eval
 -----------------------------------------------------------------------------
 data Query :: * -> * where
         Device                                            :: Query DeviceAttributes
-        Size                                              :: Query (Float,Float)
         ToDataURL                                         :: Query Text
         MeasureText          :: Text                      -> Query TextMetrics
         IsPointInPath        :: (Float,Float)             -> Query Bool
@@ -156,7 +152,6 @@ data TextMetrics = TextMetrics Float
 
 instance Show (Query a) where
   show Device                   = "Device"
-  show Size                     = "Size"
   show ToDataURL                = "ToDataURL"
   show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
   show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
@@ -171,7 +166,6 @@ instance Show (Query a) where
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
 parseQueryResult (Device {}) o    = uncurry3 DeviceAttributes <$> parseJSON o
-parseQueryResult (Size {}) o      = parseJSON o -- default is good
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o        = parseJSON o
@@ -191,19 +185,6 @@ uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
 device = Query Device
-
--- | 'size' of the canvas. 'size' always returns integral values, but typically is used
--- in position computations, which are floating point (aka JavaScript number).
--- 
--- Typical usage is
---
--- >   (width,height) <- size
--- >   ... (width and height are now defined) ...
---
--- Note that this call always returns the same values; we do not support dynamic re-sizing.
-
-size :: Canvas (Float,Float)
-size = Query Size
 
 -- | Turn the canvas into a png data stream / data URL.
 -- 
