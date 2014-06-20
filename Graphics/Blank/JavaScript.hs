@@ -5,7 +5,6 @@ module Graphics.Blank.JavaScript where
 import Data.List
 import Data.Word (Word8)
 import Numeric
-import qualified Data.Text as Text
 import Data.Text (Text)
 
 import qualified Data.Vector.Unboxed as V
@@ -77,7 +76,8 @@ class JSArg a where
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""        
 
-jsFloat = showJS :: Float -> String
+jsFloat :: Float -> String
+jsFloat = showJS 
 
 instance JSArg Int where
   showJS a = show a
@@ -85,35 +85,41 @@ instance JSArg Int where
 instance JSArg CanvasContext where
   showJS (CanvasContext n _ _) = "canvasbuffers[" ++ show n ++ "]"
 
-jsCanvasContext = showJS :: CanvasContext -> String
+jsCanvasContext :: CanvasContext -> String
+jsCanvasContext = showJS 
 
 instance JSArg CanvasImage where
   showJS (CanvasImage n _ _) = "images[" ++ show n ++ "]"
 
-jsCanvasImage = showJS :: CanvasImage -> String
+jsCanvasImage :: CanvasImage -> String
+jsCanvasImage = showJS 
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
 
-jsCanvasGradient = showJS :: CanvasGradient -> String
+jsCanvasGradient :: CanvasGradient -> String
+jsCanvasGradient = showJS 
 
 instance JSArg CanvasPattern where
   showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
 
-jsCanvasPattern = showJS :: CanvasPattern -> String
+jsCanvasPattern :: CanvasPattern -> String
+jsCanvasPattern = showJS
 
 instance JSArg ImageData where
   showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[" ++ vs ++ "])"
      where
           vs = jsList show $ V.toList d
 
-jsImageData = showJS :: ImageData -> String
+jsImageData :: ImageData -> String
+jsImageData = showJS
 
 instance JSArg Bool where
   showJS True  = "true"
   showJS False = "false"
 
-jsBool = showJS :: Bool -> String
+jsBool :: Bool -> String
+jsBool = showJS
 
 instance JSArg Text where 
   showJS str = show str

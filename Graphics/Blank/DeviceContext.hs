@@ -3,7 +3,6 @@ module Graphics.Blank.DeviceContext where
 
 import Graphics.Blank.JavaScript
 import Control.Concurrent.STM
-import Control.Monad
 
 import qualified Web.Scotty.Comet as KC
 

@@ -1,0 +1,34 @@
+Name:                wiki-suite
+Version:             0.4.0
+Synopsis:            HTML5 Canvas Graphics Library wiki generator and test suite
+build-type:          Simple
+Cabal-version:       >= 1.10
+
+executable wiki-suite
+    build-depends:    base,
+                      hpc == 0.6.*,
+                      time == 1.4.*,
+                      process == 1.2.*,
+                      base64-bytestring == 1.*,
+                      unix == 2.7.*,
+                      blank-canvas == 0.4.0,
+                       bytestring       == 0.10.*,
+                       aeson            == 0.7.*,
+                       containers       == 0.5.*,
+                       kansas-comet     == 0.3.*,
+                       scotty           == 0.8.*,
+                       http-types       == 0.8.*,
+                       text             >= 1.1          && < 1.2,
+                       network          >= 2.4          && < 2.6,
+                       transformers     >= 0.3          && < 0.5,
+                       wai              == 3.*,
+                       wai-extra        == 3.*,
+                       warp             == 3.*,
+                       stm              >= 2.2          && < 2.5,
+                       vector           >= 0.10         && < 0.11
+
+    default-language: Haskell2010
+-- add -fhpc to do coverage
+    GHC-options:  -threaded
+    main-is:          Main.hs
+

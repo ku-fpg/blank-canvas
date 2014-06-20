@@ -1,5 +1,11 @@
 {-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP, BangPatterns, ScopedTypeVariables #-}
 
+-- | blank-canvas is a Haskell binding to the complete HTML5 Canvas
+--   API. blank-canvas allows Haskell users to write, in Haskell,
+--   interactive images onto their web browsers. blank-canvas gives
+--   the users a single full-window canvas, and provides many
+--   well-documented functions for rendering images.
+
 module Graphics.Blank
         (
          -- * Starting blank-canvas
@@ -245,7 +251,7 @@ send cxt commands =
       send' c (Bind MyContext k)   cmds = send' c (k c) cmds
 
       send' _ (With c m)           cmds = send' c m cmds
-      send' c MyContext            cmds = return c
+      send' c MyContext            cmds = send' c (Return c) cmds
       send' _ (Return a)           cmds = do
               sendToCanvas cxt cmds
               return a

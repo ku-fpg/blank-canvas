@@ -5,16 +5,13 @@ module Graphics.Blank.Canvas where
 import Graphics.Blank.Events
 import Graphics.Blank.JavaScript
 
-import Data.Aeson (FromJSON(..),Value(..), toJSON, encode)
+import Data.Aeson (FromJSON(..),Value(..),encode)
 import Data.Aeson.Types (Parser, (.:))
 import Data.Char (chr)
 import Control.Monad (ap, liftM2)
 import Control.Applicative
 import Data.Monoid
 import qualified Data.ByteString.Lazy as DBL
-import qualified Data.Vector.Unboxed as V
-import Data.Vector.Unboxed (Vector)
-import Data.Word
 import qualified Data.Text as Text
 import Data.Text (Text)
 

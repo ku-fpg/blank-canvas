@@ -34,10 +34,24 @@ tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
 
 wiki_dir = "blank-canvas.wiki"
 
-main = shakeArgs shakeOptions $ do
-    want [wiki_dir ++ "/images/" ++ nm ++ ".gif" | nm <- movies]
-    want [wiki_dir ++ "/images/" ++ nm ++ ".png" | nm <- examples ++ tutorial]
-    want [wiki_dir ++ "/examples/" ++ nm ++ ".hs" | nm <- movies ++ examples ++ tutorial]
+toMinus = map (\ c -> if c == '_' then '-' else c) 
+
+main = do args <- getArgs
+          main2 args
+
+
+main2 ["clean"] = do 
+        createProcess $ shell "rm blank-canvas.wiki/images/*.png blank-canvas.wiki/images/*.gif blank-canvas.wiki/examples/*.hs"
+        return ()
+        
+main2 args = shakeArgs shakeOptions $ do
+
+    if null args then do
+            want [wiki_dir ++ "/images/" ++ nm ++ ".gif" | nm <- movies ]
+            want [wiki_dir ++ "/images/" ++ nm ++ ".png" | nm <- examples ++ tutorial]
+            want [wiki_dir ++ "/examples/" ++ nm ++ ".hs" | nm <- movies ++ examples ++ tutorial]
+            want [wiki_dir ++ "/" ++ toMinus nm ++ ".md" | nm <- movies ++ examples ++ tutorial]
+    else return ()
 
     [wiki_dir ++ "/images/*.png", wiki_dir ++ "/images/*.gif"] |*> \out -> do
         let nm = takeBaseName out

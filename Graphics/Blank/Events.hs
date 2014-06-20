@@ -2,7 +2,7 @@
 module Graphics.Blank.Events where
 
 import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
-import Data.Aeson.Types (Parser, (.:), (.=), object)
+import Data.Aeson.Types ((.:), (.=), object)
 import Control.Applicative((<|>),(<$>),(<*>))
 import Control.Concurrent.STM
 import Data.Text (Text)

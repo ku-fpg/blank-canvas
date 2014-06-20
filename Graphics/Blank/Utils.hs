@@ -3,7 +3,6 @@ module Graphics.Blank.Utils where
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Graphics.Blank.JavaScript
-import Graphics.Blank.DeviceContext
 
 -- | Clear the screen. Restores the default transformation matrix.
 clearCanvas :: Canvas ()

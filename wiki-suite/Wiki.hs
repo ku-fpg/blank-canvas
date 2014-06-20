@@ -20,8 +20,8 @@ import System.Posix.Process
 import System.Process
 import Control.Concurrent.STM
 import System.IO.Unsafe
-import Trace.Hpc.Reflect
-import Trace.Hpc.Tix
+--import Trace.Hpc.Reflect
+--import Trace.Hpc.Tix
 import Data.List (isPrefixOf)
 
 snapShot :: DeviceContext -> FilePath -> IO ()
@@ -71,7 +71,7 @@ snapShot context fileName = do
                         drawImage(top,[1,1])
                         toDataURL() -- of tempCanvas
 
-        B.writeFile ("blank-canvas.wiki/" ++ fileName)
+        B.writeFile fileName
 		  $ decodeLenient
 		  $ encodeUtf8 $ Text.tail $ Text.dropWhile (/= ',') $ txt
 
@@ -80,11 +80,11 @@ wiki = id
 
 close :: DeviceContext -> IO ()
 close context = do
-        n <- getPOSIXTime                
-        Tix tix <- examineTix
-	let tix' = filter (\ t -> ("Graphics.Blank" `isPrefixOf` tixModuleName t)) 
-	         $ tix
-        writeFile ("tix/tix_" ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".tix") $ show $ Tix tix'
+--        n <- getPOSIXTime                
+--        Tix tix <- examineTix
+--	let tix' = filter (\ t -> ("Graphics.Blank" `isPrefixOf` tixModuleName t)) 
+--	         $ tix
+--        writeFile ("tix/tix_" ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".tix") $ show $ Tix tix'
         send context $ eval "open(location, '_self').close()"
         threadDelay (1000 * 1000);
         print "dieing"
@@ -101,11 +101,11 @@ whenM = M.when
 anim_png :: String -> IO String
 anim_png nm = do
    n <- getPOSIXTime                
-   return $ "../tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".png"
+   return $ "tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".png"
 
 build_anim :: String -> Int -> IO ()
 build_anim nm pz = do
-       callCommand $ "convert -delay " ++ show pz ++ " -loop 0 -dispose background tmp/" ++ nm ++ "_*.png blank-canvas.wiki/images/" ++ nm ++ ".gif"
+       callCommand $ "convert -delay " ++ show pz ++ " -loop 0 -dispose background tmp/" ++ nm ++ "_*.png images/" ++ nm ++ ".gif"
        return ()
 
 

@@ -4,12 +4,8 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 import System.IO.Unsafe (unsafePerformIO)
---import System.Mem.StableName
-import qualified Data.Text as T
-import Data.Text (Text)
 
 import Graphics.Blank (Options(..),port,send, Canvas, blankCanvas)
-import Graphics.Blank.JavaScript
 
 -- | splitCanvas is the GHCi entry point into blank-canvas.
 -- A typical invocation would be
@@ -36,7 +32,7 @@ splatCanvas opts cmds = do
 
     case optCh of
       Nothing -> return ()
-      Just ch -> do forkIO $ blankCanvas opts $ \ cxt -> forever $ do
+      Just ch -> do _ <- forkIO $ blankCanvas opts $ \ cxt -> forever $ do
                            cmd <- atomically $ takeTMVar ch
                            send cxt cmd    -- run the command
                     return ()

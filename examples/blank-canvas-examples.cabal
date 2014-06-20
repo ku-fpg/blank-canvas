@@ -24,7 +24,7 @@ data-files:
 -- % cabal configure -f -examples
 flag examples
   Description: Please build all examples. Makes it possible to turn off building everything
-  Default:     True
+  Default:     False
 
 executable blank-canvas-example-trivial
   if flag(examples)
