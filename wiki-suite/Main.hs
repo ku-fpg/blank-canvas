@@ -24,6 +24,7 @@ import qualified Line_Join
 import qualified Line_Width
 import qualified Linear_Gradient
 import qualified Load_Image_Data_URL
+import qualified Miter_Limit
 import qualified Path
 import qualified Pattern
 import qualified Quadratic_Curve
@@ -67,6 +68,7 @@ main2 ["Grayscale"] = Grayscale.main
 main2 ["HPCTEST"] = HPCTEST.main
 main2 ["Image_Crop"] = Image_Crop.main
 main2 ["Image_Loader"] = Image_Loader.main
+main2 ["Miter_Limit"] = Miter_Limit.main
 main2 ["Image_Size"] = Image_Size.main
 main2 ["Key_Read"] = Key_Read.main
 main2 ["Line"] = Line.main

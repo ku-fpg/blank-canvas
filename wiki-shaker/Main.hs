@@ -20,7 +20,7 @@ movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples = ["Red_Line","Favicon"]
 
-tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap"] 
+tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Arc","Quadratic_Curve","Bezier_Curve"]
         ++ ["Path","Line_Join","Rounded_Corners"]
         ++ ["Custom_Shape","Rectangle","Circle","Semicircle"]
