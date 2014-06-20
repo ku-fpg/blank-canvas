@@ -64,18 +64,19 @@ main = shakeArgs shakeOptions $ do
               ] ++ [(512,384)]
 
 
-        (_,_,_,ghc) <- liftIO $ 
-                      createProcess (proc "./dist/build/wiki-suite/wiki-suite" [nm])
+        sequence_ [
+             do (_,_,_,ghc) <- liftIO $ 
+                              createProcess (proc "./dist/build/wiki-suite/wiki-suite" [nm])
 
-         -- wait a second, for things to start
-        liftIO $ threadDelay (1 * 1000 * 1000)
+                 -- wait a second, for things to start
+                liftIO $ threadDelay (1 * 1000 * 1000)
 
-        command_ [] "/usr/bin/open" 
-                               ["-a"
-                               ,"/Applications/Google Chrome.app"
-                               ,"http://localhost:3000/?height=" ++ show h ++ "&width=" ++ show w]
-         -- wait for haskell program to stop
-        v <- liftIO $ waitForProcess ghc
+                command_ [] "/usr/bin/open" 
+                                       ["-a"
+                                       ,"/Applications/Google Chrome.app"
+                                       ,"http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd]
+                 -- wait for haskell program to stop
+                liftIO $ waitForProcess ghc | hd <- [("")] ++ if nm == "Text_Wrap" then [("&hd")] else [] ]
         return ()
 
     "blank-canvas.wiki/examples/*.hs" *> \ out -> do
