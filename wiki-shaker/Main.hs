@@ -29,7 +29,7 @@ tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Font_Size_and_Style","Text_Color","Text_Stroke","Text_Align","Text_Baseline","Text_Metrics","Text_Wrap"]
 	++ ["Translate_Transform"]
         ++ ["Shadow","Global_Alpha","Clipping_Region","Global_Composite_Operations"]
-        ++ ["Get_Image_Data_URL","Load_Image_Data_URL"]
+        ++ ["Grayscale","Get_Image_Data_URL","Load_Image_Data_URL"]
 
 wiki_dir = "blank-canvas.wiki"
 

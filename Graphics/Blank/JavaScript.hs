@@ -82,8 +82,6 @@ jsFloat = showJS :: Float -> String
 instance JSArg Int where
   showJS a = show a
 
-jsInt = showJS :: Int -> String
-
 instance JSArg CanvasContext where
   showJS (CanvasContext n _ _) = "canvasbuffers[" ++ show n ++ "]"
 
@@ -107,7 +105,7 @@ jsCanvasPattern = showJS :: CanvasPattern -> String
 instance JSArg ImageData where
   showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[" ++ vs ++ "])"
      where
-          vs = jsList (\ x -> "0x" ++ showHex x "") $ V.toList d
+          vs = jsList show $ V.toList d
 
 jsImageData = showJS :: ImageData -> String
 

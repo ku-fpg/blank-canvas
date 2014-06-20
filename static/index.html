@@ -102,9 +102,9 @@
             function GetImageData(sx,sy,sw,sh) { 
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);
-                    var arr = []; // empty for now
+                    var arr = [];
                     for(var i = 0;i < img.data.length;i++) {
-                            arr[i] = img.data[i];
+                        arr[i] = img.data[i];
                     }
                     $.kc.reply(u,{ width: img.width
                                  , height: img.height
@@ -139,6 +139,14 @@
                          }); 
              }
              
+             function ImageData(w,h,dat) { 
+                var imgData = canvasbuffers[0].createImageData(w,h);
+                for(var i = 0;i < dat.length;i ++) {
+                   imgData.data[i] = dat[i];
+                }
+                return imgData;
+             }
+
             $(document).ready(function() {
                 // Make the canvas the size of the window
                 var w = $(window).width();
