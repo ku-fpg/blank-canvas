@@ -99,7 +99,7 @@ instance Show Command where
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
   show (Log msg) = "console.log(" ++ showJS msg ++ ")" 
-  show (Eval cmd) = jsText cmd -- no escaping or interpretation
+  show (Eval cmd) = Text.unpack cmd -- no escaping or interpretation
 
 -----------------------------------------------------------------------------
 
