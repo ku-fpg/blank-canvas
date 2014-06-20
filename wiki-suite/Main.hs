@@ -1,11 +1,14 @@
+-- TO test: ghci wiki-suite/Draw_Canvas.hs -idist/build/autogen/:.:wiki-suite
 import qualified Arc
 import qualified Bezier_Curve
 import qualified Bounce
 import qualified Circle
 import qualified Clipping_Region
 import qualified Color_Fill
+import qualified Color_Square
 import qualified Custom_Shape
 import qualified Draw_Image
+import qualified Draw_Canvas
 import qualified Favicon
 import qualified Font_Size_and_Style
 import qualified Get_Image_Data_URL
@@ -57,8 +60,10 @@ main2 ["Bounce"] = Bounce.main
 main2 ["Circle"] = Circle.main
 main2 ["Clipping_Region"] = Clipping_Region.main
 main2 ["Color_Fill"] = Color_Fill.main
+main2 ["Color_Square"] = Color_Square.main
 main2 ["Custom_Shape"] = Custom_Shape.main
 main2 ["Draw_Image"] = Draw_Image.main
+main2 ["Draw_Canvas"] = Draw_Canvas.main
 main2 ["Favicon"] = Favicon.main
 main2 ["Font_Size_and_Style"] = Font_Size_and_Style.main
 main2 ["Get_Image_Data_URL"] = Get_Image_Data_URL.main

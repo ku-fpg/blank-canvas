@@ -6,7 +6,7 @@ import qualified Data.Vector.Unboxed as V
 import Data.Vector.Unboxed (Vector)
 import Wiki -- (578,400)
 
-main = blankCanvas 3000 { static= ["images/House.jpg"], debug = False } $ \ context -> do
+main = blankCanvas 3000 { static= ["images/House.jpg"] } $ \ context -> do
     ImageData w h v <- send context $ do
         img <- newImage "/images/House.jpg"
         drawImage(img,[50,50])
