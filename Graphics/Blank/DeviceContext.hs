@@ -45,19 +45,11 @@ sendToCanvas :: DeviceContext -> ShowS -> IO ()
 sendToCanvas cxt cmds = do
         KC.send (theComet cxt) $ "try{" <> T.pack (cmds "}catch(e){alert('JavaScript Failure: '+e.message);}")
 
--- | wait for any event
+-- | wait for any event. blocks.
 wait :: DeviceContext -> IO Event
 wait c = atomically $ readTChan (eventQueue c)
 
--- | get the next event if it exists
-tryGet :: DeviceContext -> IO (Maybe Event)
-tryGet cxt = atomically $ do
-    b <- isEmptyTChan (eventQueue cxt)
-    if b 
-    then return Nothing
-    else liftM Just $ readTChan (eventQueue cxt)
-
--- | 'flush' all the current events, returning them all to the user.
+-- | 'flush' all the current events, returning them all to the user. Never blocks.
 flush :: DeviceContext -> IO [Event]
 flush cxt = atomically $ loop
   where loop = do 

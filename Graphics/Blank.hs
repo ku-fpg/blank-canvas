@@ -101,7 +101,6 @@ module Graphics.Blank
         , trigger 
         , eventQueue
         , wait
-        , tryGet
         , flush
         , Event(..)
         , EventName
