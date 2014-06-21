@@ -5,6 +5,7 @@ import Graphics.Blank
 import Data.Time.Clock
 import Control.Concurrent
 import Control.Concurrent.STM
+import Data.Text(Text)
 import Control.Monad -- wiki $
 import Wiki -- (512,384)
 

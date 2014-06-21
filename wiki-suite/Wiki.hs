@@ -20,6 +20,7 @@ import System.Posix.Process
 import System.Process
 import Control.Concurrent.STM
 import System.IO.Unsafe
+import Data.Text(Text)
 --import Trace.Hpc.Reflect
 --import Trace.Hpc.Tix
 import Data.List (isPrefixOf)
