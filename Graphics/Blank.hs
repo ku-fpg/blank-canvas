@@ -111,8 +111,6 @@ module Graphics.Blank
         , Event(..)
         , EventName
         , EventQueue
-        -- ** Non-Prelude Data
-        , Text
         -- ** Middleware
         , local_only
         ) where
@@ -144,7 +142,8 @@ import Graphics.Blank.DeviceContext
 import Graphics.Blank.Canvas
 import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
 import qualified Graphics.Blank.Generated as Generated
-import Graphics.Blank.JavaScript
+import qualified Graphics.Blank.JavaScript as JavaScript
+import Graphics.Blank.JavaScript hiding (width, height)
 import Graphics.Blank.Utils
 import Paths_blank_canvas
 
@@ -317,3 +316,10 @@ fillStyle = Generated.fillStyle
 
 strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle
+
+height :: (Image image, Num a) => image -> a
+height = JavaScript.height
+
+width :: (Image image, Num a) => image -> a
+width = JavaScript.width
+

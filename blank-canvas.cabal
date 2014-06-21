@@ -6,7 +6,7 @@ Description:      blank-canvas is a Haskell binding to the complete
                   HTML5 Canvas API. blank-canvas allows Haskell
                   users to write, in Haskell, interactive images
                   onto their web browsers. blank-canvas gives the
-                  users a single full-window canvas, and provides
+                  user a single full-window canvas, and provides
                   many well-documented functions for rendering
                   images.
                   .
