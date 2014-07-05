@@ -22,7 +22,7 @@ loop context state = do
                 (width,height) <- size
                 clearRect (0,0,width,height)
                 lineWidth 1
-                strokeStyle "red"
+                fillStyle "red"
                 font "30pt Calibri"
                 fillText("Keys currently pressed: " <> Text.pack (show (keys state)),50,50)
                 fillText("Counter: " <> Text.pack (show (step state)),50,150)
