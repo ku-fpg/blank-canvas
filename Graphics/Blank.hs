@@ -115,37 +115,42 @@ module Graphics.Blank
         , local_only
         ) where
 
-import Control.Concurrent
-import Control.Concurrent.STM
-import Control.Monad
-import Control.Exception
-import Network.Wai.Handler.Warp (run)
-import Network.Wai (Middleware,remoteHost, responseLBS)
-import qualified Network.HTTP.Types as H
-import Network.Socket (SockAddr(..))
-import System.IO.Unsafe (unsafePerformIO)
---import System.Mem.StableName
-import Web.Scotty (scottyApp, get, file)
-import qualified Web.Scotty as Scotty
---import Network.Wai.Middleware.RequestLogger -- Used when debugging
---import Network.Wai.Middleware.Static
-import qualified Web.Scotty.Comet as KC
-import Data.Aeson
-import Data.Aeson.Types (parse)
-import Data.String
-import qualified Data.Text as T
-import Data.Text (Text)
-import Data.Monoid((<>))
+import           Control.Concurrent
+import           Control.Concurrent.STM
+import           Control.Exception
+import           Control.Monad
 
-import Graphics.Blank.Events
-import Graphics.Blank.DeviceContext
-import Graphics.Blank.Canvas
-import Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
+import           Data.Aeson
+import           Data.Aeson.Types (parse)
+import           Data.Monoid((<>))
+import           Data.String
+import qualified Data.Text as T
+import           Data.Text (Text)
+
+import           Graphics.Blank.Canvas
+import           Graphics.Blank.DeviceContext
+import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
+import           Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
 import qualified Graphics.Blank.JavaScript as JavaScript
-import Graphics.Blank.JavaScript hiding (width, height)
-import Graphics.Blank.Utils
-import Paths_blank_canvas
+import           Graphics.Blank.JavaScript hiding (width, height)
+import           Graphics.Blank.Utils
+
+import qualified Network.HTTP.Types as H
+import           Network.Socket (SockAddr(..))
+import           Network.Wai (Middleware,remoteHost, responseLBS)
+import           Network.Wai.Handler.Warp (run)
+-- import           Network.Wai.Middleware.RequestLogger -- Used when debugging
+-- import           Network.Wai.Middleware.Static
+
+import           Paths_blank_canvas
+
+import           System.IO.Unsafe (unsafePerformIO)
+-- import           System.Mem.StableName
+
+import qualified Web.Scotty as Scotty
+import           Web.Scotty (scottyApp, get, file)
+import qualified Web.Scotty.Comet as KC
 
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
@@ -234,7 +239,7 @@ send cxt commands =
       send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
       send' c (Bind (Return a) k)    cmds = send' c (k a) cmds
       send' c (Bind (Bind m k1) k2)  cmds = send' c (Bind m (\ r -> Bind (k1 r) k2)) cmds
-      send' c (Bind (Method cmd) k) cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
+      send' c (Bind (Method cmd) k)  cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
       send' c (Bind (Command cmd) k) cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
       send' c (Bind (Query query) k) cmds = do
               -- send the com
@@ -246,15 +251,16 @@ send cxt commands =
                 Error msg -> fail msg
                 Success a -> do
                         send' c (k a) id
-      send' c (Bind (With c' m) k) cmds = send' c' (Bind m (With c . k)) cmds
-      send' c (Bind MyContext k)   cmds = send' c (k c) cmds
+      send' c (Bind (With c' m) k)  cmds = send' c' (Bind m (With c . k)) cmds
+      send' c (Bind MyContext k)    cmds = send' c (k c) cmds
 
-      send' _ (With c m)           cmds = send' c m cmds
-      send' c MyContext            cmds = send' c (Return c) cmds
-      send' _ (Return a)           cmds = do
+      send' _ (With c m)            cmds = send' c m cmds
+      send' c MyContext             cmds = send' c (Return c) cmds
+      send' _ (Return a)            cmds = do
               sendToCanvas cxt cmds
               return a
-      send' c cmd                  cmds = send' c (Bind cmd Return) cmds
+      send' _ (LiftIO io)           _    = io
+      send' c cmd                   cmds = send' c (Bind cmd Return) cmds
 
 
 local_only :: Middleware
