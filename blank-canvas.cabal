@@ -75,6 +75,7 @@ Library
                        vector           >= 0.10         && < 0.11
 
   GHC-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations
+  GHC-prof-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations -auto-all
 
 source-repository head
   type:     git
