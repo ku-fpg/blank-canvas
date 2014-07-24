@@ -3,6 +3,7 @@ module Main where
 
 import Graphics.Blank
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
         send context $ do
                 moveTo(50,50)

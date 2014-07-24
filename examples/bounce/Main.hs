@@ -1,10 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Graphics.Blank
-import Data.Time.Clock
 import Control.Concurrent
-import Control.Concurrent.STM
+import Data.Text (Text)
+import Graphics.Blank
 
 main :: IO ()
 main = blankCanvas 3000 { events = ["mousedown"] } $ go
@@ -17,7 +16,6 @@ epoch :: [Ball ()]
 epoch = []
 
 type State = ([Ball Color])
-
 
 showBall :: (Float,Float) -> Text -> Canvas ()
 showBall (x,y) col = do
@@ -37,14 +35,15 @@ showBall (x,y) col = do
 moveBall :: Ball a -> Ball a
 moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
 
+go :: DeviceContext -> IO b
 go context = do
 
-     (width,height) <- send context size
-     print (width,height)
+     let (w,h) = (width context, height context) :: (Float, Float)
+     print (w,h)
 
      let bounce :: Ball a -> Ball a
          bounce ((x,y),d,a)
-            | y + 25 >= height && d > 0 = ((x,y),-(d-0.5)*0.97,a)
+            | y + 25 >= h && d > 0 = ((x,y),-(d-0.5)*0.97,a)
             | otherwise         = ((x,y),d,a)
 
      let loop (balls,cols) = do
@@ -69,4 +68,3 @@ go context = do
 
 
      loop ([((100,100),0,"blue")],cycle ["red","blue","green","orange","cyan"])
-      
