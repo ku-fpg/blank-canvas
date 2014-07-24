@@ -1,14 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import Graphics.Blank
-import qualified Graphics.Blank.Style as Style
-import Paths_blank_canvas_examples
-import qualified Data.Text as Text
-import qualified Data.Text.IO  as Text.IO
-import Data.Text (Text)
-import Data.Monoid((<>))
+import           Control.Applicative
 
+import           Data.Monoid((<>))
+import           Data.Text (Text)
+import qualified Data.Text as Text
+import qualified Data.Text.IO as Text.IO
+
+import           Graphics.Blank
+import qualified Graphics.Blank.Style as Style
+
+import           Paths_blank_canvas_examples
+
+main :: IO ()
 main = do
  dat <- getDataDir        
  blankCanvas 3000 { events = ["mousedown"], 
@@ -21,8 +26,8 @@ main = do
   sequence_ [ -- blank the screeen
 
               do send canvas $ do
-                      (width,height) <- size
-                      clearRect (0,0,width,height)
+                      let (w,h) = size canvas
+                      clearRect (0,0,w,h)
                       beginPath()
                       globalAlpha 1.0 -- reset this global property
 
@@ -36,15 +41,16 @@ main = do
                       restore()
 
                  -- draw the watermark in corner
-                 send canvas $ message name
+                 send canvas $ message canvas name
                  
                  -- wait for a mouse press
                  wait canvas 
 
             | (example,name) <- drop 15 $ cycle (map wrap examples ++ io_examples)
             ]
-  where wrap (example,name) = ( \ canvas -> do send canvas example, name)
-          
+    where wrap (example,name) = (send <*> example, name)
+
+examples :: [(DeviceContext -> Canvas (), Text)]
 examples =
 	 -- Lines
         [ (example_1_2_1,"1.2.1 Line")
@@ -97,6 +103,7 @@ examples =
 	-- Mouse Detection 2.5
         ]
 
+io_examples :: [(DeviceContext -> IO (), Text)]
 io_examples =
         [ (example_2_3_4,"2.3.4 Get Image Data URL")
         , (example_2_3_5,"2.3.5 Load Image Data URL")
@@ -109,31 +116,42 @@ io_examples =
           lineTo(450, 50);
           stroke();
 -}
-example_1_2_1 = do
+example_1_2_1, example_1_2_2, example_1_2_3, example_1_2_4,
+    example_1_3_1, example_1_3_2, example_1_3_3,
+    example_1_4_1, example_1_4_2, example_1_4_3,
+    example_1_5_1, example_1_5_2, example_1_5_3, example_1_5_4,
+    example_1_6_1, example_1_6_2, example_1_6_3, example_1_6_4,
+    example_1_7_1, example_1_7_2, example_1_7_3, example_1_7_4,
+    example_1_8_1, example_1_8_2, example_1_8_3, example_1_8_4, example_1_8_5, example_1_8_6, example_1_8_7,
+    example_2_1_1,
+    example_2_2_1, example_2_2_2, example_2_2_3, example_2_2_4
+  :: Image image => image -> Canvas ()
+
+example_1_2_1 _ = do
         moveTo(100,150)
         lineTo(450,50)
         stroke()
 
-example_1_2_2 = do
+example_1_2_2 _ = do
         moveTo(100,150)
         lineTo(450,50)
         lineWidth 15
         stroke()
 
-example_1_2_3 = do
+example_1_2_3 _ = do
         moveTo(100,150)
         lineTo(450,50)
         lineWidth 5
         strokeStyle "#ff0000"
         stroke()
 
-example_1_2_4 = do
-        (width,height) <- size
+example_1_2_4 canvas = do
+        let (w,h) = size canvas
 
         sequence_
            [ do beginPath()
-                moveTo(200, height / 2 + n)
-                lineTo(width - 200, height / 2 + n)
+                moveTo(200, h / 2 + n)
+                lineTo(w - 200, h / 2 + n)
                 lineWidth 20
                 strokeStyle "#0000ff"
                 lineCap cap
@@ -141,10 +159,10 @@ example_1_2_4 = do
            | (cap,n) <- zip ["butt","round","square"] [-50,0,50]
            ]
 
-example_1_3_1 = do
-        (width,height) <- size
-        let centerX = width / 2;
-        let centerY = height / 2;
+example_1_3_1 canvas = do
+        let (w,h) = size canvas
+        let centerX = w / 2;
+        let centerY = h / 2;
         let radius = 75;
         let startingAngle = 1.1 * pi
         let endingAngle = 1.9 * pi
@@ -154,7 +172,7 @@ example_1_3_1 = do
         strokeStyle "black"
         stroke()
 
-example_1_3_2 = do
+example_1_3_2 _ = do
 	beginPath()
 	moveTo(188, 150)
         quadraticCurveTo(288, 0, 388, 150)
@@ -163,8 +181,7 @@ example_1_3_2 = do
         strokeStyle "black"
         stroke()
 
-example_1_3_3 = do
-        (width,height) <- size
+example_1_3_3 _ = do
 	beginPath()
 	moveTo(188, 150)
 	bezierCurveTo(140, 10, 388, 10, 388, 170)
@@ -173,8 +190,7 @@ example_1_3_3 = do
         strokeStyle "black"
         stroke()
 
-example_1_4_1 = do
-        (width,height) <- size
+example_1_4_1 _ = do
 
         beginPath()
         moveTo(100, 20)
@@ -191,8 +207,7 @@ example_1_4_1 = do
         stroke()
 
 
-example_1_4_2 = do
-        (width,height) <- size
+example_1_4_2 _ = do
         lineWidth 25;
 
       -- miter line join (left)
@@ -219,8 +234,7 @@ example_1_4_2 = do
         lineJoin "bevel";
         stroke();
  
-example_1_4_3 = do
-        (width,height) <- size
+example_1_4_3 _ = do
         lineWidth 25;
 
         let rectWidth = 200;
@@ -237,8 +251,7 @@ example_1_4_3 = do
         lineWidth 5;
         stroke();
 
-example_1_5_1 = do
-        (width,height) <- size
+example_1_5_1 _ = do
         beginPath();
         moveTo(170, 80);
         bezierCurveTo(130, 100, 130, 150, 230, 150);
@@ -253,8 +266,7 @@ example_1_5_1 = do
         strokeStyle "blue";
         stroke();
 
-example_1_5_2 = do
-        (width,height) <- size
+example_1_5_2 _ = do
         beginPath();
         rect(188, 50, 200, 100);
         fillStyle "yellow";
@@ -263,10 +275,10 @@ example_1_5_2 = do
         strokeStyle "black";
         stroke();
       
-example_1_5_3 = do
-        (width,height) <- size
-        let centerX = width / 2
-        let centerY = height / 2
+example_1_5_3 canvas = do
+        let (w,h) = size canvas
+        let centerX = w / 2
+        let centerY = h / 2
         let radius = 70
 
         beginPath()
@@ -277,8 +289,7 @@ example_1_5_3 = do
         strokeStyle "black"
         stroke()
 
-example_1_5_4 = do
-        (width,height) <- size
+example_1_5_4 _ = do
         beginPath();
         arc(288, 75, 70, 0, pi, False);
         closePath();
@@ -288,8 +299,7 @@ example_1_5_4 = do
         strokeStyle "#550000";
         stroke();
 
-example_1_6_1 = do
-        (width,height) <- size
+example_1_6_1 _ = do
         beginPath();
         moveTo(170, 80);
         bezierCurveTo(130, 100, 130, 150, 230, 150);
@@ -307,10 +317,10 @@ example_1_6_1 = do
         strokeStyle "blue";
         stroke();
 
-example_1_6_2 = do
-        (width,height) <- size
-        rect(0, 0, width, height)
-        grd <- createLinearGradient(0, 0, width, height)
+example_1_6_2 canvas = do
+        let (w,h) = size canvas
+        rect(0, 0, w, h)
+        grd <- createLinearGradient(0, 0, w, h)
         -- light blue
         grd # addColorStop(0, "#8ED6FF")
         -- dark blue
@@ -318,9 +328,9 @@ example_1_6_2 = do
         Style.fillStyle grd;
         fill();
 
-example_1_6_3 = do
-        (width,height) <- size
-        rect(0, 0, width, height)
+example_1_6_3 canvas = do
+        let (w,h) = size canvas
+        rect(0, 0, w, h)
         grd <- createRadialGradient (238, 50, 10, 238, 50, 300)
         -- light blue
         grd # addColorStop(0, "#8ED6FF")
@@ -329,94 +339,94 @@ example_1_6_3 = do
         Style.fillStyle grd;
         fill();
 
-example_1_6_4 = do
-        (width,height) <- size
+example_1_6_4 canvas = do
+        let (w,h) = size canvas
         imageObj <- newImage "/images/fan.jpg"
         pattern <- createPattern (imageObj,"repeat")
-        rect(0, 0, width, height);
+        rect(0, 0, w, h);
         Style.fillStyle pattern;
         fill();
 
-example_1_7_1 = do
+example_1_7_1 _ = do
         img <- newImage "/images/princess.jpg"
         drawImage(img,[69,50])
 
-example_1_7_2 = do
+example_1_7_2 _ = do
         img <- newImage "/images/princess.jpg"
         drawImage(img,[69,50,97,129])
 
-example_1_7_3 = do
+example_1_7_3 _ = do
         img <- newImage "/images/princess.jpg"
         drawImage(img,[400,200,300,400,100,100,150,200])
 
-example_1_7_4 = do
+example_1_7_4 _ = do
         img1 <- newImage "/images/princess.jpg"
         img2 <- newImage "/images/fan.jpg"
         drawImage(img1,[69,50,97,129])
         drawImage(img2,[400,50])
 
-example_1_8_1 = do
+example_1_8_1 _ = do
         font "40pt Calibri"
         fillText("Hello World!", 150, 100)
 
-example_1_8_2 = do
+example_1_8_2 _ = do
         font "40pt Calibri"
         fillStyle "#0000ff"
         fillText("Hello World!", 150, 100)
 
-example_1_8_3 = do
+example_1_8_3 _ = do
         font "60pt Calibri"
         lineWidth 3
         strokeStyle "blue"
         strokeText("Hello World!", 80, 110)
 
-example_1_8_4 = do
-        (width,height) <- size
-        let x = width / 2
-        let y = height / 2
+example_1_8_4 canvas = do
+        let (w,h) = size canvas
+        let x = w / 2
+        let y = h / 2
         font "30pt Calibri"
         textAlign "center"
         fillStyle "blue"
         fillText("Hello World!", x, y)
 
-example_1_8_5 = do
-        (width,height) <- size
-        let x = width / 2
-        let y = height / 2
+example_1_8_5 canvas = do
+        let (w,h) = size canvas
+        let x = w / 2
+        let y = h / 2
         font "30pt Calibri"
         textAlign "center"
         textBaseline "middle"
         fillStyle "blue"
         fillText("Hello World!", x, y)
 
-example_1_8_6 = do
-        (width,height) <- size
-        let x = width / 2
-        let y = height / 2 - 10;
+example_1_8_6 canvas = do
+        let (w,h) = size canvas
+        let x = w / 2
+        let y = h / 2 - 10;
         let text = "Hello World!"
         font "30pt Calibri"
         textAlign "center"
         fillStyle "blue"
         fillText(text, x, y)
 
-        TextMetrics w <- measureText text
+        TextMetrics w' <- measureText text
         font "20pt Calibri"
         textAlign "center"
         fillStyle "#555"
-        fillText("(" <> Text.pack (show w) <> "px wide)", x, y + 40)
+        fillText("(" <> Text.pack (show w') <> "px wide)", x, y + 40)
 
-example_1_8_7 = do
-        (width,height) <- size
+example_1_8_7 canvas = do
+        let w = width canvas
         font "lighter 16pt Calibri"
         fillStyle "#000"
-        let maxWidth = width / 3
-        wrapText 0 (Text.words message) ((width - maxWidth) / 2) 60 maxWidth 25
+        let maxWidth = w / 3
+        wrapText 0 (Text.words message') ((w - maxWidth) / 2) 60 maxWidth 25
     where
 
-        message = "All the world's a stage, and all the men and women merely players. " <>
+        message' = "All the world's a stage, and all the men and women merely players. " <>
                   "They have their exits and their entrances; And one man in his time plays many parts."
 
-        wrapText wc []   x y maxWidth lineHeight = return ()
+        wrapText _  []   _ _ _        _          = return ()
         wrapText wc text x y maxWidth lineHeight = do
              TextMetrics testWidth <- measureText $ Text.unwords $ take (wc+1) $ text
              if (testWidth > maxWidth && wc > 0) || length text <= wc
@@ -425,15 +435,15 @@ example_1_8_7 = do
              else do wrapText (wc+1) text           x y                maxWidth lineHeight
 
 
-example_2_1_1 = do
-        (width,height) <- size
+example_2_1_1 canvas = do
+        let (w,h) = size canvas
         let rectWidth = 150;
         let rectHeight = 75;
-        translate(width / 2, height / 2);
+        translate(w / 2, h / 2);
         fillStyle "blue";
         fillRect(rectWidth / (-2), rectHeight / (-2), rectWidth, rectHeight);
 
-example_2_2_1 = do
+example_2_2_1 _ = do
         rect(188, 40, 200, 100);
         fillStyle "red";
         shadowColor "#999";
@@ -442,7 +452,7 @@ example_2_2_1 = do
         shadowOffsetY 15;
         fill()
 
-example_2_2_2 = do
+example_2_2_2 _ = do
       -- draw blue rectangle
       beginPath();
       rect(200, 20, 100, 100);
@@ -456,10 +466,10 @@ example_2_2_2 = do
       fillStyle "red";
       fill();
 
-example_2_2_3 = do
-      (width,height) <- size
-      let x = width / 2;
-      let y = height / 2;
+example_2_2_3 canvas = do
+      let (w,h) = size canvas
+      let x = w / 2;
+      let y = h / 2;
       let radius = 75;
       let offset = 50;
 
@@ -502,22 +512,22 @@ example_2_2_3 = do
       strokeStyle "blue";
       stroke();
 
-sync = do _ <- size
-          return ()
+sync :: Monad m => a -> m ()
+sync _ = return ()
 
-example_2_2_4 = do
-        (width,height) <- size
-        tempCanvas <- newCanvas (round width,round height)
+example_2_2_4 canvas = do
+        let (w,h) = size canvas :: (Float, Float)
+        tempCanvas <- newCanvas (round w,round h)
         console_log tempCanvas
-        (w,h) <- with tempCanvas $ size
-        console_log $ Text.pack $ show $ (w,h)
+        let (w',h') = size tempCanvas
+        console_log $ Text.pack $ show $ (w',h')
 
-        sync
+        sync canvas
         
         let squareWidth = 55;
         let circleRadius = 35;
         let shapeOffset = 50;
-        let operationOffset = 150;
+        -- let operationOffset = 150;
 
         let compss = 
              [["source-atop", "source-in", "source-out", "source-over"]
@@ -536,7 +546,7 @@ example_2_2_4 = do
                 with tempCanvas $ do
                         save();
 
-                        clearRect(0, 0, width, height);
+                        clearRect(0, 0, w', h');
                         -- draw rectangle (destination)
                         beginPath();
                         rect(0, 0, squareWidth, squareWidth);
@@ -564,6 +574,8 @@ example_2_2_4 = do
               | (comps,y)         <- compss `zip` [0..]
               , (thisOperation,x) <- comps  `zip` [0..]
               ]
+
+example_2_3_4, example_2_3_5 :: DeviceContext -> IO ()
 
 example_2_3_4 canvas = do
    url <- send canvas $ do
@@ -593,23 +605,27 @@ example_2_3_5 canvas = do
            img <- newImage url
            drawImage (img,[0,0])
 
-example_last = do
-        todo  -- marker for the scanning sof the examples
+-- example_last :: Canvas ()
+-- example_last = do
+--         todo  -- marker for the scanning sof the examples
 
 ---------------------------------------------------------------------------
 
-todo :: Canvas ()
-todo = do
-        font "40pt Calibri"
-        fillText("(TODO)", 150, 100)
+-- todo :: Canvas ()
+-- todo = do
+--         font "40pt Calibri"
+--         fillText("(TODO)", 150, 100)
 
 -- Small "watermark-like text in the bottom corner"
-message :: Text -> Canvas ()
-message msg = do
+message :: DeviceContext -> Text -> Canvas ()
+message canvas msg = do
         save()
-        (width,height) <- size
+        let h = height canvas
         font "30pt Calibri"
         textAlign "left"
         fillStyle "#8090a0"
-        fillText(msg, 10, height - 10)
+        fillText(msg, 10, h - 10)
         restore()
+
+size :: (Image image, Num a, Num b) => image -> (a, b)
+size image = (width image, height image)

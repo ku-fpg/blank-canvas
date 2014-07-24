@@ -4,6 +4,14 @@ dist/*
 *.swp
 *.swo
 *~
+cabal-dev
+.chi
+.chs.h
+.virtualenv
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.config
 examples/dist/*
 notes/
 tmp/

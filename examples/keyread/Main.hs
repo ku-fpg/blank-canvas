@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Graphics.Blank
-import Debug.Trace
-import Control.Concurrent
-import Data.List (nub)
+-- import           Control.Concurrent
+
+import           Data.List (nub)
 import qualified Data.Text as Text
-import Data.Monoid((<>))
+import           Data.Monoid((<>))
+
+import           Graphics.Blank
 
 data State = State
      	     { keys :: [Int]    -- key *codes* for pressed keys
@@ -14,13 +15,15 @@ data State = State
      	     }
      deriving Show
 
+main :: IO ()
 main = blankCanvas 3000 { events = ["keyup","keydown"] } $ \ context -> loop context (State [] 0)
 
+loop :: DeviceContext -> State -> IO a
 loop context state = do
 --        threadDelay (1 * 1000 * 10)    -- remove if writing a game
         send context $ do
-                (width,height) <- size
-                clearRect (0,0,width,height)
+                let (w,h) = (width context, height context)
+                clearRect (0,0,w,h)
                 lineWidth 1
                 fillStyle "red"
                 font "30pt Calibri"
@@ -31,6 +34,7 @@ loop context state = do
 
         control context state
 
+control :: DeviceContext -> State -> IO a
 control context state = do
         event <- wait context
         let down_keys = case (eType event,eWhich event) of

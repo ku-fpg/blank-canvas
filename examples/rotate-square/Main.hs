@@ -1,19 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Graphics.Blank
 import Control.Concurrent
+import Graphics.Blank
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
-     loop context (0 :: Float)
+     loop context 0
 
+loop :: DeviceContext -> Float -> IO a
 loop context n = do
         send context $ do
-                (width,height) <- size
-                clearRect (0,0,width,height)
+                let (w,h) = (width context, height context)
+                clearRect (0,0,w,h)
                 beginPath()
                 save()
-                translate (width / 2,height / 2)
+                translate (w / 2, h / 2)
                 rotate (pi * n)
                 beginPath()
                 moveTo(-100,-100)
@@ -25,6 +27,5 @@ loop context n = do
                 strokeStyle "green"
                 stroke()
                 restore()
-	threadDelay (20 * 1000)	
+        threadDelay (20 * 1000)	
         loop context (n + 0.01)
-

@@ -1,11 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Graphics.Blank
-import Data.Map (Map)
+import           Data.Map (Map)
 import qualified Data.Map as Map
-import Debug.Trace
+import           Data.Text (Text)
 
+import           Graphics.Blank
+
+main :: IO ()
 main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> loop context Map.empty X
 data XO = X | O
         deriving (Eq,Ord,Show)
@@ -14,18 +16,18 @@ swap :: XO -> XO
 swap X = O
 swap O = X
 
-loop :: Context -> Map (Int,Int) XO -> XO -> IO ()
+loop :: DeviceContext -> Map (Int,Int) XO -> XO -> IO ()
 loop context board turn = do
 --        print board
 --        print turn
-        (width,height,sz) <- send context $ do
-                (width,height) <- size
-                clearRect (0,0,width,height)
+        (w,h,sz) <- send context $ do
+                let (w,h) = (width context, height context)
+                clearRect (0,0,w,h)
                 beginPath()
 
-                let sz = min width height
+                let sz = min w h
                 save()
-                translate (width / 2,height / 2)
+                translate (w / 2, h / 2)
                 sequence_ [ do bigLine (-sz * 0.45,n) (sz * 0.45,n)
                                bigLine (n,-sz * 0.45) (n,sz * 0.45)
                           | n <- [-sz * 0.15,sz * 0.15]
@@ -43,12 +45,12 @@ loop context board turn = do
                           , y <- [-1,0,1]
                           ]
                 restore()
-                return (width,height,sz)
+                return (w,h,sz)
 
         let pointToSq :: (Float,Float) -> Maybe (Int,Int)
             pointToSq (x,y) = do
-                    x' <- fd ((x - width / 2) / sz)
-                    y' <- fd ((y - height / 2) / sz)
+                    x' <- fd ((x - w / 2) / sz)
+                    y' <- fd ((y - h / 2) / sz)
                     return (x',y')
 
             fd x = 
@@ -70,7 +72,7 @@ loop context board turn = do
                                                     -- already something here
                                            Just _ -> loop context board turn
 
-
+xColor, oColor, boardColor :: Text
 xColor = "#ff0000"
 oColor = "#00a000"
 boardColor = "#000080"
