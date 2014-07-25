@@ -80,8 +80,8 @@
 
             function MeasureText(txt) { 
                 return function (u,c) {
-                    $.kc.reply(u,c.measureText(txt));
-                }        
+                    $.kc.reply(u,{ width: c.measureText(txt).width });
+                }
             }
             function IsPointInPath(x,y) { 
                 return function (u,c) {
