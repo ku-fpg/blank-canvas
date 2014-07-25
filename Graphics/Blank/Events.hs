@@ -1,10 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables, OverloadedStrings #-}
 module Graphics.Blank.Events where
 
+import Control.Applicative ((<|>), (<$>), (<*>))
+import Control.Concurrent.STM
+
 import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
 import Data.Aeson.Types ((.:), (.=), object)
-import Control.Applicative((<|>),(<$>),(<*>))
-import Control.Concurrent.STM
 import Data.Text (Text)
 
 -- | Basic Event from Browser; see <http://api.jquery.com/category/events/event-object/> for details.

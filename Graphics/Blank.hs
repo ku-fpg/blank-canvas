@@ -122,7 +122,7 @@ import           Control.Monad
 
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
-import           Data.Monoid((<>))
+import           Data.Monoid ((<>))
 import           Data.String
 import qualified Data.Text as T
 import           Data.Text (Text)
