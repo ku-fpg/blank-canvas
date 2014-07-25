@@ -43,9 +43,9 @@
             }
             function ToDataURL(u,c) {
                 $.kc.reply(u,c.canvas.toDataURL());
-                            
+
             }
-            function NewImage(src) { 
+            function NewImage(src) {
                 return function (u,c) {
                     var img = new Image();
                     var count = images.push(img);
@@ -54,52 +54,52 @@
                     };
                     img.onerror = function() { alert("Image " + src + " not found.\nAdd as a static file to fix this."); };
                     img.src = src;
-                }        
+                }
             }
 
-            function CreateLinearGradient(x0,y0,x1,y1) { 
+            function CreateLinearGradient(x0,y0,x1,y1) {
                 return function (u,c) {
                     var count = gradients.push(c.createLinearGradient(x0,y0,x1,y1));
                     $.kc.reply(u,count - 1);
-                }        
+                }
             }
 
-            function CreateRadialGradient(x0,y0,r0,x1,y1,r1) { 
+            function CreateRadialGradient(x0,y0,r0,x1,y1,r1) {
                 return function (u,c) {
                     var count = gradients.push(c.createRadialGradient(x0,y0,r0,x1,y1,r1));
                     $.kc.reply(u,count - 1);
-                }        
+                }
             }
 
-            function CreatePattern(img,src) { 
+            function CreatePattern(img,src) {
                 return function (u,c) {
                     var count = patterns.push(c.createPattern(img,src));
                     $.kc.reply(u,count - 1);
-                }        
+                }
             }
 
-            function MeasureText(txt) { 
+            function MeasureText(txt) {
                 return function (u,c) {
                     $.kc.reply(u,{ width: c.measureText(txt).width });
                 }
             }
-            function IsPointInPath(x,y) { 
+            function IsPointInPath(x,y) {
                 return function (u,c) {
                     $.kc.reply(u,c.isPointInPath(x,y));
-                }        
+                }
             }
 
-            function NewCanvas(w,h) { 
+            function NewCanvas(w,h) {
                 return function (u,c) {
                     var canvas = document.createElement('canvas');
                     canvas.width = w;
                     canvas.height = h;
                     var count = canvasbuffers.push(canvas.getContext("2d"));
-                    $.kc.reply(u,[count - 1,w,h]);              
-                }        
+                    $.kc.reply(u,[count - 1,w,h]);
+                }
             }
 
-            function GetImageData(sx,sy,sw,sh) { 
+            function GetImageData(sx,sy,sw,sh) {
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);
                     var arr = [];
@@ -110,10 +110,10 @@
                                  , height: img.height
                                  , data: arr
                                  });
-                }        
+                }
             }
 
-            function Trigger(e) { 
+            function Trigger(e) {
                 $.kc.event({ eMetaKey: e.eMetaKey,
                              ePageXY : e.ePageXY,
                              eType   : e.eType,
@@ -128,7 +128,7 @@
                                      eWhich  : e.which
                                     });
                 });
-            }  
+            }
             function redraw() {
                 $.ajax({ url: "/canvas/" + session,
                          type: "GET",
@@ -136,10 +136,10 @@
                          success: function success() {
                                  redraw();
                          }
-                         }); 
+                         });
              }
-             
-             function ImageData(w,h,dat) { 
+
+             function ImageData(w,h,dat) {
                 var imgData = canvasbuffers[0].createImageData(w,h);
                 for(var i = 0;i < dat.length;i ++) {
                    imgData.data[i] = dat[i];
@@ -169,8 +169,8 @@
                 $("#canvas").replaceWith(
                             '<canvas id="canvas" width="' + (w * myDevicePixelRatio) + '" height="' + (h * myDevicePixelRatio) +
                             '" style="border: black solid ' + b + 'px; padding: 0px; margin: 0px"></canvas>');
-                $("#canvas").css("width",w + "px");            
-                $("#canvas").css("height",h + "px");            
+                $("#canvas").css("width",w + "px");
+                $("#canvas").css("height",h + "px");
                 c = getContext("2d");
                 canvasbuffers.push(c);
                 $.kc.connect("/blank");
