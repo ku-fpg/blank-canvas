@@ -1,9 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
+import Data.Text (Text)
+
 import Graphics.Blank.Canvas
 import Graphics.Blank.JavaScript
-import Data.Text (Text)
 
 instance Show Method where
   show (Arc (a1,a2,a3,a4,a5,a6)) = "arc(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsBool a6 ++ ")"

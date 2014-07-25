@@ -3,9 +3,10 @@ module Graphics.Blank.GHCi (splatCanvas) where
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
-import System.IO.Unsafe (unsafePerformIO)
 
 import Graphics.Blank (Options(..),port,send, Canvas, blankCanvas)
+
+import System.IO.Unsafe (unsafePerformIO)
 
 -- | splitCanvas is the GHCi entry point into blank-canvas.
 -- A typical invocation would be

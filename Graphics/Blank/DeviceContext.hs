@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.DeviceContext where
 
-import Graphics.Blank.JavaScript
-import Control.Concurrent.STM
+import           Control.Concurrent.STM
+
+import           Data.Monoid ((<>))
+import qualified Data.Text as T
+
+import           Graphics.Blank.Events
+import           Graphics.Blank.JavaScript
 
 import qualified Web.Scotty.Comet as KC
-
-import Graphics.Blank.Events
-import Data.Monoid((<>))
-import qualified Data.Text as T
 
 -- | 'Context' is our abstact handle into a specific 2d-context inside a browser.
 -- Note that the JavaScript API concepts of 2D-Context and Canvas

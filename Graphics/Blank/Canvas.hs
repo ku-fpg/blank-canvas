@@ -2,28 +2,32 @@
 
 module Graphics.Blank.Canvas where
 
-import Graphics.Blank.Events
-import Graphics.Blank.JavaScript
+import           Control.Applicative
+import           Control.Monad (ap, liftM2)
+import           Control.Monad.IO.Class
 
-import Data.Aeson (FromJSON(..),Value(..),encode)
-import Data.Aeson.Types (Parser, (.:))
-import Data.Char (chr)
-import Control.Monad (ap, liftM2)
-import Control.Applicative
-import Data.Monoid
+import           Graphics.Blank.Events
+import           Graphics.Blank.JavaScript
+
+import           Data.Aeson (FromJSON(..),Value(..),encode)
+import           Data.Aeson.Types (Parser, (.:))
+import           Data.Char (chr)
+
 import qualified Data.ByteString.Lazy as DBL
+import           Data.Monoid
 import qualified Data.Text as Text
-import Data.Text (Text)
+import           Data.Text (Text)
 
 
 data Canvas :: * -> * where
-        Method  :: Method                              -> Canvas ()     -- <context>.<method>
-        Command :: Command                             -> Canvas ()     -- <command>
-        Query   :: (Show a) => Query a                 -> Canvas a
-        With    :: CanvasContext -> Canvas a           -> Canvas a
-        MyContext ::                                      Canvas CanvasContext
-        Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
-        Return  :: a                                   -> Canvas a
+        Method    :: Method                      -> Canvas ()     -- <context>.<method>
+        Command   :: Command                     -> Canvas ()     -- <command>
+        Query     :: (Show a) => Query a         -> Canvas a
+        With      :: CanvasContext -> Canvas a   -> Canvas a
+        MyContext ::                                Canvas CanvasContext
+        Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
+        Return    :: a                           -> Canvas a
+        LiftIO    :: IO a                        -> Canvas a
 
 instance Monad Canvas where
         return = Return
@@ -39,6 +43,9 @@ instance Functor Canvas where
 instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
   mempty  = return mempty
+
+instance MonadIO Canvas where
+  liftIO = LiftIO
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method

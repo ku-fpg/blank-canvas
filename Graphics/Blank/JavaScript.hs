@@ -2,13 +2,14 @@
 
 module Graphics.Blank.JavaScript where
 
-import Data.List
-import Data.Word (Word8)
-import Numeric
-import Data.Text (Text)
+import           Data.List
+import           Data.Text (Text)
+import           Data.Word (Word8)
 
 import qualified Data.Vector.Unboxed as V
-import Data.Vector.Unboxed (Vector)
+import           Data.Vector.Unboxed (Vector)
+
+import           Numeric
 
 -------------------------------------------------------------
 
