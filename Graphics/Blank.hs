@@ -253,6 +253,9 @@ send cxt commands =
                         send' c (k a) id
       send' c (Bind (With c' m) k)  cmds = send' c' (Bind m (With c . k)) cmds
       send' c (Bind MyContext k)    cmds = send' c (k c) cmds
+      send' c (Bind (LiftIO io) k)  cmds = do
+              a <- io
+              send' c (k a) cmds
 
       send' _ (With c m)            cmds = send' c m cmds
       send' c MyContext             cmds = send' c (Return c) cmds
