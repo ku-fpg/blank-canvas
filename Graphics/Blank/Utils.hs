@@ -12,13 +12,13 @@ clearCanvas = do
   clearRect (0,0,width me,height me)
 
 -- | Wrap a canvas computation in 'save' / 'restore'.
-saveRestore :: Canvas () -> Canvas ()
+saveRestore :: Canvas a -> Canvas a
 saveRestore m = do
     save ()
-    m
+    r <- m
     restore ()
-    
-    
+    return r
+
 infixr 0 #
 
 -- | The @#@-operator is the Haskell analog to the @.@-operator
