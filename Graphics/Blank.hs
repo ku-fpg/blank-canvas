@@ -260,12 +260,10 @@ send cxt commands =
       send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
 -- Most of these can be factored out, except return
       send' c (Bind m k)            cmds = sendBind c m k cmds
-      send' _ (With c m)            cmds = send' c m cmds
-      send' c MyContext             cmds = send' c (Return c) cmds
+      send' _ (With c m)            cmds = send' c m cmds  -- This is a bit of a hack
       send' _ (Return a)            cmds = do
               sendToCanvas cxt cmds
               return a
-      send' _ (LiftIO io)           _    = io
       send' c cmd                   cmds = sendBind c cmd Return cmds
 
 
