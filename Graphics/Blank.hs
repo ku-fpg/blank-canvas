@@ -15,7 +15,7 @@ module Graphics.Blank
         , DeviceContext       -- abstact
         , send
           -- * HTML5 Canvas API
-          -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript 
+          -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript
           --   version of this API.
         , Canvas        -- abstact
           -- ** Canvas element
@@ -70,7 +70,7 @@ module Graphics.Blank
         , rect
         , isPointInPath
           -- ** Text
-        , font 
+        , font
         , textAlign
         , textBaseline
         , fillText
@@ -104,7 +104,7 @@ module Graphics.Blank
          -- ** Drawing Utilities
         , module Graphics.Blank.Utils
          -- ** Events
-        , trigger 
+        , trigger
         , eventQueue
         , wait
         , flush
@@ -181,8 +181,8 @@ blankCanvas opts actions = do
 
    app <- scottyApp $ do
 --        middleware logStdoutDev
-        sequence_ [ Scotty.middleware ware 
-                  | ware <- middleware opts 
+        sequence_ [ Scotty.middleware ware
+                  | ware <- middleware opts
                   ]
         -- use the comet
         let kc_opts :: KC.Options
@@ -204,17 +204,17 @@ blankCanvas opts actions = do
                            _ -> return ()
 
                 let cxt0 = DeviceContext kc_doc queue 300 300 1
-                
-                -- A bit of bootstrapping 
+
+                -- A bit of bootstrapping
                 DeviceAttributes w h dpr <- send cxt0 device
                 -- print (DeviceAttributes w h dpr)
 
-                let cxt1 = cxt0 
+                let cxt1 = cxt0
                          { ctx_width = w
                          , ctx_height = h
                          , ctx_devicePixelRatio = dpr
                          }
-                
+
                 (actions $ cxt1) `catch` \ (e :: SomeException) -> do
                         print ("Exception in blank-canvas application:"  :: String)
                         print e
@@ -296,7 +296,7 @@ getUniq = do
 
 -------------------------------------------------
 
-data Options = Options 
+data Options = Options
         { port   :: Int              -- ^ which port do we issue the blank canvas using
         , events :: [EventName]      -- ^ which events does the canvas listen to
         , debug  :: Bool             -- ^ turn on debugging (default False)
@@ -304,7 +304,7 @@ data Options = Options
         , root   :: String           -- ^ location of the static files (default .)
         , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
         }
-        
+
 instance Num Options where
     (+) = error "no arithmetic for Blank Canvas Options"
     (-) = error "no arithmetic for Blank Canvas Options"
@@ -334,4 +334,3 @@ height = JavaScript.height
 
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width
-
