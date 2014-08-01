@@ -233,15 +233,15 @@ blankCanvas opts actions = do
 -- to common up as many commands as possible. Should not crash.
 
 send :: DeviceContext -> Canvas a -> IO a
-send cxt commands = 
-      send' (deviceCanvasContext cxt) commands id 
+send cxt commands =
+      send' (deviceCanvasContext cxt) commands id
   where
-      send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
-      send' c (Bind (Return a) k)    cmds = send' c (k a) cmds
-      send' c (Bind (Bind m k1) k2)  cmds = send' c (Bind m (\ r -> Bind (k1 r) k2)) cmds
-      send' c (Bind (Method cmd) k)  cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
-      send' c (Bind (Command cmd) k) cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
-      send' c (Bind (Query query) k) cmds = do
+      sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendBind c (Return a) k    cmds = send' c (k a) cmds
+      sendBind c (Bind m k1) k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
+      sendBind c (Method cmd) k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
+      sendBind c (Command cmd) k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
+      sendBind c (Query query) k cmds = do
               -- send the com
               uq <- atomically $ getUniq
               -- The query function returns a function takes the unique port number of the reply.
@@ -251,19 +251,22 @@ send cxt commands =
                 Error msg -> fail msg
                 Success a -> do
                         send' c (k a) id
-      send' c (Bind (With c' m) k)  cmds = send' c' (Bind m (With c . k)) cmds
-      send' c (Bind MyContext k)    cmds = send' c (k c) cmds
-      send' c (Bind (LiftIO io) k)  cmds = do
-              a <- io
+      sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
+      sendBind c MyContext k    cmds = send' c (k c) cmds
+      sendBind c (LiftIO io) k  cmds = do
+              a <- io    -- done out of step from the cmds, which have not been sent yet.
               send' c (k a) cmds
 
+      send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
+-- Most of these can be factored out, except return
+      send' c (Bind m k)            cmds = sendBind c m k cmds
       send' _ (With c m)            cmds = send' c m cmds
       send' c MyContext             cmds = send' c (Return c) cmds
       send' _ (Return a)            cmds = do
               sendToCanvas cxt cmds
               return a
       send' _ (LiftIO io)           _    = io
-      send' c cmd                   cmds = send' c (Bind cmd Return) cmds
+      send' c cmd                   cmds = sendBind c cmd Return cmds
 
 
 local_only :: Middleware
