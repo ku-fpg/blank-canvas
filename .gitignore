@@ -23,3 +23,4 @@ tix/
 .shake.database
 *tix
 wiki-suite/dist
+bugs/

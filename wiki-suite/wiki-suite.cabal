@@ -11,7 +11,7 @@ executable wiki-suite
                       process == 1.2.*,
                       base64-bytestring == 1.*,
                       unix == 2.7.*,
-                      blank-canvas == 0.4.0,
+                      blank-canvas == 0.4.0.1,
                        bytestring       == 0.10.*,
                        aeson            == 0.7.*,
                        containers       == 0.5.*,
