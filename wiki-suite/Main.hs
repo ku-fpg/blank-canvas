@@ -28,6 +28,8 @@ import qualified Line_Join
 import qualified Line_Width
 import qualified Linear_Gradient
 import qualified Load_Image_Data_URL
+import qualified Load_Image_Data_URL_2
+import qualified Load_Image_Data_URL_3
 import qualified Miter_Limit
 import qualified Path
 import qualified Pattern
@@ -88,6 +90,8 @@ main2 ["Line_Join"] = Line_Join.main
 main2 ["Line_Width"] = Line_Width.main
 main2 ["Linear_Gradient"] = Linear_Gradient.main
 main2 ["Load_Image_Data_URL"] = Load_Image_Data_URL.main
+main2 ["Load_Image_Data_URL_2"] = Load_Image_Data_URL_2.main
+main2 ["Load_Image_Data_URL_3"] = Load_Image_Data_URL_3.main
 main2 ["Path"] = Path.main
 main2 ["Pattern"] = Pattern.main
 main2 ["Quadratic_Curve"] = Quadratic_Curve.main
