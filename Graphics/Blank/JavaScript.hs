@@ -3,8 +3,9 @@
 module Graphics.Blank.JavaScript where
 
 import           Data.List
-import           Data.Text (Text)
+import           Data.Text (Text,unpack)
 import           Data.Word (Word8)
+import           Data.Char (isControl, isAscii, ord)
 
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector)
@@ -123,10 +124,53 @@ jsBool :: Bool -> String
 jsBool = showJS
 
 instance JSArg Text where 
-  showJS str = show str
+  showJS = jsLiteralString . unpack
 
 jsText :: Text -> String
 jsText = showJS
 
 jsList :: (a -> String) -> [a] -> String
 jsList js = concat . intersperse "," . map js 
+
+
+-- The following was from our Sunroof compiler.
+-- -------------------------------------------------------------
+-- String Conversion Utilities: Haskell -> JS
+-- -------------------------------------------------------------
+
+-- | Transform a Haskell string into a string representing a JS string literal.
+jsLiteralString :: String -> String
+jsLiteralString = jsQuoteString . jsEscapeString
+
+-- | Add quotes to a string.
+jsQuoteString :: String -> String
+jsQuoteString s = "\"" ++ s ++ "\""
+
+-- | Transform a character to a string that represents its JS
+--   unicode escape sequence.
+jsUnicodeChar :: Char -> String
+jsUnicodeChar c =
+  let hex = showHex (ord c) ""
+  in ('\\':'u': replicate (4 - length hex) '0') ++ hex
+
+-- | Correctly replace Haskell characters by the JS escape sequences.
+jsEscapeString :: String -> String
+jsEscapeString [] = []
+jsEscapeString (c:cs) = case c of
+  -- Backslash has to remain backslash in JS.
+  '\\' -> '\\' : '\\' : jsEscapeString cs
+  -- Special control sequences.
+  '\0' -> jsUnicodeChar '\0' ++ jsEscapeString cs -- Ambigous with numbers
+  '\a' -> jsUnicodeChar '\a' ++ jsEscapeString cs -- Non JS
+  '\b' -> '\\' : 'b' : jsEscapeString cs
+  '\f' -> '\\' : 'f' : jsEscapeString cs
+  '\n' -> '\\' : 'n' : jsEscapeString cs
+  '\r' -> '\\' : 'r' : jsEscapeString cs
+  '\t' -> '\\' : 't' : jsEscapeString cs
+  '\v' -> '\\' : 'v' : jsEscapeString cs
+  '\"' -> '\\' : '\"' : jsEscapeString cs
+  '\'' -> '\\' : '\'' : jsEscapeString cs
+  -- Non-control ASCII characters can remain as they are.
+  c' | not (isControl c') && isAscii c' -> c' : jsEscapeString cs
+  -- All other non ASCII signs are escaped to unicode.
+  c' -> jsUnicodeChar c' ++ jsEscapeString cs 
