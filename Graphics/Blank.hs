@@ -139,7 +139,7 @@ import           Graphics.Blank.Utils
 import qualified Network.HTTP.Types as H
 import           Network.Socket (SockAddr(..))
 import           Network.Wai (Middleware,remoteHost, responseLBS)
-import           Network.Wai.Handler.Warp (run)
+import           Network.Wai.Handler.Warp
 -- import           Network.Wai.Middleware.RequestLogger -- Used when debugging
 -- import           Network.Wai.Middleware.Static
 
@@ -227,7 +227,12 @@ blankCanvas opts actions = do
         sequence_ [ get (fromString ("/" ++ nm)) $ file $ (root opts ++ "/" ++ nm) | nm <- static opts ]
         return ()
 
-   run (port opts) app
+
+
+   runSettings (setPort (port opts)
+               $ setTimeout 5
+               $ defaultSettings
+               ) app
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible. Should not crash.
