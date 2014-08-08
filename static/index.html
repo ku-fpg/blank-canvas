@@ -113,6 +113,10 @@
                 }
             }
 
+            function Sync(u,c) {
+                $.kc.reply(u,[]);
+            }
+
             function Trigger(e) {
                 $.kc.event({ eMetaKey: e.eMetaKey,
                              ePageXY : e.ePageXY,

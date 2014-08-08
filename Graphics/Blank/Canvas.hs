@@ -28,6 +28,7 @@ data Canvas :: * -> * where
         Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
         Return    :: a                           -> Canvas a
         LiftIO    :: IO a                        -> Canvas a
+        ASync     ::                                Canvas ()
 
 instance Monad Canvas where
         return = Return
@@ -102,7 +103,7 @@ instance Show Command where
   show (Trigger e) = "Trigger(" ++ map (chr . fromEnum) (DBL.unpack (encode e)) ++ ")"
   show (AddColorStop (off,rep) g)
      = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
-  show (Log msg) = "console.log(" ++ showJS msg ++ ")" 
+  show (Log msg) = "console.log(" ++ showJS msg ++ ")"
   show (Eval cmd) = Text.unpack cmd -- no escaping or interpretation
 
 -----------------------------------------------------------------------------
@@ -146,10 +147,11 @@ data Query :: * -> * where
         CreatePattern        :: Image image => (image,Text) -> Query CanvasPattern
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
+        Sync                 ::                              Query ()
 
-data DeviceAttributes = DeviceAttributes Int Int Float 
+data DeviceAttributes = DeviceAttributes Int Int Float
         deriving Show
-        
+
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
 data TextMetrics = TextMetrics Float
         deriving Show
@@ -164,8 +166,9 @@ instance Show (Query a) where
   show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "CreateRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ jsImage img ++ "," ++ showJS str ++ ")"
   show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (GetImageData (sx,sy,sw,sh)) 
+  show (GetImageData (sx,sy,sw,sh))
                                  = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
+  show Sync                      = "Sync"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -178,20 +181,21 @@ parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreateRadialGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o = uncurry3 CanvasContext <$> parseJSON o
-parseQueryResult (GetImageData {}) (Object o) = ImageData 
+parseQueryResult (GetImageData {}) (Object o) = ImageData
                                          <$> (o .: "width")
                                          <*> (o .: "height")
                                          <*> (o .: "data")
+parseQueryResult (Sync {}) _ = return () -- we just accept anything; empty list sent
 parseQueryResult _ _ = fail "no parse in blank-canvas server (internal error)"
 
 uncurry3 :: (t0 -> t1 -> t2 -> t3) -> (t0, t1, t2) -> t3
-uncurry3 f (a,b,c) = f a b c 
+uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
 device = Query Device
 
 -- | Turn the canvas into a png data stream / data URL.
--- 
+--
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
 toDataURL :: () -> Canvas Text
@@ -203,11 +207,11 @@ measureText = Query . MeasureText
 isPointInPath :: (Float,Float) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle, 
+-- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle,
 -- _after_ loading.
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
-newImage = Query . NewImage 
+newImage = Query . NewImage
 
 createLinearGradient :: (Float,Float,Float,Float) -> Canvas CanvasGradient
 createLinearGradient = Query . CreateLinearGradient
@@ -224,5 +228,12 @@ newCanvas = Query . NewCanvas
 
 -- | Capture ImageDate from the Canvas.
 getImageData :: (Float,Float,Float,Float) -> Canvas ImageData
-getImageData = Query . GetImageData        
+getImageData = Query . GetImageData
 
+-- | Send all commands to the browser, wait for the browser to ack, then continue.
+sync :: Canvas ()
+sync = Query $ Sync
+
+-- | Send all commands to the browser, then continue without waiting.
+async :: Canvas ()
+async = ASync

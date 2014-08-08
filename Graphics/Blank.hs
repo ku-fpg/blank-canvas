@@ -97,6 +97,9 @@ module Graphics.Blank
         , with
         , myCanvasContext
         , deviceCanvasContext
+         -- ** Syncing
+        , sync
+        , async
          -- ** Debugging
         , console_log
         , eval
@@ -246,6 +249,9 @@ send cxt commands =
       sendBind c (Bind m k1) k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
       sendBind c (Method cmd) k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
       sendBind c (Command cmd) k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
+      sendBind c (ASync) k cmds = do
+          sendToCanvas cxt cmds
+          send' c (k ()) id
       sendBind c (Query query) k cmds = do
               -- send the com
               uq <- atomically $ getUniq
