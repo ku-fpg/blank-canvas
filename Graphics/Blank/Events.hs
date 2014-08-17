@@ -8,7 +8,7 @@ import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
 import Data.Aeson.Types ((.:), (.=), object)
 import Data.Text (Text)
 
--- | Basic Event from Browser; see <http://api.jquery.com/category/events/event-object/> for details.
+-- | Basic Event from Browser; see <http://api.jquery.com/category/events/> for details.
 data Event = Event
         { eMetaKey :: Bool
         , ePageXY  :: Maybe (Float,Float)
