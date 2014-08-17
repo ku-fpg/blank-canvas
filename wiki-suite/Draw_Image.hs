@@ -4,7 +4,7 @@ module Draw_Image where
 import Graphics.Blank
 import Wiki -- (578,200)
 
-main = blankCanvas 3000 { static = ["images/Haskell.jpg"] } $ \ context -> do
+main = blankCanvas 3000 $ \ context -> do
     send context $ do
         img <- newImage "/images/Haskell.jpg"
         drawImage(img,[69,50])

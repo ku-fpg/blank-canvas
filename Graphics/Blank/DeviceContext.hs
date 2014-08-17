@@ -3,7 +3,9 @@ module Graphics.Blank.DeviceContext where
 
 import           Control.Concurrent.STM
 
+import           Data.Set (Set)
 import           Data.Monoid ((<>))
+import           Data.Text (Text)
 import qualified Data.Text as T
 
 import           Graphics.Blank.Events
@@ -22,9 +24,10 @@ data DeviceContext = DeviceContext
         , ctx_width   :: !Int
         , ctx_height  :: !Int
         , ctx_devicePixelRatio :: !Float
+        , localFiles  :: TVar (Set Text)            -- ^ approved local files
         }
 
-instance Image DeviceContext where 
+instance Image DeviceContext where
   jsImage = jsImage . deviceCanvasContext
   width  = fromIntegral . ctx_width
   height = fromIntegral . ctx_height
@@ -52,7 +55,7 @@ wait c = atomically $ readTChan (eventQueue c)
 -- | 'flush' all the current events, returning them all to the user. Never blocks.
 flush :: DeviceContext -> IO [Event]
 flush cxt = atomically $ loop
-  where loop = do 
+  where loop = do
           b <- isEmptyTChan (eventQueue cxt)
           if b then return [] else do
                  e <- readTChan (eventQueue cxt)

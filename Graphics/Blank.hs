@@ -122,13 +122,18 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
 import           Control.Monad
+import           Control.Monad.IO.Class
 
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
+import           Data.List as L
 import           Data.Monoid ((<>))
+import qualified Data.Set as S
 import           Data.String
 import qualified Data.Text as T
 import           Data.Text (Text)
+import qualified Data.Text.Lazy as LT
+
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.DeviceContext
@@ -180,6 +185,8 @@ blankCanvas opts actions = do
    kComet <- KC.kCometPlugin
 
 
+   locals :: TVar (S.Set Text) <- atomically $ newTVar S.empty
+
 --   print dataDir
 
    app <- scottyApp $ do
@@ -190,6 +197,8 @@ blankCanvas opts actions = do
         -- use the comet
         let kc_opts :: KC.Options
             kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
+
+
 
         KC.connect kc_opts $ \ kc_doc -> do
                 -- register the events we want to watch for
@@ -206,7 +215,8 @@ blankCanvas opts actions = do
                                    atomically $ writeTChan queue event
                            _ -> return ()
 
-                let cxt0 = DeviceContext kc_doc queue 300 300 1
+
+                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals
 
                 -- A bit of bootstrapping
                 DeviceAttributes w h dpr <- send cxt0 device
@@ -227,6 +237,19 @@ blankCanvas opts actions = do
         get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js"   $ file $ dataDir ++ "/static/jquery-json.js"
         get "/kansas-comet.js"  $ file $ kComet
+
+        -- There has to be a better way of doing this, using function, perhaps?
+        get (Scotty.regex "^/(.*)$") $ do
+          fileName :: Text <- Scotty.param "1"
+          db <- liftIO $ atomically $ readTVar $ locals
+          if fileName `S.member` db
+          then do
+            mime <- mimeTypes (T.unpack fileName)
+            Scotty.setHeader "Content-Type" $ LT.fromStrict $ mime
+            file $ (root opts ++ "/" ++ T.unpack fileName)
+          else do
+            Scotty.next
+
         sequence_ [ get (fromString ("/" ++ nm)) $ file $ (root opts ++ "/" ++ nm) | nm <- static opts ]
         return ()
 
@@ -252,21 +275,33 @@ send cxt commands =
       sendBind c (ASync) k cmds = do
           sendToCanvas cxt cmds
           send' c (k ()) id
-      sendBind c (Query query) k cmds = do
-              -- send the com
-              uq <- atomically $ getUniq
-              -- The query function returns a function takes the unique port number of the reply.
-              sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ "," ++ showJS c ++ ");") ++))
-              v <- KC.getReply (theComet cxt) uq
-              case parse (parseQueryResult query) v of
-                Error msg -> fail msg
-                Success a -> do
-                        send' c (k a) id
+      sendBind c (Query query) k cmds = sendQuery c query k cmds
       sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
       sendBind c MyContext k    cmds = send' c (k c) cmds
       sendBind c (LiftIO io) k  cmds = do
               a <- io    -- done out of step from the cmds, which have not been sent yet.
               send' c (k a) cmds
+
+      sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendQuery c query k cmds = do
+          case query of
+            NewImage url | "/" `T.isPrefixOf` url -> do
+              atomically $ do
+                  db <- readTVar (localFiles cxt)
+                  writeTVar (localFiles cxt) $ S.insert (T.tail url) $ db
+            _ -> return ()
+
+          -- send the com
+          uq <- atomically $ getUniq
+          -- The query function returns a function takes the unique port number of the reply.
+          sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ "," ++ showJS c ++ ");") ++))
+          v <- KC.getReply (theComet cxt) uq
+          case parse (parseQueryResult query) v of
+            Error msg -> fail msg
+            Success a -> do
+                    send' c (k a) id
+
+
 
       send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
 -- Most of these can be factored out, except return
@@ -303,7 +338,17 @@ getUniq = do
     writeTVar uniqVar (u + 1)
     return u
 
+mimeTypes :: Monad m => FilePath -> m Text
+mimeTypes filePath
+  | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
+  | ".png" `L.isSuffixOf` filePath = return "image/png"
+  | ".gif" `L.isSuffixOf` filePath = return "image/gif"
+  | otherwise = fail $ "do not understand mime type for : " ++ show filePath
+
 -------------------------------------------------
+
+-- TODO: add extra mime types
+
 
 data Options = Options
         { port   :: Int              -- ^ which port do we issue the blank canvas using
