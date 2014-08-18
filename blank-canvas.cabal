@@ -45,10 +45,6 @@ data-files:
     static/jquery.js
     static/jquery-json.js
 
-flag network-uri
-  description: Get Network.URI from the network-uri package
-  default:     True
-
 Library
   Exposed-modules:     Graphics.Blank, 
                        Graphics.Blank.GHCi,
@@ -69,6 +65,7 @@ Library
                        containers        == 0.5.*,
                        http-types        == 0.8.*,
                        kansas-comet      == 0.3.*,
+                       network           >= 2.4   && < 2.7,
                        scotty            == 0.8.*,
                        stm               >= 2.2   && < 2.5,
                        text              >= 1.1   && < 1.2,
@@ -77,11 +74,6 @@ Library
                        wai-extra         == 3.*,  
                        warp              == 3.*,  
                        vector            >= 0.10  && < 0.11
-
-  if flag(network-uri)
-    build-depends:     network           >= 2.6   && < 2.7
-  else
-    build-depends:     network           >= 2.4   && < 2.6
 
   GHC-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations
   GHC-prof-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations -auto-all
