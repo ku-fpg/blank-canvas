@@ -65,7 +65,7 @@ Library
                        containers       == 0.5.*,
                        http-types       == 0.8.*,
                        kansas-comet     == 0.3.*,
-                       scotty           == 0.8.*,
+                       scotty           >= 0.8   && < 0.10,
                        stm              >= 2.2   && < 2.5,
                        text             >= 1.1   && < 1.2,
                        transformers     >= 0.3   && < 0.5,
