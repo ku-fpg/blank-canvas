@@ -72,9 +72,7 @@ snapShot context fileName = do
                         drawImage(top,[1,1])
                         toDataURL() -- of tempCanvas
 
-        B.writeFile fileName
-		  $ decodeLenient
-		  $ encodeUtf8 $ Text.tail $ Text.dropWhile (/= ',') $ txt
+        writeDataURL fileName txt			
 
 wiki :: a -> a
 wiki = id
