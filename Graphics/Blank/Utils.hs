@@ -34,7 +34,7 @@ infixr 0 #
 --
 -- > grd # addColorStop(0, "#8ED6FF");
 --
---   This can be seen as equivalent of @document.addColorStop(0, "#8ED6FF")@.
+--   This can be seen as equivalent of @grd.addColorStop(0, "#8ED6FF")@.
 (#) :: a -> (a -> Canvas b) -> Canvas b
 (#) obj act = act obj
 
