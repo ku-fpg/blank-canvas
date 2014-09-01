@@ -512,9 +512,6 @@ example_2_2_3 canvas = do
       strokeStyle "blue";
       stroke();
 
-sync :: Monad m => a -> m ()
-sync _ = return ()
-
 example_2_2_4 canvas = do
         let (w,h) = size canvas :: (Float, Float)
         tempCanvas <- newCanvas (round w,round h)
@@ -522,7 +519,7 @@ example_2_2_4 canvas = do
         let (w',h') = size tempCanvas
         console_log $ Text.pack $ show $ (w',h')
 
-        sync canvas
+        sync
         
         let squareWidth = 55;
         let circleRadius = 35;

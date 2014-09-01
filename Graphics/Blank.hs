@@ -139,14 +139,14 @@ import           Graphics.Blank.Canvas
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
-import           Graphics.Blank.Generated hiding (fillStyle,strokeStyle)
+import           Graphics.Blank.Generated hiding (fillStyle, strokeStyle)
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
 import           Graphics.Blank.Utils
 
 import qualified Network.HTTP.Types as H
-import           Network.Socket (SockAddr(..))
-import           Network.Wai (Middleware,remoteHost, responseLBS)
+import           Network.Wai (Middleware, responseLBS)
+import           Network.Wai.Middleware.Local
 import           Network.Wai.Handler.Warp
 -- import           Network.Wai.Middleware.RequestLogger -- Used when debugging
 -- import           Network.Wai.Middleware.Static
@@ -314,18 +314,7 @@ send cxt commands =
 
 
 local_only :: Middleware
-local_only f r k = case remoteHost r of
-                   SockAddrInet _  h | h == fromIntegral home
-                                    -> f r k
-#if !defined(mingw32_HOST_OS) && !defined(_WIN32)
-                   SockAddrUnix _   -> f r k
-#endif
-                   _                ->  k $ responseLBS H.status403
-                                                        [("Content-Type", "text/plain")]
-							 "local access only"
- where
-        home :: Integer
-        home = 127 + (256 * 256 * 256) * 1
+local_only = local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
 
 
 {-# NOINLINE uniqVar #-}
