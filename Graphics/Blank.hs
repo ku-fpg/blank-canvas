@@ -285,10 +285,11 @@ send cxt commands =
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
       sendQuery c query k cmds = do
           case query of
-            NewImage url | "/" `T.isPrefixOf` url -> do
+            NewImage url -> do
+              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
               atomically $ do
                   db <- readTVar (localFiles cxt)
-                  writeTVar (localFiles cxt) $ S.insert (T.tail url) $ db
+                  writeTVar (localFiles cxt) $ S.insert url' $ db
             _ -> return ()
 
           -- send the com
