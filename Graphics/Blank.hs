@@ -134,12 +134,12 @@ import qualified Data.Text as T
 import           Data.Text (Text)
 import qualified Data.Text.Lazy as LT
 
-
-import           Graphics.Blank.Canvas
+import qualified Graphics.Blank.Canvas as Canvas
+import           Graphics.Blank.Canvas hiding (addColorStop)
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
-import           Graphics.Blank.Generated hiding (fillStyle, strokeStyle)
+import           Graphics.Blank.Generated hiding (fillStyle, strokeStyle, shadowColor)
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
 import           Graphics.Blank.Utils
@@ -372,6 +372,12 @@ fillStyle = Generated.fillStyle
 
 strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle
+
+shadowColor :: Text -> Canvas ()
+shadowColor = Generated.shadowColor
+
+addColorStop :: (Float, Text) -> CanvasGradient -> Canvas ()
+addColorStop = Canvas.addColorStop
 
 height :: (Image image, Num a) => image -> a
 height = JavaScript.height

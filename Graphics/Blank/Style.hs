@@ -4,6 +4,7 @@ module Graphics.Blank.Style
         ( strokeStyle
         , fillStyle
         , Style
+        , CanvasColor
         ) where
 
 import Graphics.Blank.Generated
