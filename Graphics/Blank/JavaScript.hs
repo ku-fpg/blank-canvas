@@ -6,7 +6,7 @@ import           Data.Char (isControl, isAscii, ord)
 import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.List
-import           Data.Text (Text,unpack)
+import           Data.Text (Text, unpack)
 import           Data.Word (Word8)
 
 import qualified Data.Vector.Unboxed as V
@@ -87,13 +87,13 @@ class JSArg a where
 
 instance JSArg (AlphaColour Float) where
     showJS aCol
-        | a >= 1    = showJS rgbCol
-        | a <= 0    = "rgba(0,0,0,0)"
-        | otherwise = "rgba("
-            ++ show r                   ++ ","
-            ++ show g                   ++ ","
-            ++ show b                   ++ ","
-            ++ showFFloat (Just 1) a "" ++ ")"
+        | a >= 1    = jsColour rgbCol
+        | a <= 0    = jsLiteralString "rgba(0,0,0,0)"
+        | otherwise = jsLiteralString $ "rgba("
+            ++ show r    ++ ","
+            ++ show g    ++ ","
+            ++ show b    ++ ","
+            ++ jsFloat a ++ ")"
       where
         a         = alphaChannel aCol
         rgbCol    = darken (recip a) $ aCol `over` black
@@ -136,7 +136,7 @@ jsCanvasPattern :: CanvasPattern -> String
 jsCanvasPattern = showJS
 
 instance JSArg (Colour Float) where
-    showJS = sRGB24show
+    showJS = jsLiteralString . sRGB24show
 
 jsColour :: Colour Float -> String
 jsColour = showJS
