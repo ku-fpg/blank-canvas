@@ -174,7 +174,7 @@ import qualified Data.Colour.Names as Names
 import           Data.Colour.RGBSpace
 import qualified Data.Colour.RGBSpace.HSL as HSL
 import           Data.Colour.SRGB
-import qualified Data.Colour.SRGB.Linear as Linear
+import           Data.Word
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
@@ -193,14 +193,14 @@ type Percentage = Float
 -- |
 -- Specifies a 'Colour' by its red, green, and blue components, where each component
 -- is an integer between 0 and 255.
-rgb :: Int -> Int -> Int -> Colour Float
-rgb r g b = sRGB (realToFrac r) (realToFrac g) (realToFrac b)
+rgb :: Word8 -> Word8 -> Word8 -> Colour Float
+rgb = sRGB24
 
 -- |
 -- Specifies a 'Colour' by its red, green, and blue components, where each component
 -- is given by a percentage of 255.
 rgbPercent :: Percentage -> Percentage -> Percentage -> Colour Float
-rgbPercent r g b = Linear.rgb (r/100) (g/100) (b/100)
+rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 
 -- |
 -- Specifies an `AlphaColour' by its RGB components and an alpha value.
@@ -208,7 +208,7 @@ rgbPercent r g b = Linear.rgb (r/100) (g/100) (b/100)
 -- @
 -- 'rgba' r g b 0.0 = 'transparent`
 -- @
-rgba :: Int -> Int -> Int -> Alpha -> AlphaColour Float
+rgba :: Word8 -> Word8 -> Word8 -> Alpha -> AlphaColour Float
 rgba r g b = withOpacity $ rgb r g b
 
 -- |
