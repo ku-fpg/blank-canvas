@@ -194,7 +194,7 @@ type Percentage = Float
 -- Specifies a 'Colour' by its red, green, and blue components, where each component
 -- is an integer between 0 and 255.
 rgb :: Int -> Int -> Int -> Colour Float
-rgb r g b = sRGB (realToFrac r) (realToFrac b) (realToFrac g)
+rgb r g b = sRGB (realToFrac r) (realToFrac g) (realToFrac b)
 
 -- |
 -- Specifies a 'Colour' by its red, green, and blue components, where each component
