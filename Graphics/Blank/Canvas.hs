@@ -161,9 +161,9 @@ instance Show (Query a) where
   show ToDataURL                = "ToDataURL"
   show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
   show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
-  show (CreateLinearGradient (x0,y0,x1,y1)) = "CreateLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
-  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "CreateRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
+  show (NewImage url)           = showJS url
+  show (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
+  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ jsImage img ++ "," ++ showJS str ++ ")"
   show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh))

@@ -91,13 +91,13 @@ jsCanvasContext :: CanvasContext -> String
 jsCanvasContext = showJS 
 
 instance JSArg CanvasImage where
-  showJS (CanvasImage n _ _) = "images[" ++ show n ++ "]"
+  showJS (CanvasImage n _ _) = "images" ++ show n
 
 jsCanvasImage :: CanvasImage -> String
 jsCanvasImage = showJS 
 
 instance JSArg CanvasGradient where
-  showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
+  showJS (CanvasGradient n) = "gradients" ++ show n
 
 jsCanvasGradient :: CanvasGradient -> String
 jsCanvasGradient = showJS 
