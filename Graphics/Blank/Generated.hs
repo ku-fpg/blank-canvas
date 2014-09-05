@@ -41,7 +41,7 @@ instance Show Method where
   show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsText a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
   show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsStyle a1 ++ ")"
   show (ShadowBlur (a1)) = "shadowBlur = (" ++ jsFloat a1 ++ ")"
-  show (ShadowColor (a1)) = "shadowColor = (" ++ jsText a1 ++ ")"
+  show (ShadowColor (a1)) = "shadowColor = (" ++ jsStyle a1 ++ ")"
   show (ShadowOffsetX (a1)) = "shadowOffsetX = (" ++ jsFloat a1 ++ ")"
   show (ShadowOffsetY (a1)) = "shadowOffsetY = (" ++ jsFloat a1 ++ ")"
   show (TextAlign (a1)) = "textAlign = (" ++ jsText a1 ++ ")"
@@ -154,7 +154,7 @@ strokeStyle = Method . StrokeStyle
 shadowBlur :: Float -> Canvas ()
 shadowBlur = Method . ShadowBlur
 
-shadowColor :: Text -> Canvas ()
+shadowColor :: CanvasColor color => color -> Canvas ()
 shadowColor = Method . ShadowColor
 
 shadowOffsetX :: Float -> Canvas ()

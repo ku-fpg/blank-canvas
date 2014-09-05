@@ -85,7 +85,7 @@ data Method
         | StrokeText (Text,Float,Float)
         | forall style . Style style => StrokeStyle style
         | ShadowBlur Float
-        | ShadowColor Text
+        | forall color . CanvasColor color => ShadowColor color
         | ShadowOffsetX Float
         | ShadowOffsetY Float
         | TextAlign Text
@@ -95,14 +95,14 @@ data Method
 
 data Command
   = Trigger Event
-  | AddColorStop (Float,Text) CanvasGradient
+  | forall color . CanvasColor color => AddColorStop (Float, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
 
 instance Show Command where
   show (Trigger e) = "Trigger(" ++ map (chr . fromEnum) (DBL.unpack (encode e)) ++ ")"
   show (AddColorStop (off,rep) g)
-     = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ showJS rep ++ ")"
+     = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ jsStyle rep ++ ")"
   show (Log msg) = "console.log(" ++ showJS msg ++ ")"
   show (Eval cmd) = Text.unpack cmd -- no escaping or interpretation
 
@@ -124,7 +124,7 @@ trigger :: Event -> Canvas ()
 trigger = Command . Trigger
 
 -- | add a Color stop to a Canvas Gradient.
-addColorStop :: (Float,Text) -> CanvasGradient -> Canvas ()
+addColorStop :: CanvasColor color => (Float, color) -> CanvasGradient -> Canvas ()
 addColorStop (off,rep) = Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser console.log.
