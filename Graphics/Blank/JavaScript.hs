@@ -16,29 +16,29 @@ import           Numeric
 
 -------------------------------------------------------------
 
--- TODO: close off 
+-- TODO: close off
 class Image a where
   jsImage :: a -> String
   width  :: Num b => a -> b
   height :: Num b => a -> b
 
-instance Image CanvasImage where 
+instance Image CanvasImage where
   jsImage = jsCanvasImage
-  width  (CanvasImage _ w _) = fromIntegral w 
+  width  (CanvasImage _ w _) = fromIntegral w
   height (CanvasImage _ _ h) = fromIntegral h
-  
+
 -- The Image of a canvas is the the canvas context, not the DOM entry, so
 -- you need to indirect back to the DOM here.
 instance Image CanvasContext where
   jsImage = (++ ".canvas") . jsCanvasContext
-  width  (CanvasContext _ w _) = fromIntegral w 
+  width  (CanvasContext _ w _) = fromIntegral w
   height (CanvasContext _ _ h) = fromIntegral h
 
 -- instance Element Video  -- Not supported
 
 -----------------------------------------------------------------------------
 
--- TODO: close off 
+-- TODO: close off
 class Style a where
   jsStyle :: a -> String
 
@@ -50,6 +50,9 @@ instance Style (AlphaColour Float) where { jsStyle = jsAlphaColour }
 
 class Style a => CanvasColor a
 
+jsCanvasColor :: CanvasColor color => color -> String
+jsCanvasColor = jsStyle
+
 instance CanvasColor Text
 instance CanvasColor (Colour Float)
 instance CanvasColor (AlphaColour Float)
@@ -58,7 +61,7 @@ instance CanvasColor (AlphaColour Float)
 
 -- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
 data CanvasContext = CanvasContext Int Int Int
- deriving (Show,Eq,Ord)                
+ deriving (Show,Eq,Ord)
 
 -- | A handle to the Image. CanvasImages can not be destroyed.
 data CanvasImage = CanvasImage Int Int Int deriving (Show,Eq,Ord)
@@ -75,7 +78,7 @@ newtype CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
 --   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
 --  width, height, data can be projected from 'ImageData',
 --  'Vector.length' can be used to find the length.
--- 
+--
 --   Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
@@ -103,10 +106,10 @@ jsAlphaColour :: AlphaColour Float -> String
 jsAlphaColour = showJS
 
 instance JSArg Float where
-  showJS a = showFFloat (Just 3) a ""        
+  showJS a = showFFloat (Just 3) a ""
 
 jsFloat :: Float -> String
-jsFloat = showJS 
+jsFloat = showJS
 
 instance JSArg Int where
   showJS a = show a
@@ -115,19 +118,19 @@ instance JSArg CanvasContext where
   showJS (CanvasContext n _ _) = "canvasbuffers[" ++ show n ++ "]"
 
 jsCanvasContext :: CanvasContext -> String
-jsCanvasContext = showJS 
+jsCanvasContext = showJS
 
 instance JSArg CanvasImage where
   showJS (CanvasImage n _ _) = "images[" ++ show n ++ "]"
 
 jsCanvasImage :: CanvasImage -> String
-jsCanvasImage = showJS 
+jsCanvasImage = showJS
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
 
 jsCanvasGradient :: CanvasGradient -> String
-jsCanvasGradient = showJS 
+jsCanvasGradient = showJS
 
 instance JSArg CanvasPattern where
   showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
@@ -156,14 +159,14 @@ instance JSArg Bool where
 jsBool :: Bool -> String
 jsBool = showJS
 
-instance JSArg Text where 
+instance JSArg Text where
   showJS = jsLiteralString . unpack
 
 jsText :: Text -> String
 jsText = showJS
 
 jsList :: (a -> String) -> [a] -> String
-jsList js = concat . intersperse "," . map js 
+jsList js = concat . intersperse "," . map js
 
 
 -- The following was from our Sunroof compiler.
@@ -206,4 +209,4 @@ jsEscapeString (c:cs) = case c of
   -- Non-control ASCII characters can remain as they are.
   c' | not (isControl c') && isAscii c' -> c' : jsEscapeString cs
   -- All other non ASCII signs are escaped to unicode.
-  c' -> jsUnicodeChar c' ++ jsEscapeString cs 
+  c' -> jsUnicodeChar c' ++ jsEscapeString cs

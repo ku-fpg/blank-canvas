@@ -1,10 +1,9 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
-import Data.Text (Text)
-
 import Graphics.Blank.Canvas
 import Graphics.Blank.JavaScript
+import Data.Text (Text)
 
 instance Show Method where
   show (Arc (a1,a2,a3,a4,a5,a6)) = "arc(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsBool a6 ++ ")"
@@ -41,7 +40,7 @@ instance Show Method where
   show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsText a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
   show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsStyle a1 ++ ")"
   show (ShadowBlur (a1)) = "shadowBlur = (" ++ jsFloat a1 ++ ")"
-  show (ShadowColor (a1)) = "shadowColor = (" ++ jsStyle a1 ++ ")"
+  show (ShadowColor (a1)) = "shadowColor = (" ++ jsCanvasColor a1 ++ ")"
   show (ShadowOffsetX (a1)) = "shadowOffsetX = (" ++ jsFloat a1 ++ ")"
   show (ShadowOffsetY (a1)) = "shadowOffsetY = (" ++ jsFloat a1 ++ ")"
   show (TextAlign (a1)) = "textAlign = (" ++ jsText a1 ++ ")"
@@ -154,7 +153,7 @@ strokeStyle = Method . StrokeStyle
 shadowBlur :: Float -> Canvas ()
 shadowBlur = Method . ShadowBlur
 
-shadowColor :: CanvasColor color => color -> Canvas ()
+shadowColor :: CanvasColor canvasColor => canvasColor -> Canvas ()
 shadowColor = Method . ShadowColor
 
 shadowOffsetX :: Float -> Canvas ()

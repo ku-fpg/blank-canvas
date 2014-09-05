@@ -85,7 +85,7 @@ data Method
         | StrokeText (Text,Float,Float)
         | forall style . Style style => StrokeStyle style
         | ShadowBlur Float
-        | forall color . CanvasColor color => ShadowColor color
+        | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
         | ShadowOffsetX Float
         | ShadowOffsetY Float
         | TextAlign Text
