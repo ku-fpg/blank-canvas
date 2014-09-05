@@ -269,11 +269,12 @@ send cxt commands =
   where
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> (String -> String) -> IO b
       sendBind c (Return a) k    cmds = send' c (k a) cmds
-      sendBind c (Bind m k1) k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd) k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
+      sendBind c (Bind m k1) k2 cmds  = sendBind c m (\ r -> Bind (k1 r) k2) cmds
+      sendBind c (Method cmd) k cmds  = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
       sendBind c (Command cmd) k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
       sendBind c (ASync) k cmds = do
           sendToCanvas cxt cmds
+          putStrLn $ cmds ""
           send' c (k ()) id
       sendBind c (Query query) k cmds = sendQuery c query k cmds
       sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
@@ -282,16 +283,34 @@ send cxt commands =
               a <- io    -- done out of step from the cmds, which have not been sent yet.
               send' c (k a) cmds
 
-      sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
-      sendQuery c query k cmds = do
-          case query of
-            NewImage url -> do
-              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-              atomically $ do
-                  db <- readTVar (localFiles cxt)
-                  writeTVar (localFiles cxt) $ S.insert url' $ db
-            _ -> return ()
+      -- The idea is factor out all of the 'Query's that don't need to talk
+      -- to the browser. I haven't identified exactly which ones thes are,
+      -- but certainly 'CreateLinearGradient', 'CreateRadialGradient', and
+      -- 'NewImage' can be factored out. Perhaps these sholdn't be 'Query's
+      -- but some new constructor for 'Canvas', something like 'Function'.
+      -- The code below seems to work for gradients but not images (I'm not
+      -- sure why I need to understand Scotty better).
 
+      sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendQuery c q@(CreateLinearGradient _) k cmds = do
+        -- Technically we don't need a TVar here since the other thread
+        -- does not need to ever see 'gId', but since we already have it
+        -- setup, I'll use is for now.
+        gId <- atomically getUniq
+        send' c (k $ CanvasGradient gId) (cmds 
+          . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
+          . shows q . (";" ++))
+      sendQuery c q@(CreateRadialGradient _) k cmds = do
+        gId <- atomically getUniq
+        send' c (k $ CanvasGradient gId) (cmds 
+          . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
+          . shows q . (";" ++))
+      sendQuery c q@(NewImage url) k cmds = do
+        gId <- atomically getUniq
+        send' c (k $ CanvasImage gId 0 0) (cmds 
+          . (("var images" ++ show gId ++ " = new Image(); images" ++ show gId ++ ".src = ") ++) 
+          . shows q . (";" ++))
+      sendQuery c query k cmds = do
           -- send the com
           uq <- atomically $ getUniq
           -- The query function returns a function takes the unique port number of the reply.
@@ -302,14 +321,13 @@ send cxt commands =
             Success a -> do
                     send' c (k a) id
 
-
-
       send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
--- Most of these can be factored out, except return
+      -- Most of these can be factored out, except return
       send' c (Bind m k)            cmds = sendBind c m k cmds
       send' _ (With c m)            cmds = send' c m cmds  -- This is a bit of a hack
       send' _ (Return a)            cmds = do
               sendToCanvas cxt cmds
+              putStrLn $ cmds ""
               return a
       send' c cmd                   cmds = sendBind c cmd Return cmds
 
