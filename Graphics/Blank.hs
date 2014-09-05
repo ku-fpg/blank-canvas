@@ -307,9 +307,7 @@ send cxt commands =
           . shows q . (";" ++))
       sendQuery c q@(NewImage url) k cmds = do
         gId <- atomically getUniq
-        send' c (k $ CanvasImage gId 0 0) (cmds 
-          . (("var images" ++ show gId ++ " = new Image(); images" ++ show gId ++ ".src = ") ++) 
-          . shows q . (";" ++))
+        send' c (k $ CanvasImage gId 0 0) (cmds . ((jsImageTemplate gId (showJS c) (show url)) ++)  . (";" ++))
       sendQuery c query k cmds = do
           -- send the com
           uq <- atomically $ getUniq
