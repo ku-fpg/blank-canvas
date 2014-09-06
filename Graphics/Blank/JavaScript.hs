@@ -219,7 +219,7 @@ class JSArg a where
   showJS :: a -> String
 
 instance JSArg Alignment where
-  showJS = jsEscapeString . show
+  showJS = jsLiteralString . show
 
 jsAlignment :: Alignment -> String
 jsAlignment = showJS
@@ -242,7 +242,7 @@ jsAlphaColour :: AlphaColour Float -> String
 jsAlphaColour = showJS
 
 instance JSArg Baseline where
-  showJS = jsEscapeString . show
+  showJS = jsLiteralString . show
 
 jsBaseline :: Baseline -> String
 jsBaseline = showJS
@@ -279,13 +279,13 @@ jsCanvasPattern :: CanvasPattern -> String
 jsCanvasPattern = showJS
 
 instance JSArg (Colour Float) where
-    showJS = jsLiteralString . sRGB24show
+  showJS = jsLiteralString . sRGB24show
 
 jsColour :: Colour Float -> String
 jsColour = showJS
 
 instance JSArg Corner where
-  showJS = jsEscapeString . show
+  showJS = jsLiteralString . show
 
 jsCorner :: Corner -> String
 jsCorner = showJS
@@ -308,7 +308,7 @@ instance JSArg Int where
   showJS a = show a
 
 instance JSArg LineEnds where
-  showJS = jsEscapeString . show
+  showJS = jsLiteralString . show
 
 jsLineEnds :: LineEnds -> String
 jsLineEnds = showJS
@@ -317,7 +317,7 @@ jsList :: (a -> String) -> [a] -> String
 jsList js = concat . intersperse "," . map js
 
 instance JSArg RepeatDirection where
-  showJS = jsEscapeString . show
+  showJS = jsLiteralString . show
 
 jsRepeatDirection :: RepeatDirection -> String
 jsRepeatDirection = showJS
