@@ -142,6 +142,7 @@ data Function :: * -> * where
   NewImage             :: Text                                  -> Function CanvasImage
   CreateLinearGradient :: (Float,Float,Float,Float)             -> Function CanvasGradient
   CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Function CanvasGradient
+  CreatePattern        :: Image image => (image,Text)           -> Function CanvasPattern
 
 instance Show (Function a) where
   show (NewImage url)           = showJS url
@@ -151,17 +152,18 @@ instance Show (Function a) where
   show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
         ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," 
         ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
+  show (CreatePattern (img,str)) = "createPattern(" ++ jsImage img ++ "," 
+        ++ showJS str ++ ")"
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where
-        Device                                            :: Query DeviceAttributes
-        ToDataURL                                         :: Query Text
-        MeasureText          :: Text                      -> Query TextMetrics
-        IsPointInPath        :: (Float,Float)             -> Query Bool
-        CreatePattern        :: Image image => (image,Text) -> Query CanvasPattern
-        NewCanvas            :: (Int,Int)                 -> Query CanvasContext
-        GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
-        Sync                 ::                              Query ()
+        Device        ::                                Query DeviceAttributes
+        ToDataURL     ::                                Query Text
+        MeasureText   :: Text                        -> Query TextMetrics
+        IsPointInPath :: (Float,Float)               -> Query Bool
+        NewCanvas     :: (Int,Int)                   -> Query CanvasContext
+        GetImageData  :: (Float,Float,Float,Float)   -> Query ImageData
+        Sync          ::                                Query ()
 
 data DeviceAttributes = DeviceAttributes Int Int Float
         deriving Show
@@ -171,23 +173,21 @@ data TextMetrics = TextMetrics Float
         deriving Show
 
 instance Show (Query a) where
-  show Device                   = "Device"
-  show ToDataURL                = "ToDataURL"
-  show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
-  show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (CreatePattern (img,str)) = "CreatePattern(" ++ jsImage img ++ "," ++ showJS str ++ ")"
-  show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (GetImageData (sx,sy,sw,sh))
-                                 = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
-  show Sync                      = "Sync"
+  show Device                       = "Device"
+  show ToDataURL                    = "ToDataURL"
+  show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
+  show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," 
+        ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
+  show Sync                         = "Sync"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
-parseQueryResult (Device {}) o    = uncurry3 DeviceAttributes <$> parseJSON o
+parseQueryResult (Device {}) o = uncurry3 DeviceAttributes <$> parseJSON o
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
-parseQueryResult (IsPointInPath {}) o        = parseJSON o
-parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
+parseQueryResult (IsPointInPath {}) o = parseJSON o
 parseQueryResult (NewCanvas {}) o = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
                                          <$> (o .: "width")
@@ -214,9 +214,6 @@ measureText = Query . MeasureText
 
 isPointInPath :: (Float,Float) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
-
-createPattern :: (CanvasImage, Text) -> Canvas CanvasPattern
-createPattern = Query . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height.
 newCanvas :: (Int,Int) -> Canvas CanvasContext
@@ -247,3 +244,5 @@ createLinearGradient = Function . CreateLinearGradient
 createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
 createRadialGradient = Function . CreateRadialGradient
 
+createPattern :: (CanvasImage, Text) -> Canvas CanvasPattern
+createPattern = Function . CreatePattern

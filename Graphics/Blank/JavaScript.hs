@@ -103,7 +103,7 @@ jsImageTemplate n ctx src = concat [l1, l2, l3, l4, l5]
     l1 = "var " ++ img ++ " = new Image();"
     l2 = img ++ ".onload = function(){"
     l3 = ctx ++ ".drawImage(" ++ img ++ ", " ++ img ++ ".width" ++ ", " ++ img ++ ".height);};"
-    l4 = img ++ ".onerror = function() {alert('Image not found.'); };"
+    l4 = img ++ ".onerror = function() {alert('Image " ++ src ++ " not found.'); };"
     l5 = img ++ ".src = " ++ src
     
 

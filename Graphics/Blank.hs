@@ -293,7 +293,8 @@ send cxt commands =
       -- sure why I need to understand Scotty better).
       -- Technically we don't need a TVar for 'gId' since the other thread
       -- does not need to ever see 'gId', but since we already have it
-      -- setup, I'll use is for now.
+      -- setup, I'll use is for now. There is also too much code
+      -- duplication which needs to be abstracted away.
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> (String -> String) -> IO b
       sendFunc c q@(NewImage url) k cmds = do
@@ -309,6 +310,11 @@ send cxt commands =
         gId <- atomically getUniq
         send' c (k $ CanvasGradient gId) (cmds 
           . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
+          . shows q . (";" ++))
+      sendFunc c q@(CreatePattern _) k cmds = do
+        pId <- atomically getUniq
+        send' c (k $ CanvasPattern pId) (cmds
+          . (("var patterns" ++ show pId ++ " = " ++ showJS c ++ ".") ++) 
           . shows q . (";" ++))
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
