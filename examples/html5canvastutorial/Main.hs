@@ -15,14 +15,14 @@ import           Paths_blank_canvas_examples
 
 main :: IO ()
 main = do
- dat <- getDataDir        
- blankCanvas 3000 { events = ["mousedown"], 
-                         debug = True,
-                          static = ["images/" ++ img
-                                   | img <- ["fan.jpg", "princess.jpg"]
-                                   ]
-                        , root = dat ++ "/static"
-                        } $ \ canvas -> do
+ dat <- getDataDir
+ blankCanvas 3000 { events = ["mousedown"]
+                  , debug = True
+                  , static = ["images/" ++ img
+                             | img <- ["fan.jpg", "princess.jpg"]
+                             ]
+                  , root = dat
+                  } $ \ canvas -> do
   sequence_ [ -- blank the screeen
 
               do send canvas $ do
