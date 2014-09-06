@@ -203,10 +203,10 @@ rgbPercent :: Percentage -> Percentage -> Percentage -> Colour Float
 rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 
 -- |
--- Specifies an `AlphaColour' by its RGB components and an alpha value.
+-- Specifies an 'AlphaColour' by its RGB components and an alpha value.
 -- 
 -- @
--- 'rgba' r g b 0.0 = 'transparent`
+-- 'rgba' r g b 0.0 = 'transparent'
 -- @
 rgba :: Word8 -> Word8 -> Word8 -> Alpha -> AlphaColour Float
 rgba r g b = withOpacity $ rgb r g b
@@ -215,7 +215,7 @@ rgba r g b = withOpacity $ rgb r g b
 -- Specifies an 'AlphaColour' by its RGB component percentages and an alpha value.
 -- 
 -- @
--- 'rgbaPercent' r g b 0.0 = 'transparent`
+-- 'rgbaPercent' r g b 0.0 = 'transparent'
 -- @
 rgbaPercent :: Percentage -> Percentage -> Percentage -> Alpha -> AlphaColour Float
 rgbaPercent r g b = withOpacity $ rgbPercent r g b

@@ -21,8 +21,8 @@ instance Show Method where
   show (Font (a1)) = "font = (" ++ jsText a1 ++ ")"
   show (GlobalAlpha (a1)) = "globalAlpha = (" ++ jsFloat a1 ++ ")"
   show (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" ++ jsText a1 ++ ")"
-  show (LineCap (a1)) = "lineCap = (" ++ jsText a1 ++ ")"
-  show (LineJoin (a1)) = "lineJoin = (" ++ jsText a1 ++ ")"
+  show (LineCap (a1)) = "lineCap = (" ++ jsLineEnds a1 ++ ")"
+  show (LineJoin (a1)) = "lineJoin = (" ++ jsCorner a1 ++ ")"
   show (LineTo (a1,a2)) = "lineTo(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ ")"
   show (LineWidth (a1)) = "lineWidth = (" ++ jsFloat a1 ++ ")"
   show (MiterLimit (a1)) = "miterLimit = (" ++ jsFloat a1 ++ ")"
@@ -43,8 +43,8 @@ instance Show Method where
   show (ShadowColor (a1)) = "shadowColor = (" ++ jsCanvasColor a1 ++ ")"
   show (ShadowOffsetX (a1)) = "shadowOffsetX = (" ++ jsFloat a1 ++ ")"
   show (ShadowOffsetY (a1)) = "shadowOffsetY = (" ++ jsFloat a1 ++ ")"
-  show (TextAlign (a1)) = "textAlign = (" ++ jsText a1 ++ ")"
-  show (TextBaseline (a1)) = "textBaseline = (" ++ jsText a1 ++ ")"
+  show (TextAlign (a1)) = "textAlign = (" ++ jsAlignment a1 ++ ")"
+  show (TextBaseline (a1)) = "textBaseline = (" ++ jsBaseline a1 ++ ")"
   show (Transform (a1,a2,a3,a4,a5,a6)) = "transform(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsFloat a6 ++ ")"
   show (Translate (a1,a2)) = "translate(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ ")"
 
@@ -96,10 +96,10 @@ globalAlpha = Method . GlobalAlpha
 globalCompositeOperation :: Text -> Canvas ()
 globalCompositeOperation = Method . GlobalCompositeOperation
 
-lineCap :: Text -> Canvas ()
+lineCap :: LineEnds -> Canvas ()
 lineCap = Method . LineCap
 
-lineJoin :: Text -> Canvas ()
+lineJoin :: Corner -> Canvas ()
 lineJoin = Method . LineJoin
 
 lineTo :: (Float,Float) -> Canvas ()
@@ -162,10 +162,10 @@ shadowOffsetX = Method . ShadowOffsetX
 shadowOffsetY :: Float -> Canvas ()
 shadowOffsetY = Method . ShadowOffsetY
 
-textAlign :: Text -> Canvas ()
+textAlign :: Alignment -> Canvas ()
 textAlign = Method . TextAlign
 
-textBaseline :: Text -> Canvas ()
+textBaseline :: Baseline -> Canvas ()
 textBaseline = Method . TextBaseline
 
 transform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()

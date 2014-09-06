@@ -42,6 +42,8 @@ module Graphics.Blank
         , lineCap
         , lineJoin
         , miterLimit
+        , LineEnds(..)
+        , Corner(..)
           -- ** Colors, styles and shadows
         , strokeStyle
         , fillStyle
@@ -53,6 +55,7 @@ module Graphics.Blank
         , createRadialGradient
         , createPattern
         , addColorStop
+        , RepeatDirection(..)
         , CanvasGradient
         , CanvasPattern
           -- ** Paths
@@ -76,6 +79,8 @@ module Graphics.Blank
         , fillText
         , strokeText
         , measureText
+        , Alignment(..)
+        , Baseline(..)
         , TextMetrics(..)
           -- ** Rectangles
         , clearRect

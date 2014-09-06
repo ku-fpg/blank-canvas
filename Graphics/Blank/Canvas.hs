@@ -66,8 +66,8 @@ data Method
         | Font Text
         | GlobalAlpha Float
         | GlobalCompositeOperation Text
-        | LineCap Text
-        | LineJoin Text
+        | LineCap LineEnds
+        | LineJoin Corner
         | LineTo (Float,Float)
         | LineWidth Float
         | MiterLimit Float
@@ -88,8 +88,8 @@ data Method
         | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
         | ShadowOffsetX Float
         | ShadowOffsetY Float
-        | TextAlign Text
-        | TextBaseline Text
+        | TextAlign Alignment
+        | TextBaseline Baseline
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
 
@@ -144,7 +144,7 @@ data Query :: * -> * where
         NewImage             :: Text                      -> Query CanvasImage
         CreateLinearGradient :: (Float,Float,Float,Float)             -> Query CanvasGradient
         CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Query CanvasGradient
-        CreatePattern        :: Image image => (image,Text) -> Query CanvasPattern
+        CreatePattern        :: Image image => (image,RepeatDirection) -> Query CanvasPattern
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
         Sync                 ::                              Query ()
@@ -164,7 +164,7 @@ instance Show (Query a) where
   show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
   show (CreateLinearGradient (x0,y0,x1,y1)) = "CreateLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
   show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "CreateRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
-  show (CreatePattern (img,str)) = "CreatePattern(" ++ jsImage img ++ "," ++ showJS str ++ ")"
+  show (CreatePattern (img,dir)) = "CreatePattern(" ++ jsImage img ++ "," ++ jsRepeatDirection dir ++ ")"
   show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh))
                                  = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
@@ -219,7 +219,7 @@ createLinearGradient = Query . CreateLinearGradient
 createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
 createRadialGradient = Query . CreateRadialGradient
 
-createPattern :: (CanvasImage, Text) -> Canvas CanvasPattern
+createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height.
