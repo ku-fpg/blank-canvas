@@ -22,6 +22,7 @@ import           Data.Text (Text)
 data Canvas :: * -> * where
         Method    :: Method                      -> Canvas ()     -- <context>.<method>
         Command   :: Command                     -> Canvas ()     -- <command>
+        Function  :: (Show a) => Function a      -> Canvas a
         Query     :: (Show a) => Query a         -> Canvas a
         With      :: CanvasContext -> Canvas a   -> Canvas a
         MyContext ::                                Canvas CanvasContext
@@ -136,14 +137,27 @@ eval :: Text -> Canvas ()
 eval = Command . Eval
 
 -----------------------------------------------------------------------------
+
+data Function :: * -> * where
+  NewImage             :: Text                                  -> Function CanvasImage
+  CreateLinearGradient :: (Float,Float,Float,Float)             -> Function CanvasGradient
+  CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Function CanvasGradient
+
+instance Show (Function a) where
+  show (NewImage url)           = showJS url
+  show (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
+        ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," 
+        ++ showJS y1 ++ ")"
+  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
+        ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," 
+        ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
+
+-----------------------------------------------------------------------------
 data Query :: * -> * where
         Device                                            :: Query DeviceAttributes
         ToDataURL                                         :: Query Text
         MeasureText          :: Text                      -> Query TextMetrics
         IsPointInPath        :: (Float,Float)             -> Query Bool
-        NewImage             :: Text                      -> Query CanvasImage
-        CreateLinearGradient :: (Float,Float,Float,Float)             -> Query CanvasGradient
-        CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Query CanvasGradient
         CreatePattern        :: Image image => (image,Text) -> Query CanvasPattern
         NewCanvas            :: (Int,Int)                 -> Query CanvasContext
         GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
@@ -161,9 +175,6 @@ instance Show (Query a) where
   show ToDataURL                = "ToDataURL"
   show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
   show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (NewImage url)           = showJS url
-  show (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
-  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
   show (CreatePattern (img,str)) = "CreatePattern(" ++ jsImage img ++ "," ++ showJS str ++ ")"
   show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh))
@@ -176,9 +187,6 @@ parseQueryResult (Device {}) o    = uncurry3 DeviceAttributes <$> parseJSON o
 parseQueryResult (ToDataURL {}) o = parseJSON o
 parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o        = parseJSON o
-parseQueryResult (NewImage {}) o             = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
-parseQueryResult (CreateRadialGradient {}) o = CanvasGradient <$> parseJSON o
 parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
@@ -207,18 +215,6 @@ measureText = Query . MeasureText
 isPointInPath :: (Float,Float) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle,
--- _after_ loading.
--- The assumption is you are using local images, so loading should be near instant.
-newImage :: Text -> Canvas CanvasImage
-newImage = Query . NewImage
-
-createLinearGradient :: (Float,Float,Float,Float) -> Canvas CanvasGradient
-createLinearGradient = Query . CreateLinearGradient
-
-createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
-createRadialGradient = Query . CreateRadialGradient
-
 createPattern :: (CanvasImage, Text) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
@@ -237,3 +233,17 @@ sync = Query $ Sync
 -- | Send all commands to the browser, then continue without waiting.
 async :: Canvas ()
 async = ASync
+
+------------------------------------------------------------------------------
+-- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle,
+-- _after_ loading.
+-- The assumption is you are using local images, so loading should be near instant.
+newImage :: Text -> Canvas CanvasImage
+newImage = Function . NewImage
+
+createLinearGradient :: (Float,Float,Float,Float) -> Canvas CanvasGradient
+createLinearGradient = Function . CreateLinearGradient
+
+createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
+createRadialGradient = Function . CreateRadialGradient
+

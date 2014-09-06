@@ -276,6 +276,7 @@ send cxt commands =
           sendToCanvas cxt cmds
           putStrLn $ cmds ""
           send' c (k ()) id
+      sendBind c (Function func) k cmds = sendFunc c func k cmds
       sendBind c (Query query) k cmds = sendQuery c query k cmds
       sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
       sendBind c MyContext k    cmds = send' c (k c) cmds
@@ -290,24 +291,27 @@ send cxt commands =
       -- but some new constructor for 'Canvas', something like 'Function'.
       -- The code below seems to work for gradients but not images (I'm not
       -- sure why I need to understand Scotty better).
+      -- Technically we don't need a TVar for 'gId' since the other thread
+      -- does not need to ever see 'gId', but since we already have it
+      -- setup, I'll use is for now.
+
+      sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendFunc c q@(NewImage url) k cmds = do
+        gId <- atomically getUniq
+        send' c (k $ CanvasImage gId 0 0) (cmds 
+          . ((jsImageTemplate gId (showJS c) (show url)) ++)  . (";" ++))
+      sendFunc c q@(CreateLinearGradient _) k cmds = do
+        gId <- atomically getUniq
+        send' c (k $ CanvasGradient gId) (cmds 
+          . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
+          . shows q . (";" ++))
+      sendFunc c q@(CreateRadialGradient _) k cmds = do
+        gId <- atomically getUniq
+        send' c (k $ CanvasGradient gId) (cmds 
+          . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
+          . shows q . (";" ++))
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
-      sendQuery c q@(CreateLinearGradient _) k cmds = do
-        -- Technically we don't need a TVar here since the other thread
-        -- does not need to ever see 'gId', but since we already have it
-        -- setup, I'll use is for now.
-        gId <- atomically getUniq
-        send' c (k $ CanvasGradient gId) (cmds 
-          . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
-          . shows q . (";" ++))
-      sendQuery c q@(CreateRadialGradient _) k cmds = do
-        gId <- atomically getUniq
-        send' c (k $ CanvasGradient gId) (cmds 
-          . (("var gradients" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
-          . shows q . (";" ++))
-      sendQuery c q@(NewImage url) k cmds = do
-        gId <- atomically getUniq
-        send' c (k $ CanvasImage gId 0 0) (cmds . ((jsImageTemplate gId (showJS c) (show url)) ++)  . (";" ++))
       sendQuery c query k cmds = do
           -- send the com
           uq <- atomically $ getUniq
