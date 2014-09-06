@@ -9,6 +9,7 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Ix
 import           Data.List
+import           Data.String
 import           Data.Text (Text, unpack)
 import           Data.Word (Word8)
 
@@ -88,6 +89,9 @@ data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally and v
                      | NoRepeat -- ^ The pattern displays only once and does not repeat.
   deriving Eq
 
+instance IsString RepeatDirection where
+  fromString = read
+
 instance Read RepeatDirection where
   readPrec = parens . lift $ do
       skipSpaces
@@ -109,6 +113,9 @@ data LineEnds = Butt       -- ^ Flat edges, no caps
               | SquareCaps -- ^ Square end caps
   deriving Eq
 
+instance IsString LineEnds where
+  fromString = read
+
 instance Read LineEnds where
   readPrec = parens $ do
       Ident s <- lexP
@@ -129,6 +136,9 @@ data Corner = BevelCorner -- ^ A filled triangle with a beveled edge connects tw
             | RoundCorner -- ^ A filled arc connects two lines.
             | MiterCorner -- ^ A filled triangle with a sharp edge connects two lines.
   deriving Eq
+
+instance IsString Corner where
+  fromString = read
 
 instance Read Corner where
   readPrec = parens $ do
@@ -152,6 +162,9 @@ data Alignment = StartAlign  -- ^ The text is anchored at either its left edge (
                | LeftAlign   -- ^ The text is anchored at its left edge.
                | RightAlign  -- ^ the text is anchored at its right edge.
   deriving Eq
+
+instance IsString Alignment where
+  fromString = read
 
 instance Read Alignment where
   readPrec = parens $ do
@@ -180,6 +193,9 @@ data Baseline = Top
               | Ideographic
               | Bottom
   deriving (Bounded, Eq, Ix, Ord)
+
+instance IsString Baseline where
+  fromString = read
 
 instance Read Baseline where
   readPrec = parens $ do

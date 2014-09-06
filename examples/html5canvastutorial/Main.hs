@@ -156,7 +156,7 @@ example_1_2_4 canvas = do
                 strokeStyle "#0000ff"
                 lineCap cap
                 stroke()
-           | (cap,n) <- zip [Butt,RoundCaps,SquareCaps] [-50,0,50]
+           | (cap,n) <- zip ["butt","round","square"] [-50,0,50]
            ]
 
 example_1_3_1 canvas = do
@@ -215,7 +215,7 @@ example_1_4_2 _ = do
         moveTo(99, 150);
         lineTo(149, 50);
         lineTo(199, 150);
-        lineJoin MiterCorner;
+        lineJoin "miter";
         stroke();
 
       -- round line join (middle)
@@ -223,7 +223,7 @@ example_1_4_2 _ = do
         moveTo(239, 150);
         lineTo(289, 50);
         lineTo(339, 150);
-        lineJoin RoundCorner;
+        lineJoin "round";
         stroke();
 
       -- bevel line join (right)
@@ -231,7 +231,7 @@ example_1_4_2 _ = do
         moveTo(379, 150);
         lineTo(429, 50);
         lineTo(479, 150);
-        lineJoin BevelCorner;
+        lineJoin "bevel";
         stroke();
  
 example_1_4_3 _ = do
@@ -342,7 +342,7 @@ example_1_6_3 canvas = do
 example_1_6_4 canvas = do
         let (w,h) = size canvas
         imageObj <- newImage "/images/fan.jpg"
-        pattern <- createPattern (imageObj,Repeat)
+        pattern <- createPattern (imageObj,"repeat")
         rect(0, 0, w, h);
         Style.fillStyle pattern;
         fill();
@@ -385,7 +385,7 @@ example_1_8_4 canvas = do
         let x = w / 2
         let y = h / 2
         font "30pt Calibri"
-        textAlign CenterAlign
+        textAlign "center"
         fillStyle "blue"
         fillText("Hello World!", x, y)
 
@@ -394,8 +394,8 @@ example_1_8_5 canvas = do
         let x = w / 2
         let y = h / 2
         font "30pt Calibri"
-        textAlign CenterAlign
-        textBaseline Middle
+        textAlign "center"
+        textBaseline "middle"
         fillStyle "blue"
         fillText("Hello World!", x, y)
 
@@ -405,13 +405,13 @@ example_1_8_6 canvas = do
         let y = h / 2 - 10;
         let text = "Hello World!"
         font "30pt Calibri"
-        textAlign CenterAlign
+        textAlign "center"
         fillStyle "blue"
         fillText(text, x, y)
 
         TextMetrics w' <- measureText text
         font "20pt Calibri"
-        textAlign CenterAlign
+        textAlign "center"
         fillStyle "#555"
         fillText("(" <> Text.pack (show w') <> "px wide)", x, y + 40)
 
@@ -619,7 +619,7 @@ message canvas msg = do
         save()
         let h = height canvas
         font "30pt Calibri"
-        textAlign LeftAlign
+        textAlign "left"
         fillStyle "#8090a0"
         fillText(msg, 10, h - 10)
         restore()

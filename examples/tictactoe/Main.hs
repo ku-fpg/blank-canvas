@@ -80,7 +80,7 @@ boardColor = "#000080"
 drawX :: Float -> Canvas ()
 drawX size = do
         strokeStyle xColor
-        lineCap Butt
+        lineCap "butt"
         beginPath()
         moveTo(-size,-size)
         lineTo(size,size)
@@ -107,6 +107,6 @@ bigLine (x,y) (x',y') = do
         lineTo(x',y')
         lineWidth 20
         strokeStyle boardColor
-        lineCap RoundCaps
+        lineCap "round"
         stroke()
 
