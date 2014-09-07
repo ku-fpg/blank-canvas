@@ -289,8 +289,6 @@ send cxt commands =
       -- but certainly 'CreateLinearGradient', 'CreateRadialGradient', and
       -- 'NewImage' can be factored out. Perhaps these sholdn't be 'Query's
       -- but some new constructor for 'Canvas', something like 'Function'.
-      -- The code below seems to work for gradients but not images (I'm not
-      -- sure why I need to understand Scotty better).
       -- Technically we don't need a TVar for 'gId' since the other thread
       -- does not need to ever see 'gId', but since we already have it
       -- setup, I'll use is for now. There is also too much code
@@ -298,9 +296,13 @@ send cxt commands =
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> (String -> String) -> IO b
       sendFunc c q@(NewImage url) k cmds = do
+        let url' = if "/" `T.isPrefixOf` url then T.tail url else url
+        atomically $ do
+          db <- readTVar (localFiles cxt)
+          writeTVar (localFiles cxt) $ S.insert url' $ db
         gId <- atomically getUniq
         send' c (k $ CanvasImage gId 0 0) (cmds 
-          . ((jsImageTemplate gId (showJS c) (show url)) ++)  . (";" ++))
+          . ((jsImageTemplate gId (showJS c) (show url')) ++)  . (";" ++))
       sendFunc c q@(CreateLinearGradient _) k cmds = do
         gId <- atomically getUniq
         send' c (k $ CanvasGradient gId) (cmds 
