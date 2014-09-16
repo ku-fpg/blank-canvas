@@ -30,7 +30,7 @@ Description:      blank-canvas is a Haskell binding to the complete
 		  .
 License:             BSD3
 License-file:        LICENSE
-Author:              Andy Gill
+Author:              Andy Gill and Ryan Scott
 Maintainer:          andygill@ku.edu
 Copyright:           Copyright (c) 2014 The University of Kansas
 Homepage:            https://github.com/ku-fpg/blank-canvas/wiki
