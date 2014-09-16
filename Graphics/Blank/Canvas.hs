@@ -66,8 +66,8 @@ data Method
         | Font Text
         | GlobalAlpha Float
         | GlobalCompositeOperation Text
-        | LineCap LineEnds
-        | LineJoin Corner
+        | LineCap LineEndCap
+        | LineJoin LineJoinCorner
         | LineTo (Float,Float)
         | LineWidth Float
         | MiterLimit Float
@@ -88,8 +88,8 @@ data Method
         | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
         | ShadowOffsetX Float
         | ShadowOffsetY Float
-        | TextAlign Alignment
-        | TextBaseline Baseline
+        | TextAlign TextAnchorAlignment
+        | TextBaseline TextBaselineAlignment
         | Transform (Float,Float,Float,Float,Float,Float)
         | Translate (Float,Float)
 

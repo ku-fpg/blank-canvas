@@ -83,10 +83,12 @@ newtype CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
 -------------------------------------------------------------
 
 -- | The direction in which a 'CanvasPattern' repeats.
-data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally and vertically.
+data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
+                                --   and vertically.
                      | RepeatX  -- ^ The pattern repeats only horizontally.
                      | RepeatY  -- ^ The pattern repeats only vertically.
-                     | NoRepeat -- ^ The pattern displays only once and does not repeat.
+                     | NoRepeat -- ^ The pattern displays only once and
+                                --   does not repeat.
   deriving Eq
 
 instance IsString RepeatDirection where
@@ -107,40 +109,42 @@ instance Show RepeatDirection where
       RepeatY  -> "repeat-y"
       NoRepeat -> "no-repeat"
 
--- | The style of the ends of a line.
-data LineEnds = Butt       -- ^ Flat edges, no caps
-              | RoundCaps  -- ^ Semicircular end caps
-              | SquareCaps -- ^ Square end caps
+-- | The style of the caps on the endpoints of a line.
+data LineEndCap = ButtCap   -- ^ Flat edges
+                | RoundCap  -- ^ Semicircular end caps
+                | SquareCap -- ^ Square end caps
   deriving Eq
 
-instance IsString LineEnds where
+instance IsString LineEndCap where
   fromString = read
 
-instance Read LineEnds where
+instance Read LineEndCap where
   readPrec = parens $ do
       Ident s <- lexP
       case s of
-          "butt"   -> return Butt
-          "round"  -> return RoundCaps
-          "square" -> return SquareCaps
+          "butt"   -> return ButtCap  
+          "round"  -> return RoundCap 
+          "square" -> return SquareCap
           _        -> pfail
 
-instance Show LineEnds where
+instance Show LineEndCap where
   showsPrec _ le = showString $ case le of
-      Butt       -> "butt"
-      RoundCaps  -> "round"
-      SquareCaps -> "square"
+      ButtCap   -> "butt"
+      RoundCap  -> "round"
+      SquareCap -> "square"
 
--- | The style of corner that is created when two lines meet.
-data Corner = BevelCorner -- ^ A filled triangle with a beveled edge connects two lines.
-            | RoundCorner -- ^ A filled arc connects two lines.
-            | MiterCorner -- ^ A filled triangle with a sharp edge connects two lines.
+-- | The style of corner that is created when two lines join.
+data LineJoinCorner = BevelCorner -- ^ A filled triangle with a beveled edge
+                                  --   connects two lines.
+                    | RoundCorner -- ^ A filled arc connects two lines.
+                    | MiterCorner -- ^ A filled triangle with a sharp edge
+                                  --   connects two lines.
   deriving Eq
 
-instance IsString Corner where
+instance IsString LineJoinCorner where
   fromString = read
 
-instance Read Corner where
+instance Read LineJoinCorner where
   readPrec = parens $ do
       Ident s <- lexP
       case s of
@@ -149,74 +153,79 @@ instance Read Corner where
           "miter" -> return MiterCorner
           _       -> pfail
 
-instance Show Corner where
+instance Show LineJoinCorner where
   showsPrec _ corner = showString $ case corner of
       BevelCorner -> "bevel"
       RoundCorner -> "round"
       MiterCorner -> "miter"
 
 -- | The anchor point for text in the current 'DeviceContext'.
-data Alignment = StartAlign  -- ^ The text is anchored at either its left edge (if the canvas is left-to-right) or its right edge (if the canvas is right-to-left).
-               | EndAlign    -- ^ The text is anchored at either its right edge (if the canvas is left-to-right) or its left edge (if the canvas is right-to-left).
-               | CenterAlign -- ^ The text is anchored in its center.
-               | LeftAlign   -- ^ The text is anchored at its left edge.
-               | RightAlign  -- ^ the text is anchored at its right edge.
+data TextAnchorAlignment = StartAnchor  -- ^ The text is anchored at either its left edge
+                                        --   (if the canvas is left-to-right) or its right
+                                        --   edge (if the canvas is right-to-left).
+                         | EndAnchor    -- ^ The text is anchored at either its right edge
+                                        --   (if the canvas is left-to-right) or its left
+                                        --   edge (if the canvas is right-to-left).
+                         | CenterAnchor -- ^ The text is anchored in its center.
+                         | LeftAnchor   -- ^ The text is anchored at its left edge.
+                         | RightAnchor  -- ^ the text is anchored at its right edge.
   deriving Eq
 
-instance IsString Alignment where
+instance IsString TextAnchorAlignment where
   fromString = read
 
-instance Read Alignment where
+instance Read TextAnchorAlignment where
   readPrec = parens $ do
       Ident s <- lexP
       case s of
-          "start"  -> return StartAlign
-          "end"    -> return EndAlign
-          "center" -> return CenterAlign
-          "left"   -> return LeftAlign
-          "right"  -> return RightAlign
+          "start"  -> return StartAnchor
+          "end"    -> return EndAnchor
+          "center" -> return CenterAnchor
+          "left"   -> return LeftAnchor
+          "right"  -> return RightAnchor
           _        -> pfail
 
-instance Show Alignment where
+instance Show TextAnchorAlignment where
   showsPrec _ align = showString $ case align of
-      StartAlign  -> "start"
-      EndAlign    -> "end"
-      CenterAlign -> "center"
-      LeftAlign   -> "left"
-      RightAlign  -> "right"
+      StartAnchor  -> "start"
+      EndAnchor    -> "end"
+      CenterAnchor -> "center"
+      LeftAnchor   -> "left"
+      RightAnchor  -> "right"
 
--- | The baseline alignment used when drawing text in the current 'DeviceContext'. The baselines are ordered from highest ('Top') to lowest ('Bottom').
-data Baseline = Top
-              | Hanging
-              | Middle
-              | Alphabetic
-              | Ideographic
-              | Bottom
+-- | The baseline alignment used when drawing text in the current 'DeviceContext'.
+--   The baselines are ordered from highest ('Top') to lowest ('Bottom').
+data TextBaselineAlignment = TopBaseline
+                           | HangingBaseline
+                           | MiddleBaseline
+                           | AlphabeticBaseline
+                           | IdeographicBaseline
+                           | BottomBaseline
   deriving (Bounded, Eq, Ix, Ord)
 
-instance IsString Baseline where
+instance IsString TextBaselineAlignment where
   fromString = read
 
-instance Read Baseline where
+instance Read TextBaselineAlignment where
   readPrec = parens $ do
       Ident s <- lexP
       case s of
-          "top"         -> return Top
-          "hanging"     -> return Hanging
-          "middle"      -> return Middle
-          "alphabetic"  -> return Alphabetic
-          "ideographic" -> return Ideographic
-          "bottom"      -> return Bottom
+          "top"         -> return TopBaseline
+          "hanging"     -> return HangingBaseline
+          "middle"      -> return MiddleBaseline
+          "alphabetic"  -> return AlphabeticBaseline
+          "ideographic" -> return IdeographicBaseline
+          "bottom"      -> return BottomBaseline
           _             -> pfail
 
-instance Show Baseline where
+instance Show TextBaselineAlignment where
   showsPrec _ bl = showString $ case bl of
-      Top         -> "top"
-      Hanging     -> "hanging"
-      Middle      -> "middle"
-      Alphabetic  -> "alphabetic"
-      Ideographic -> "ideographic"
-      Bottom      -> "bottom"
+      TopBaseline         -> "top"
+      HangingBaseline     -> "hanging"
+      MiddleBaseline      -> "middle"
+      AlphabeticBaseline  -> "alphabetic"
+      IdeographicBaseline -> "ideographic"
+      BottomBaseline      -> "bottom"
 
 -------------------------------------------------------------
 
@@ -234,12 +243,6 @@ data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
 class JSArg a where
   showJS :: a -> String
 
-instance JSArg Alignment where
-  showJS = jsLiteralString . show
-
-jsAlignment :: Alignment -> String
-jsAlignment = showJS
-
 instance JSArg (AlphaColour Float) where
   showJS aCol
       | a >= 1    = jsColour rgbCol
@@ -256,12 +259,6 @@ instance JSArg (AlphaColour Float) where
 
 jsAlphaColour :: AlphaColour Float -> String
 jsAlphaColour = showJS
-
-instance JSArg Baseline where
-  showJS = jsLiteralString . show
-
-jsBaseline :: Baseline -> String
-jsBaseline = showJS
 
 instance JSArg Bool where
   showJS True  = "true"
@@ -300,12 +297,6 @@ instance JSArg (Colour Float) where
 jsColour :: Colour Float -> String
 jsColour = showJS
 
-instance JSArg Corner where
-  showJS = jsLiteralString . show
-
-jsCorner :: Corner -> String
-jsCorner = showJS
-
 instance JSArg Float where
   showJS a = showFFloat (Just 3) a ""
 
@@ -323,11 +314,17 @@ jsImageData = showJS
 instance JSArg Int where
   showJS a = show a
 
-instance JSArg LineEnds where
+instance JSArg LineEndCap where
   showJS = jsLiteralString . show
 
-jsLineEnds :: LineEnds -> String
-jsLineEnds = showJS
+jsLineEndCap :: LineEndCap -> String
+jsLineEndCap = showJS
+
+instance JSArg LineJoinCorner where
+  showJS = jsLiteralString . show
+
+jsLineJoinCorner :: LineJoinCorner -> String
+jsLineJoinCorner = showJS
 
 jsList :: (a -> String) -> [a] -> String
 jsList js = concat . intersperse "," . map js
@@ -343,6 +340,18 @@ instance JSArg Text where
 
 jsText :: Text -> String
 jsText = showJS
+
+instance JSArg TextAnchorAlignment where
+  showJS = jsLiteralString . show
+
+jsTextAnchorAlignment :: TextAnchorAlignment -> String
+jsTextAnchorAlignment = showJS
+
+instance JSArg TextBaselineAlignment where
+  showJS = jsLiteralString . show
+
+jsTextBaselineAlignment :: TextBaselineAlignment -> String
+jsTextBaselineAlignment = showJS
 
 -- The following was from our Sunroof compiler.
 -- -------------------------------------------------------------

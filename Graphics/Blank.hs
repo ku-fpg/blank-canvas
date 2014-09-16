@@ -42,8 +42,8 @@ module Graphics.Blank
         , lineCap
         , lineJoin
         , miterLimit
-        , LineEnds(..)
-        , Corner(..)
+        , LineEndCap(..)
+        , LineJoinCorner(..)
           -- ** Colors, styles and shadows
         , strokeStyle
         , fillStyle
@@ -79,8 +79,8 @@ module Graphics.Blank
         , fillText
         , strokeText
         , measureText
-        , Alignment(..)
-        , Baseline(..)
+        , TextAnchorAlignment(..)
+        , TextBaselineAlignment(..)
         , TextMetrics(..)
           -- ** Rectangles
         , clearRect
