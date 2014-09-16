@@ -7,6 +7,7 @@ import           Control.Applicative
 import           Data.Char (isControl, isAscii, ord)
 import           Data.Colour
 import           Data.Colour.SRGB
+import           Data.Default.Class
 import           Data.Ix
 import           Data.List
 import           Data.String
@@ -91,6 +92,9 @@ data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
                                 --   does not repeat.
   deriving Eq
 
+instance Default RepeatDirection where
+  def = Repeat
+
 instance IsString RepeatDirection where
   fromString = read
 
@@ -114,6 +118,9 @@ data LineEndCap = ButtCap   -- ^ Flat edges
                 | RoundCap  -- ^ Semicircular end caps
                 | SquareCap -- ^ Square end caps
   deriving Eq
+
+instance Default LineEndCap where
+  def = ButtCap
 
 instance IsString LineEndCap where
   fromString = read
@@ -140,6 +147,9 @@ data LineJoinCorner = BevelCorner -- ^ A filled triangle with a beveled edge
                     | MiterCorner -- ^ A filled triangle with a sharp edge
                                   --   connects two lines.
   deriving Eq
+
+instance Default LineJoinCorner where
+  def = MiterCorner
 
 instance IsString LineJoinCorner where
   fromString = read
@@ -170,6 +180,9 @@ data TextAnchorAlignment = StartAnchor  -- ^ The text is anchored at either its 
                          | LeftAnchor   -- ^ The text is anchored at its left edge.
                          | RightAnchor  -- ^ the text is anchored at its right edge.
   deriving Eq
+
+instance Default TextAnchorAlignment where
+  def = StartAnchor
 
 instance IsString TextAnchorAlignment where
   fromString = read
@@ -202,6 +215,9 @@ data TextBaselineAlignment = TopBaseline
                            | IdeographicBaseline
                            | BottomBaseline
   deriving (Bounded, Eq, Ix, Ord)
+
+instance Default TextBaselineAlignment where
+  def = AlphabeticBaseline
 
 instance IsString TextBaselineAlignment where
   fromString = read
