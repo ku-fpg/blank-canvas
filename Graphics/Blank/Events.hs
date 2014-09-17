@@ -19,22 +19,22 @@ data Event = Event
 
 
 instance FromJSON Event where
-   parseJSON (Object v) = Event <$> ((v .: "eMetaKey")              <|> return False)
-                                <*> (Just <$> (v .: "ePageXY")      <|> return Nothing)
-                                <*> (v .: "eType")
-                                <*> (Just <$> (v .: "eWhich")       <|> return Nothing)
+   parseJSON (Object v) = Event <$> ((v .: "metaKey")              <|> return False)
+                                <*> (Just <$> (v .: "pageXY")      <|> return Nothing)
+                                <*> (v .: "type")
+                                <*> (Just <$> (v .: "which")       <|> return Nothing)
    parseJSON _ = fail "no parse of Event"    
 
 instance ToJSON Event where
    toJSON e = object 
-            $ ((:) ("eMetaKey" .=  eMetaKey e))
+            $ ((:) ("metaKey" .=  eMetaKey e))
             $ (case ePageXY e of
                  Nothing -> id
-                 Just (x,y) -> (:) ("ePageXY" .= (x,y)))
-            $ ((:) ("eType" .= eType e))
+                 Just (x,y) -> (:) ("pageXY" .= (x,y)))
+            $ ((:) ("type" .= eType e))
             $ (case eWhich e of
                  Nothing -> id
-                 Just w -> (:) ("eWhich" .= w))
+                 Just w -> (:) ("which" .= w))
             $ []
 
 -- | 'EventName' mirrors event names from jquery, and use lower case.

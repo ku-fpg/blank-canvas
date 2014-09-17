@@ -118,20 +118,22 @@
             }
 
             function Trigger(e) {
-                $.kc.event({ eMetaKey: e.eMetaKey,
-                             ePageXY : e.ePageXY,
-                             eType   : e.eType,
-                             eWhich  : e.eWhich
-                            });
+		var o = {};
+		o.metaKey = e.metaKey;
+                o.type    = e.type;
+		if (e.pageXY != undefined) { 
+	            o.pageXY = e.pageXY; 
+  	        }
+		if (e.pageX != undefined && e.pageY != undefined) {
+		    o.pageXY = [e.pageX,e.pageY];
+                }
+                if (e.which != undefined) { 
+                    o.which = e.which; 
+                }
+                $.kc.event(o);
             }
             function register(name) {
-                $(document).bind(name,function (e){
-                        $.kc.event({ eMetaKey: e.metaKey,
-                                     ePageXY : [e.pageX,e.pageY],
-                                     eType   : e.type,
-                                     eWhich  : e.which
-                                    });
-                });
+                $(document).bind(name,Trigger);
             }
             function redraw() {
                 $.ajax({ url: "/canvas/" + session,
