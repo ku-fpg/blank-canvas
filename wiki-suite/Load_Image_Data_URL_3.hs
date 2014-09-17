@@ -8,8 +8,8 @@ import qualified Data.Text.IO as Text.IO
 import Control.Monad.IO.Class
 
 main = blankCanvas 3000 $ \ context -> do
+    url <- readDataURL "image/jpeg" "images/Haskell.jpg"
     send context $ do
-    	   url <- liftIO $ readDataURL "image/jpeg" "images/Haskell.jpg"
            img <- newImage url
            drawImage (img,[0,0])
 

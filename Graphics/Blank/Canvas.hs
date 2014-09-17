@@ -4,7 +4,6 @@ module Graphics.Blank.Canvas where
 
 import           Control.Applicative
 import           Control.Monad (ap, liftM2)
-import           Control.Monad.IO.Class
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
@@ -27,7 +26,6 @@ data Canvas :: * -> * where
         MyContext ::                                Canvas CanvasContext
         Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
         Return    :: a                           -> Canvas a
-        LiftIO    :: IO a                        -> Canvas a
         ASync     ::                                Canvas ()
 
 instance Monad Canvas where
@@ -45,8 +43,6 @@ instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
   mempty  = return mempty
 
-instance MonadIO Canvas where
-  liftIO = LiftIO
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method

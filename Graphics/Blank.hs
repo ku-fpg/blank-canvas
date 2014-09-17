@@ -283,9 +283,6 @@ send cxt commands =
       sendBind c (Query query) k cmds = sendQuery c query k cmds
       sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
       sendBind c MyContext k    cmds = send' c (k c) cmds
-      sendBind c (LiftIO io) k  cmds = do
-              a <- io    -- done out of step from the cmds, which have not been sent yet.
-              send' c (k a) cmds
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
       sendQuery c query k cmds = do
