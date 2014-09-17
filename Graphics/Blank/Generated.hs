@@ -10,10 +10,10 @@ instance Show Method where
   show (ArcTo (a1,a2,a3,a4,a5)) = "arcTo(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ ")"
   show BeginPath = "beginPath()"
   show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsFloat a6 ++ ")"
-  show (DrawImage (a1,a2)) = "drawImage(" ++ jsImage a1 ++ "," ++ jsList jsFloat a2 ++ ")"
   show (ClearRect (a1,a2,a3,a4)) = "clearRect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
   show Clip = "clip()"
   show ClosePath = "closePath()"
+  show (DrawImage (a1,a2)) = "drawImage(" ++ jsImage a1 ++ "," ++ jsList jsFloat a2 ++ ")"
   show Fill = "fill()"
   show (FillRect (a1,a2,a3,a4)) = "fillRect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
   show (FillStyle (a1)) = "fillStyle = (" ++ jsStyle a1 ++ ")"
@@ -32,17 +32,17 @@ instance Show Method where
   show (Rect (a1,a2,a3,a4)) = "rect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
   show Restore = "restore()"
   show (Rotate (a1)) = "rotate(" ++ jsFloat a1 ++ ")"
-  show (Scale (a1,a2)) = "scale(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ ")"
   show Save = "save()"
+  show (Scale (a1,a2)) = "scale(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ ")"
   show (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsFloat a6 ++ ")"
-  show Stroke = "stroke()"
-  show (StrokeRect (a1,a2,a3,a4)) = "strokeRect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
-  show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsText a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
-  show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsStyle a1 ++ ")"
   show (ShadowBlur (a1)) = "shadowBlur = (" ++ jsFloat a1 ++ ")"
   show (ShadowColor (a1)) = "shadowColor = (" ++ jsCanvasColor a1 ++ ")"
   show (ShadowOffsetX (a1)) = "shadowOffsetX = (" ++ jsFloat a1 ++ ")"
   show (ShadowOffsetY (a1)) = "shadowOffsetY = (" ++ jsFloat a1 ++ ")"
+  show Stroke = "stroke()"
+  show (StrokeRect (a1,a2,a3,a4)) = "strokeRect(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ ")"
+  show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsStyle a1 ++ ")"
+  show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsText a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ ")"
   show (TextAlign (a1)) = "textAlign = (" ++ jsTextAnchorAlignment a1 ++ ")"
   show (TextBaseline (a1)) = "textBaseline = (" ++ jsTextBaselineAlignment a1 ++ ")"
   show (Transform (a1,a2,a3,a4,a5,a6)) = "transform(" ++ jsFloat a1 ++ "," ++ jsFloat a2 ++ "," ++ jsFloat a3 ++ "," ++ jsFloat a4 ++ "," ++ jsFloat a5 ++ "," ++ jsFloat a6 ++ ")"
@@ -62,10 +62,6 @@ beginPath () = Method BeginPath
 bezierCurveTo :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
 bezierCurveTo = Method . BezierCurveTo
 
--- | 'drawImage' takes 2, 4 or 8 floats arguments
-drawImage :: Image image => (image,[Float]) -> Canvas ()
-drawImage = Method . DrawImage
-
 clearRect :: (Float,Float,Float,Float) -> Canvas ()
 clearRect = Method . ClearRect
 
@@ -74,6 +70,32 @@ clip () = Method Clip
 
 closePath :: () -> Canvas ()
 closePath () = Method ClosePath
+
+-- | 'drawImage' takes 2, 4, or 8 'Float' arguments. See 'drawImageAt', 'drawImageSize',
+--   and 'drawImageCrop' for variants with exact numbers of arguments.
+drawImage :: Image image => (image,[Float]) -> Canvas ()
+drawImage = Method . DrawImage
+
+-- | Draws an image onto the canvas at the given x- and y-coordinates.
+drawImageAt :: Image image => (image, Float, Float) -> Canvas ()
+drawImageAt (img, dx, dy) = Method $ DrawImage (img, [dx, dy])
+
+-- | Acts like 'drawImageAt', but with two extra 'Float' arguments. The third and fourth
+--   'Float's specify the width and height of the image, respectively.
+drawImageSize :: Image image => (image, Float, Float, Float, Float) -> Canvas ()
+drawImageSize (img, dx, dy, dw, dh) = Method $ DrawImage (img, [dx, dy, dw, dh])
+
+-- | Acts like 'drawImageSize', but with four extra 'Float' arguments before the arguments
+--   of 'drawImageSize'. The first and second 'Float's specify the x- and y-coordinates at
+--   which the image begins to crop. The third and fourth 'Float's specify the width and
+--   height of the cropped image.
+-- 
+-- @
+-- 'drawImageCrop' img 0 0 dw dh dx dy dw dh = 'drawImageSize' = dx dy dw dh
+-- @
+drawImageCrop :: Image image => (image, Float, Float, Float, Float, Float, Float, Float, Float) -> Canvas ()
+drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
+  = Method $ DrawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
 
 fill :: () -> Canvas ()
 fill () = Method Fill
@@ -114,8 +136,27 @@ miterLimit = Method . MiterLimit
 moveTo :: (Float,Float) -> Canvas ()
 moveTo = Method . MoveTo
 
+-- | 'putImageData' takes 2 or 6 'Float' arguments. See `putImageDataAt' and
+--   `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData,[Float]) -> Canvas ()
 putImageData = Method . PutImageData
+
+-- | Writes 'ImageData' to the canvas at the given x- and y-coordinates.
+putImageDataAt :: (ImageData, Float, Float) -> Canvas ()
+putImageDataAt (imgData, dx, dy) = Method $ PutImageData (imgData, [dx, dy])
+
+-- | Acts like 'putImageDataDirty', but with four extra 'Float' arguments that specify
+--   which region of the 'ImageData' (the dirty rectangle) should be drawn. The third
+--   and fourth 'Float's specify the dirty rectangle's x- and y- coordinates, and the
+--   fifth and sixth 'Float's specify the dirty rectangle's width and height.
+--   
+-- @
+-- 'putImageDataDirty' imgData dx dy 0 0 w h = 'putImageDataAt' imgData dx dy
+--   where (w, h) = case imgData of ImageData w' h' _ -> (w', h')
+-- @
+putImageDataDirty :: (ImageData, Float, Float, Float, Float, Float, Float) -> Canvas ()
+putImageDataDirty (imgData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
+  = Method $ PutImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])
 
 quadraticCurveTo :: (Float,Float,Float,Float) -> Canvas ()
 quadraticCurveTo = Method . QuadraticCurveTo
@@ -129,26 +170,14 @@ restore () = Method Restore
 rotate :: Float -> Canvas ()
 rotate = Method . Rotate
 
-scale :: (Float,Float) -> Canvas ()
-scale = Method . Scale
-
 save :: () -> Canvas ()
 save () = Method Save
 
+scale :: (Float,Float) -> Canvas ()
+scale = Method . Scale
+
 setTransform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
 setTransform = Method . SetTransform
-
-stroke :: () -> Canvas ()
-stroke () = Method Stroke
-
-strokeRect :: (Float,Float,Float,Float) -> Canvas ()
-strokeRect = Method . StrokeRect
-
-strokeText :: (Text,Float,Float) -> Canvas ()
-strokeText = Method . StrokeText
-
-strokeStyle :: Style style => style -> Canvas ()
-strokeStyle = Method . StrokeStyle
 
 shadowBlur :: Float -> Canvas ()
 shadowBlur = Method . ShadowBlur
@@ -161,6 +190,18 @@ shadowOffsetX = Method . ShadowOffsetX
 
 shadowOffsetY :: Float -> Canvas ()
 shadowOffsetY = Method . ShadowOffsetY
+
+stroke :: () -> Canvas ()
+stroke () = Method Stroke
+
+strokeRect :: (Float,Float,Float,Float) -> Canvas ()
+strokeRect = Method . StrokeRect
+
+strokeStyle :: Style style => style -> Canvas ()
+strokeStyle = Method . StrokeStyle
+
+strokeText :: (Text,Float,Float) -> Canvas ()
+strokeText = Method . StrokeText
 
 textAlign :: TextAnchorAlignment -> Canvas ()
 textAlign = Method . TextAlign

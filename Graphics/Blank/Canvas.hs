@@ -51,10 +51,10 @@ data Method
         | ArcTo (Float,Float,Float,Float,Float)
         | BeginPath
         | BezierCurveTo (Float,Float,Float,Float,Float,Float)
-        | forall image . Image image => DrawImage (image,[Float]) -- 'drawImage' takes 2, 4 or 8 floats arguments
         | ClearRect (Float,Float,Float,Float)
         | Clip
         | ClosePath
+        | forall image . Image image => DrawImage (image,[Float]) -- 'drawImage' takes 2, 4, or 8 Float arguments
         | Fill
         | FillRect (Float,Float,Float,Float)
         | forall style . Style style => FillStyle style
@@ -68,22 +68,22 @@ data Method
         | LineWidth Float
         | MiterLimit Float
         | MoveTo (Float,Float)
-        | PutImageData (ImageData,[Float])
+        | PutImageData (ImageData,[Float]) -- 'putImageData' takes 2 or 6 Float arguments
         | QuadraticCurveTo (Float,Float,Float,Float)
         | Rect (Float,Float,Float,Float)
         | Restore
         | Rotate Float
-        | Scale (Float,Float)
         | Save
+        | Scale (Float,Float)
         | SetTransform (Float,Float,Float,Float,Float,Float)
-        | Stroke
-        | StrokeRect (Float,Float,Float,Float)
-        | StrokeText (Text,Float,Float)
-        | forall style . Style style => StrokeStyle style
         | ShadowBlur Float
         | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
         | ShadowOffsetX Float
         | ShadowOffsetY Float
+        | Stroke
+        | StrokeRect (Float,Float,Float,Float)
+        | forall style . Style style => StrokeStyle style
+        | StrokeText (Text,Float,Float)
         | TextAlign TextAnchorAlignment
         | TextBaseline TextBaselineAlignment
         | Transform (Float,Float,Float,Float,Float,Float)
