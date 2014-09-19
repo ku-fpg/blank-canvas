@@ -39,7 +39,7 @@ while(<F>) {
 			$orig_args = $2;
                         $comment = $3;
 			$args =~ s/\((.*)\)/$1/;
-			@args = split(/[\(\),]/,$args);
+			@args = split(/[\(\),]\s*/,$args);
 			# name is the lower case version
 			$name = $cmd;
 			$name =~ s/(\w+)/\l$1/g;
