@@ -1,22 +1,35 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import Graphics.Blank
+import qualified Data.Text as T
+import           Data.Text (Text)
+import           Graphics.Blank
+import           Prelude hiding ((++))
 
-main = blankCanvas 3000 $ \ cxt -> send cxt $ do
-     (width,height) <- size
-     console_log $ show $ (width,height)
+(++) :: Text -> Text -> Text
+(++) = T.append
+infixr 5 ++
+
+imgPath :: Text
+imgPath = "images/fan.jpg"
+
+main :: IO ()
+main = blankCanvas 3000 { static = [T.unpack imgPath] } $ \ ctx -> send ctx $ do
+     let (w, h) = (width ctx, height ctx)
+     console_log . T.pack . show $ (w, h)
 
      fillStyle "black"
      textAlign "center"   
      sequence_ [ 
           do save()
-             translate (x * width/4,(y+1) * height/16)
-             let p' = round (p * 1/z)
-             font ("lighter " ++ show p' ++ "pt " ++ "Chalkduster") --  Calibri")
+             translate (x * w/4,(y+1) * h/16)
+             let p' = round (p * 1/z) :: Int
+             font ("lighter " ++ (T.pack $ show p') ++ "pt " ++ "Chalkduster") --  Calibri")
              scale (z,z)
-             fillText("Hello World! (" ++ show p' ++ ")", 0, 0)
+             fillText("Hello World! (" ++ (T.pack $ show p') ++ ")", 0, 0)
              restore()
           | (x,p) <- [1..3] `zip` [9,18,36]
           , (y,z) <- [1..3] `zip` [0.5,1,2]
           ]
-     drawImage(top, [0,0,width,height/2,0,height/2,width/2,height/4])
+     top <- newImage imgPath
+     drawImage(top, [0,0,w,h/2,0,h/2,w/2,h/4])

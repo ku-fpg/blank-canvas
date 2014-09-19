@@ -8,7 +8,7 @@ import Graphics.Blank
 main :: IO ()
 main = blankCanvas 3000 { events = ["mousedown"] } $ go
 
-type Ball a = ((Float,Float),Float,a)
+type Ball a = ((Double, Double), Double, a)
 
 type Color = String
 
@@ -17,7 +17,7 @@ epoch = []
 
 type State = ([Ball Color])
 
-showBall :: (Float,Float) -> Text -> Canvas ()
+showBall :: (Double, Double) -> Text -> Canvas ()
 showBall (x,y) col = do
 --	save()
 --	translate (x,y)
@@ -38,7 +38,7 @@ moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
 go :: DeviceContext -> IO b
 go context = do
 
-     let (w,h) = (width context, height context) :: (Float, Float)
+     let (w,h) = (width context, height context) :: (Double, Double)
      print (w,h)
 
      let bounce :: Ball a -> Ball a

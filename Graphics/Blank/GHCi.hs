@@ -40,6 +40,6 @@ splatCanvas opts cmds = do
 
 -- common TVar for all ports in use.
 {-# NOINLINE usedPorts #-}
-usedPorts :: TVar [(Int,TMVar (Canvas ()))]
+usedPorts :: TVar [(Int, TMVar (Canvas ()))]
 usedPorts = unsafePerformIO $ newTVarIO []
 

@@ -5,10 +5,10 @@ import Graphics.Blank
 import Control.Concurrent
 import Wiki -- (384,384)
 
+main :: IO ()
+main = blankCanvas 3000 $ flip loop 0
 
-main = blankCanvas 3000 $ \ context -> do
-     loop context (0 :: Float)
-
+loop :: DeviceContext -> Double -> IO ()
 loop context n = do
         send context $ do
                 clearRect (0,0,width context,height context)

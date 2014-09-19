@@ -19,12 +19,12 @@ import qualified Web.Scotty.Comet as KC
 -- rather 'getContext' is implied (when using 'send').
 
 data DeviceContext = DeviceContext
-        { theComet    :: KC.Document                -- ^ The mechansims for sending commands
-        , eventQueue  :: EventQueue                 -- ^ A single (typed) event queue
-        , ctx_width   :: !Int
-        , ctx_height  :: !Int
-        , ctx_devicePixelRatio :: !Float
-        , localFiles  :: TVar (Set Text)            -- ^ approved local files
+        { theComet             :: KC.Document     -- ^ The mechansims for sending commands
+        , eventQueue           :: EventQueue      -- ^ A single (typed) event queue
+        , ctx_width            :: !Int
+        , ctx_height           :: !Int
+        , ctx_devicePixelRatio :: !Double
+        , localFiles           :: TVar (Set Text) -- ^ approved local files
         }
 
 instance Image DeviceContext where
@@ -40,7 +40,7 @@ deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 --   to use the native devicePixelRatio, and if successful, 'devicePixelRatio' will return a number other than 1.
 --   You can think of devicePixelRatio as the line width to use to make lines look one pixel wide.
 
-devicePixelRatio ::  DeviceContext -> Float
+devicePixelRatio ::  DeviceContext -> Double
 devicePixelRatio = ctx_devicePixelRatio
 
 -- | internal command to send a message to the canvas.

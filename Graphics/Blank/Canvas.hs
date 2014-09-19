@@ -47,51 +47,51 @@ instance Monoid a => Monoid (Canvas a) where
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
         -- regular HTML5 canvas commands
-        = Arc (Float,Float,Float,Float,Float,Bool)
-        | ArcTo (Float,Float,Float,Float,Float)
+        = Arc (Double, Double, Double, Double, Double, Bool)
+        | ArcTo (Double, Double, Double, Double, Double)
         | BeginPath
-        | BezierCurveTo (Float,Float,Float,Float,Float,Float)
-        | ClearRect (Float,Float,Float,Float)
+        | BezierCurveTo (Double, Double, Double, Double, Double, Double)
+        | ClearRect (Double, Double, Double, Double)
         | Clip
         | ClosePath
-        | forall image . Image image => DrawImage (image,[Float]) -- 'drawImage' takes 2, 4, or 8 Float arguments
+        | forall image . Image image => DrawImage (image,[Double]) -- 'drawImage' takes 2, 4, or 8 Double arguments
         | Fill
-        | FillRect (Float,Float,Float,Float)
+        | FillRect (Double, Double, Double, Double)
         | forall style . Style style => FillStyle style
-        | FillText (Text,Float,Float)
+        | FillText (Text, Double, Double)
         | Font Text
-        | GlobalAlpha Float
+        | GlobalAlpha Double
         | GlobalCompositeOperation Text
         | LineCap LineEndCap
         | LineJoin LineJoinCorner
-        | LineTo (Float,Float)
-        | LineWidth Float
-        | MiterLimit Float
-        | MoveTo (Float,Float)
-        | PutImageData (ImageData,[Float]) -- 'putImageData' takes 2 or 6 Float arguments
-        | QuadraticCurveTo (Float,Float,Float,Float)
-        | Rect (Float,Float,Float,Float)
+        | LineTo (Double, Double)
+        | LineWidth Double
+        | MiterLimit Double
+        | MoveTo (Double, Double)
+        | PutImageData (ImageData, [Double]) -- 'putImageData' takes 2 or 6 Double arguments
+        | QuadraticCurveTo (Double, Double, Double, Double)
+        | Rect (Double, Double, Double, Double)
         | Restore
-        | Rotate Float
+        | Rotate Double
         | Save
-        | Scale (Float,Float)
-        | SetTransform (Float,Float,Float,Float,Float,Float)
-        | ShadowBlur Float
+        | Scale (Double, Double)
+        | SetTransform (Double, Double, Double, Double, Double, Double)
+        | ShadowBlur Double
         | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
-        | ShadowOffsetX Float
-        | ShadowOffsetY Float
+        | ShadowOffsetX Double
+        | ShadowOffsetY Double
         | Stroke
-        | StrokeRect (Float,Float,Float,Float)
+        | StrokeRect (Double, Double, Double, Double)
         | forall style . Style style => StrokeStyle style
-        | StrokeText (Text,Float,Float)
+        | StrokeText (Text,Double, Double)
         | TextAlign TextAnchorAlignment
         | TextBaseline TextBaselineAlignment
-        | Transform (Float,Float,Float,Float,Float,Float)
-        | Translate (Float,Float)
+        | Transform (Double, Double, Double, Double, Double, Double)
+        | Translate (Double, Double)
 
 data Command
   = Trigger Event
-  | forall color . CanvasColor color => AddColorStop (Float, color) CanvasGradient
+  | forall color . CanvasColor color => AddColorStop (Double, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
 
@@ -120,7 +120,7 @@ trigger :: Event -> Canvas ()
 trigger = Command . Trigger
 
 -- | add a Color stop to a Canvas Gradient.
-addColorStop :: CanvasColor color => (Float, color) -> CanvasGradient -> Canvas ()
+addColorStop :: CanvasColor color => (Double, color) -> CanvasGradient -> Canvas ()
 addColorStop (off,rep) = Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser console.log.
@@ -133,23 +133,23 @@ eval = Command . Eval
 
 -----------------------------------------------------------------------------
 data Query :: * -> * where
-        Device                                            :: Query DeviceAttributes
-        ToDataURL                                         :: Query Text
-        MeasureText          :: Text                      -> Query TextMetrics
-        IsPointInPath        :: (Float,Float)             -> Query Bool
-        NewImage             :: Text                      -> Query CanvasImage
-        CreateLinearGradient :: (Float,Float,Float,Float)             -> Query CanvasGradient
-        CreateRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Query CanvasGradient
-        CreatePattern        :: Image image => (image,RepeatDirection) -> Query CanvasPattern
-        NewCanvas            :: (Int,Int)                 -> Query CanvasContext
-        GetImageData         :: (Float,Float,Float,Float) -> Query ImageData
-        Sync                 ::                              Query ()
+        Device               ::                                                     Query DeviceAttributes
+        ToDataURL            ::                                                     Query Text
+        MeasureText          :: Text                                             -> Query TextMetrics
+        IsPointInPath        :: (Double, Double)                                 -> Query Bool
+        NewImage             :: Text                                             -> Query CanvasImage
+        CreateLinearGradient :: (Double, Double, Double, Double)                 -> Query CanvasGradient
+        CreateRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Query CanvasGradient
+        CreatePattern        :: Image image => (image, RepeatDirection)          -> Query CanvasPattern
+        NewCanvas            :: (Int, Int)                                       -> Query CanvasContext
+        GetImageData         :: (Double, Double, Double, Double)                 -> Query ImageData
+        Sync                 ::                                                     Query ()
 
-data DeviceAttributes = DeviceAttributes Int Int Float
+data DeviceAttributes = DeviceAttributes Int Int Double
         deriving Show
 
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
-data TextMetrics = TextMetrics Float
+data TextMetrics = TextMetrics Double
         deriving Show
 
 instance Show (Query a) where
@@ -200,7 +200,7 @@ toDataURL () = Query ToDataURL
 measureText :: Text -> Canvas TextMetrics
 measureText = Query . MeasureText
 
-isPointInPath :: (Float,Float) -> Canvas Bool
+isPointInPath :: (Double, Double) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
 -- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle,
@@ -209,21 +209,21 @@ isPointInPath = Query . IsPointInPath
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
-createLinearGradient :: (Float,Float,Float,Float) -> Canvas CanvasGradient
+createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Query . CreateLinearGradient
 
-createRadialGradient :: (Float,Float,Float,Float,Float,Float) -> Canvas CanvasGradient
+createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
 createRadialGradient = Query . CreateRadialGradient
 
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height.
-newCanvas :: (Int,Int) -> Canvas CanvasContext
+newCanvas :: (Int, Int) -> Canvas CanvasContext
 newCanvas = Query . NewCanvas
 
 -- | Capture ImageDate from the Canvas.
-getImageData :: (Float,Float,Float,Float) -> Canvas ImageData
+getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
 getImageData = Query . GetImageData
 
 -- | Send all commands to the browser, wait for the browser to ack, then continue.

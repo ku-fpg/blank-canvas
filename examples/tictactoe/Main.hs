@@ -16,7 +16,7 @@ swap :: XO -> XO
 swap X = O
 swap O = X
 
-loop :: DeviceContext -> Map (Int,Int) XO -> XO -> IO ()
+loop :: DeviceContext -> Map (Int, Int) XO -> XO -> IO ()
 loop context board turn = do
 --        print board
 --        print turn
@@ -47,7 +47,7 @@ loop context board turn = do
                 restore()
                 return (w,h,sz)
 
-        let pointToSq :: (Float,Float) -> Maybe (Int,Int)
+        let pointToSq :: (Double, Double) -> Maybe (Int,Int)
             pointToSq (x,y) = do
                     x' <- fd ((x - w / 2) / sz)
                     y' <- fd ((y - h / 2) / sz)
@@ -77,7 +77,7 @@ xColor = "#ff0000"
 oColor = "#00a000"
 boardColor = "#000080"
 
-drawX :: Float -> Canvas ()
+drawX :: Double -> Canvas ()
 drawX size = do
         strokeStyle xColor
         lineCap "butt"
@@ -92,7 +92,7 @@ drawX size = do
         lineWidth 10
         stroke()
 
-drawO :: Float -> Canvas ()
+drawO :: Double -> Canvas ()
 drawO radius = do
         beginPath()
         arc(0, 0, radius, 0, 2 * pi, False)
@@ -100,7 +100,7 @@ drawO radius = do
         strokeStyle oColor
         stroke()
 
-bigLine :: (Float,Float) -> (Float,Float) -> Canvas ()
+bigLine :: (Double, Double) -> (Double, Double) -> Canvas ()
 bigLine (x,y) (x',y') = do
         beginPath()
         moveTo(x,y)

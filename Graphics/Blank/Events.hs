@@ -11,7 +11,7 @@ import Data.Text (Text)
 -- | Basic Event from Browser; see <http://api.jquery.com/category/events/> for details.
 data Event = Event
         { eMetaKey :: Bool
-        , ePageXY  :: Maybe (Float,Float)
+        , ePageXY  :: Maybe (Double, Double)
         , eType    :: EventName          -- "Describes the nature of the event." jquery
         , eWhich   :: Maybe Int          -- magic code for key presses
         }

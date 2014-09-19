@@ -513,7 +513,7 @@ example_2_2_3 canvas = do
       stroke();
 
 example_2_2_4 canvas = do
-        let (w,h) = size canvas :: (Float, Float)
+        let (w,h) = size canvas :: (Double, Double)
         tempCanvas <- newCanvas (round w,round h)
         console_log tempCanvas
         let (w',h') = size tempCanvas

@@ -8,7 +8,7 @@ main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
      loop context 0
 
-loop :: DeviceContext -> Float -> IO a
+loop :: DeviceContext -> Double -> IO a
 loop context n = do
         send context $ do
                 let (w,h) = (width context, height context)

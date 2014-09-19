@@ -383,7 +383,7 @@ strokeStyle = Generated.strokeStyle
 shadowColor :: Text -> Canvas ()
 shadowColor = Generated.shadowColor
 
-addColorStop :: (Float, Text) -> CanvasGradient -> Canvas ()
+addColorStop :: (Double, Text) -> CanvasGradient -> Canvas ()
 addColorStop = Canvas.addColorStop
 
 height :: (Image image, Num a) => image -> a

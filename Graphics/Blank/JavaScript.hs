@@ -51,11 +51,11 @@ instance Image CanvasContext where
 class Style a where
   jsStyle :: a -> String
 
-instance Style Text                where { jsStyle = jsText }
-instance Style CanvasGradient      where { jsStyle = jsCanvasGradient }
-instance Style CanvasPattern       where { jsStyle = jsCanvasPattern }
-instance Style (Colour Float)      where { jsStyle = jsColour }
-instance Style (AlphaColour Float) where { jsStyle = jsAlphaColour }
+instance Style Text                 where { jsStyle = jsText }
+instance Style CanvasGradient       where { jsStyle = jsCanvasGradient }
+instance Style CanvasPattern        where { jsStyle = jsCanvasPattern }
+instance Style (Colour Double)      where { jsStyle = jsColour }
+instance Style (AlphaColour Double) where { jsStyle = jsAlphaColour }
 
 class Style a => CanvasColor a
 
@@ -63,8 +63,8 @@ jsCanvasColor :: CanvasColor color => color -> String
 jsCanvasColor = jsStyle
 
 instance CanvasColor Text
-instance CanvasColor (Colour Float)
-instance CanvasColor (AlphaColour Float)
+instance CanvasColor (Colour Double)
+instance CanvasColor (AlphaColour Double)
 
 -------------------------------------------------------------
 
@@ -259,21 +259,21 @@ data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
 class JSArg a where
   showJS :: a -> String
 
-instance JSArg (AlphaColour Float) where
+instance JSArg (AlphaColour Double) where
   showJS aCol
       | a >= 1    = jsColour rgbCol
       | a <= 0    = jsLiteralString "rgba(0,0,0,0)"
       | otherwise = jsLiteralString $ "rgba("
-          ++ show r    ++ ","
-          ++ show g    ++ ","
-          ++ show b    ++ ","
-          ++ jsFloat a ++ ")"
+          ++ show r     ++ ","
+          ++ show g     ++ ","
+          ++ show b     ++ ","
+          ++ jsDouble a ++ ")"
     where
       a         = alphaChannel aCol
       rgbCol    = darken (recip a) $ aCol `over` black
       RGB r g b = toSRGB24 rgbCol
 
-jsAlphaColour :: AlphaColour Float -> String
+jsAlphaColour :: AlphaColour Double -> String
 jsAlphaColour = showJS
 
 instance JSArg Bool where
@@ -307,17 +307,17 @@ instance JSArg CanvasPattern where
 jsCanvasPattern :: CanvasPattern -> String
 jsCanvasPattern = showJS
 
-instance JSArg (Colour Float) where
+instance JSArg (Colour Double) where
   showJS = jsLiteralString . sRGB24show
 
-jsColour :: Colour Float -> String
+jsColour :: Colour Double -> String
 jsColour = showJS
 
-instance JSArg Float where
+instance JSArg Double where
   showJS a = showFFloat (Just 3) a ""
 
-jsFloat :: Float -> String
-jsFloat = showJS
+jsDouble :: Double -> String
+jsDouble = showJS
 
 instance JSArg ImageData where
   showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[" ++ vs ++ "])"

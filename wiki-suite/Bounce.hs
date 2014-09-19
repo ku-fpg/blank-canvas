@@ -12,7 +12,7 @@ import Wiki -- (512,384)
 main :: IO ()
 main = blankCanvas 3000 { events = ["mousedown"] } $ go
 
-type Ball a = ((Float,Float),Float,a)
+type Ball a = ((Double, Double), Double, a)
 
 type Color = String
 
@@ -22,7 +22,7 @@ epoch = []
 type State = ([Ball Color])
 
 
-showBall :: (Float,Float) -> Text -> Canvas ()
+showBall :: (Double, Double) -> Text -> Canvas ()
 showBall (x,y) col = do
         beginPath()
         globalAlpha 0.5
