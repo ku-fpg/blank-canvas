@@ -34,9 +34,6 @@ module Graphics.Blank
           -- ** Image drawing
         , Image -- abstract class
         , drawImage
-        , drawImageAt
-        , drawImageSize
-        , drawImageCrop
           -- ** Compositing
         , globalAlpha
         , globalCompositeOperation
@@ -92,8 +89,6 @@ module Graphics.Blank
           -- ** Pixel manipulation
         , getImageData
         , putImageData
-        , putImageDataAt
-        , putImageDataDirty
         , ImageData(..)
         -- * blank-canvas Extensions
         -- ** Reading from 'Canvas'

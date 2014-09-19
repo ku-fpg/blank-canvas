@@ -72,3 +72,41 @@ writeDataURL fileName
              . encodeUtf8
              . Text.tail
              . Text.dropWhile (/= ',')
+
+-- | Draws an image onto the canvas at the given x- and y-coordinates.
+drawImageAt :: Image image => (image, Double, Double) -> Canvas ()
+drawImageAt (img, dx, dy) = Method $ DrawImage (img, [dx, dy])
+
+-- | Acts like 'drawImageAt', but with two extra 'Double' arguments. The third and fourth
+--   'Double's specify the width and height of the image, respectively.
+drawImageSize :: Image image => (image, Double, Double, Double, Double) -> Canvas ()
+drawImageSize (img, dx, dy, dw, dh) = Method $ DrawImage (img, [dx, dy, dw, dh])
+
+-- | Acts like 'drawImageSize', but with four extra 'Double' arguments before the arguments
+--   of 'drawImageSize'. The first and second 'Double's specify the x- and y-coordinates at
+--   which the image begins to crop. The third and fourth 'Double's specify the width and
+--   height of the cropped image.
+-- 
+-- @
+-- 'drawImageCrop' img 0 0 dw dh dx dy dw dh = 'drawImageSize' = dx dy dw dh
+-- @
+drawImageCrop :: Image image => (image, Double, Double, Double, Double, Double, Double, Double, Double) -> Canvas ()
+drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
+  = Method $ DrawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
+
+-- | Writes 'ImageData' to the canvas at the given x- and y-coordinates.
+putImageDataAt :: (ImageData, Double, Double) -> Canvas ()
+putImageDataAt (imgData, dx, dy) = Method $ PutImageData (imgData, [dx, dy])
+
+-- | Acts like 'putImageDataDirty', but with four extra 'Double' arguments that specify
+--   which region of the 'ImageData' (the dirty rectangle) should be drawn. The third
+--   and fourth 'Double's specify the dirty rectangle's x- and y- coordinates, and the
+--   fifth and sixth 'Double's specify the dirty rectangle's width and height.
+--   
+-- @
+-- 'putImageDataDirty' imgData dx dy 0 0 w h = 'putImageDataAt' imgData dx dy
+--   where (w, h) = case imgData of ImageData w' h' _ -> (w', h')
+-- @
+putImageDataDirty :: (ImageData, Double, Double, Double, Double, Double, Double) -> Canvas ()
+putImageDataDirty (imgData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
+  = Method $ PutImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])

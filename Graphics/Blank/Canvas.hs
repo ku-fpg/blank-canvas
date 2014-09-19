@@ -54,7 +54,7 @@ data Method
         | ClearRect (Double, Double, Double, Double)
         | Clip
         | ClosePath
-        | forall image . Image image => DrawImage (image,[Double]) -- 'drawImage' takes 2, 4, or 8 Double arguments
+        | forall image . Image image => DrawImage (image,[Double]) -- drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize', and 'drawImageCrop' for variants with exact numbers of arguments.
         | Fill
         | FillRect (Double, Double, Double, Double)
         | forall style . Style style => FillStyle style
@@ -68,7 +68,7 @@ data Method
         | LineWidth Double
         | MiterLimit Double
         | MoveTo (Double, Double)
-        | PutImageData (ImageData, [Double]) -- 'putImageData' takes 2 or 6 Double arguments
+        | PutImageData (ImageData, [Double]) -- 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
         | QuadraticCurveTo (Double, Double, Double, Double)
         | Rect (Double, Double, Double, Double)
         | Restore

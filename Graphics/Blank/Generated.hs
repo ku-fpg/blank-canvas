@@ -62,7 +62,7 @@ beginPath () = Method BeginPath
 bezierCurveTo :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
 bezierCurveTo = Method . BezierCurveTo
 
-clearRect :: (Double,Double,Double,Double) -> Canvas ()
+clearRect :: (Double, Double, Double, Double) -> Canvas ()
 clearRect = Method . ClearRect
 
 clip :: () -> Canvas ()
@@ -71,31 +71,9 @@ clip () = Method Clip
 closePath :: () -> Canvas ()
 closePath () = Method ClosePath
 
--- | 'drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize',
---   and 'drawImageCrop' for variants with exact numbers of arguments.
+-- | drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize', and 'drawImageCrop' for variants with exact numbers of arguments.
 drawImage :: Image image => (image,[Double]) -> Canvas ()
 drawImage = Method . DrawImage
-
--- | Draws an image onto the canvas at the given x- and y-coordinates.
-drawImageAt :: Image image => (image, Double, Double) -> Canvas ()
-drawImageAt (img, dx, dy) = Method $ DrawImage (img, [dx, dy])
-
--- | Acts like 'drawImageAt', but with two extra 'Double' arguments. The third and fourth
---   'Double's specify the width and height of the image, respectively.
-drawImageSize :: Image image => (image, Double, Double, Double, Double) -> Canvas ()
-drawImageSize (img, dx, dy, dw, dh) = Method $ DrawImage (img, [dx, dy, dw, dh])
-
--- | Acts like 'drawImageSize', but with four extra 'Double' arguments before the arguments
---   of 'drawImageSize'. The first and second 'Double's specify the x- and y-coordinates at
---   which the image begins to crop. The third and fourth 'Double's specify the width and
---   height of the cropped image.
--- 
--- @
--- 'drawImageCrop' img 0 0 dw dh dx dy dw dh = 'drawImageSize' = dx dy dw dh
--- @
-drawImageCrop :: Image image => (image, Double, Double, Double, Double, Double, Double, Double, Double) -> Canvas ()
-drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
-  = Method $ DrawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
 
 fill :: () -> Canvas ()
 fill () = Method Fill
@@ -106,7 +84,7 @@ fillRect = Method . FillRect
 fillStyle :: Style style => style -> Canvas ()
 fillStyle = Method . FillStyle
 
-fillText :: (Text,Double,Double) -> Canvas ()
+fillText :: (Text, Double, Double) -> Canvas ()
 fillText = Method . FillText
 
 font :: Text -> Canvas ()
@@ -136,27 +114,9 @@ miterLimit = Method . MiterLimit
 moveTo :: (Double, Double) -> Canvas ()
 moveTo = Method . MoveTo
 
--- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and
---   `putImageDataDirty' for variants with exact numbers of arguments.
+-- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()
 putImageData = Method . PutImageData
-
--- | Writes 'ImageData' to the canvas at the given x- and y-coordinates.
-putImageDataAt :: (ImageData, Double, Double) -> Canvas ()
-putImageDataAt (imgData, dx, dy) = Method $ PutImageData (imgData, [dx, dy])
-
--- | Acts like 'putImageDataDirty', but with four extra 'Double' arguments that specify
---   which region of the 'ImageData' (the dirty rectangle) should be drawn. The third
---   and fourth 'Double's specify the dirty rectangle's x- and y- coordinates, and the
---   fifth and sixth 'Double's specify the dirty rectangle's width and height.
---   
--- @
--- 'putImageDataDirty' imgData dx dy 0 0 w h = 'putImageDataAt' imgData dx dy
---   where (w, h) = case imgData of ImageData w' h' _ -> (w', h')
--- @
-putImageDataDirty :: (ImageData, Double, Double, Double, Double, Double, Double) -> Canvas ()
-putImageDataDirty (imgData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
-  = Method $ PutImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])
 
 quadraticCurveTo :: (Double, Double, Double, Double) -> Canvas ()
 quadraticCurveTo = Method . QuadraticCurveTo
@@ -200,7 +160,7 @@ strokeRect = Method . StrokeRect
 strokeStyle :: Style style => style -> Canvas ()
 strokeStyle = Method . StrokeStyle
 
-strokeText :: (Text, Double, Double) -> Canvas ()
+strokeText :: (Text,Double, Double) -> Canvas ()
 strokeText = Method . StrokeText
 
 textAlign :: TextAnchorAlignment -> Canvas ()
