@@ -26,7 +26,6 @@ data Canvas :: * -> * where
         MyContext ::                                Canvas CanvasContext
         Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
         Return    :: a                           -> Canvas a
-        ASync     ::                                Canvas ()
 
 instance Monad Canvas where
         return = Return
@@ -229,7 +228,3 @@ getImageData = Query . GetImageData
 -- | Send all commands to the browser, wait for the browser to ack, then continue.
 sync :: Canvas ()
 sync = Query $ Sync
-
--- | Send all commands to the browser, then continue without waiting.
-async :: Canvas ()
-async = ASync

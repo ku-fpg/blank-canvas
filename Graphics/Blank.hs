@@ -104,7 +104,6 @@ module Graphics.Blank
         , deviceCanvasContext
          -- ** Syncing
         , sync
-        , async
          -- ** Debugging
         , console_log
         , eval
@@ -277,9 +276,6 @@ send cxt commands =
       sendBind c (Bind m k1) k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
       sendBind c (Method cmd) k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
       sendBind c (Command cmd) k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
-      sendBind c (ASync) k cmds = do
-          sendToCanvas cxt cmds
-          send' c (k ()) id
       sendBind c (Query query) k cmds = sendQuery c query k cmds
       sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
       sendBind c MyContext k    cmds = send' c (k c) cmds
