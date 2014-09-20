@@ -1,3 +1,4 @@
+## 0.5
 
 API changes
  * Using Double rather than Float
@@ -14,3 +15,4 @@ Bug fixes:
 
 Additions:
  * Allow Images to access client-side filesystem
+

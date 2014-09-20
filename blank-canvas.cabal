@@ -11,7 +11,7 @@ Description:      blank-canvas is a Haskell binding to the complete
                   images.
                   .
                   @
-                     &#123;-# LANGUAGE OverloadedStrings #-&#125;
+		     &#123;-&#35; LANGUAGE OverloadedStrings &#35;-&#125;
                      module Main where
                      import Graphics.Blank                     -- import the blank canvas
                      .
@@ -39,11 +39,13 @@ Category:            Graphics
 Build-type:          Simple
 Stability:           beta
 Extra-source-files:  README.md
+            	     Changelog.md
 Cabal-version:       >= 1.10
 data-files:
     static/index.html
     static/jquery.js
     static/jquery-json.js
+
 
 Library
   Exposed-modules:     Graphics.Blank,
