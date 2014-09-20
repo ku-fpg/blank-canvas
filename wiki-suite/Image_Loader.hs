@@ -4,7 +4,7 @@ module Image_Loader where
 import Graphics.Blank
 import Wiki -- (578,400)
 
-main = blankCanvas 3000 { static= ["images/Haskell.jpg","images/House.jpg"] } $ \ context -> do
+main = blankCanvas 3000 $ \ context -> do
     send context $ do
         img1 <- newImage "/images/Haskell.jpg"
         img2 <- newImage "/images/House.jpg"

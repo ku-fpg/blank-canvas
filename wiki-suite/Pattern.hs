@@ -5,7 +5,7 @@ import Graphics.Blank
 import qualified Graphics.Blank.Style as Style
 import Wiki -- (578,200)
 
-main = blankCanvas 3000 { static = ["images/Haskell.jpg"] } $ \ context -> do
+main = blankCanvas 3000 $ \ context -> do
     send context $ do
         imageObj <- newImage "/images/Haskell.jpg"
         pattern <- createPattern (imageObj,"repeat")

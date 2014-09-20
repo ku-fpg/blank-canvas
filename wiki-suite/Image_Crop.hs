@@ -4,7 +4,7 @@ module Image_Crop where
 import Graphics.Blank
 import Wiki -- (578,200)
 
-main = blankCanvas 3000 { static = ["images/Haskell.jpg"], debug = True } $ \ context -> do
+main = blankCanvas 3000 $ \ context -> do
     send context $ do
         img <- newImage "/images/Haskell.jpg"
         drawImage(img,[150,0,150,150,50,50,150,200])

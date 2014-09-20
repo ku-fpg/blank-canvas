@@ -254,7 +254,6 @@ blankCanvas opts actions = do
           else do
             Scotty.next
 
-        sequence_ [ get (fromString ("/" ++ nm)) $ file $ (root opts ++ "/" ++ nm) | nm <- static opts ]
         return ()
 
 
@@ -342,7 +341,6 @@ data Options = Options
         { port   :: Int              -- ^ which port do we issue the blank canvas using
         , events :: [EventName]      -- ^ which events does the canvas listen to
         , debug  :: Bool             -- ^ turn on debugging (default False)
-        , static :: [String]         -- ^ path to images, and other static artifacts
         , root   :: String           -- ^ location of the static files (default .)
         , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
         }
@@ -356,7 +354,6 @@ instance Num Options where
     fromInteger n = Options { port = fromInteger n
                             , events = []
                             , debug = False
-                            , static = []
                             , root = "."
                             , middleware = [local_only]
                             }

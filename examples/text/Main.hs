@@ -11,10 +11,10 @@ import           Prelude hiding ((++))
 infixr 5 ++
 
 imgPath :: Text
-imgPath = "images/fan.jpg"
+imgPath = "/images/fan.jpg"
 
 main :: IO ()
-main = blankCanvas 3000 { static = [T.unpack imgPath] } $ \ ctx -> send ctx $ do
+main = blankCanvas 3000 $ \ ctx -> send ctx $ do
      let (w, h) = (width ctx, height ctx)
      console_log . T.pack . show $ (w, h)
 
