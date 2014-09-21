@@ -21,6 +21,7 @@ import           Data.Text (Text)
 data Canvas :: * -> * where
         Method    :: Method                      -> Canvas ()     -- <context>.<method>
         Command   :: Command                     -> Canvas ()     -- <command>
+        Function  :: (Show a) => Function a      -> Canvas a
         Query     :: (Show a) => Query a         -> Canvas a
         With      :: CanvasContext -> Canvas a   -> Canvas a
         MyContext ::                                Canvas CanvasContext
@@ -131,18 +132,31 @@ eval :: Text -> Canvas ()
 eval = Command . Eval
 
 -----------------------------------------------------------------------------
+
+data Function :: * -> * where
+  CreateLinearGradient :: (Double,Double,Double,Double)               -> Function CanvasGradient
+  CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> Function CanvasGradient
+
+instance Show (Function a) where
+  show (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
+        ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," 
+        ++ showJS y1 ++ ")"
+  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
+        ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," 
+        ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
+
+-----------------------------------------------------------------------------
+
 data Query :: * -> * where
-        Device               ::                                                     Query DeviceAttributes
-        ToDataURL            ::                                                     Query Text
-        MeasureText          :: Text                                             -> Query TextMetrics
-        IsPointInPath        :: (Double, Double)                                 -> Query Bool
-        NewImage             :: Text                                             -> Query CanvasImage
-        CreateLinearGradient :: (Double, Double, Double, Double)                 -> Query CanvasGradient
-        CreateRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Query CanvasGradient
-        CreatePattern        :: Image image => (image, RepeatDirection)          -> Query CanvasPattern
-        NewCanvas            :: (Int, Int)                                       -> Query CanvasContext
-        GetImageData         :: (Double, Double, Double, Double)                 -> Query ImageData
-        Sync                 ::                                                     Query ()
+        Device               ::                                            Query DeviceAttributes
+        ToDataURL            ::                                            Query Text
+        MeasureText          :: Text                                    -> Query TextMetrics
+        IsPointInPath        :: (Double, Double)                        -> Query Bool
+        NewImage             :: Text                                    -> Query CanvasImage
+        CreatePattern        :: Image image => (image, RepeatDirection) -> Query CanvasPattern
+        NewCanvas            :: (Int, Int)                              -> Query CanvasContext
+        GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
+        Sync                 ::                                            Query ()
 
 data DeviceAttributes = DeviceAttributes Int Int Double
         deriving Show
@@ -152,36 +166,33 @@ data TextMetrics = TextMetrics Double
         deriving Show
 
 instance Show (Query a) where
-  show Device                   = "Device"
-  show ToDataURL                = "ToDataURL"
-  show (MeasureText txt)        = "MeasureText(" ++ showJS txt ++ ")"
-  show (IsPointInPath (x,y))    = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (NewImage url)           = "NewImage(" ++ showJS url ++ ")"
-  show (CreateLinearGradient (x0,y0,x1,y1)) = "CreateLinearGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ ")"
-  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "CreateRadialGradient(" ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
-  show (CreatePattern (img,dir)) = "CreatePattern(" ++ jsImage img ++ "," ++ jsRepeatDirection dir ++ ")"
-  show (NewCanvas (x,y))         = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (GetImageData (sx,sy,sw,sh))
-                                 = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
-  show Sync                      = "Sync"
+  show Device                       = "Device"
+  show ToDataURL                    = "ToDataURL"
+  show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
+  show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
+  show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
+                                    ++ jsRepeatDirection dir ++ ")"
+  show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
+                                   ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
+  show Sync                         = "Sync"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
-parseQueryResult (Device {}) o    = uncurry3 DeviceAttributes <$> parseJSON o
-parseQueryResult (ToDataURL {}) o = parseJSON o
-parseQueryResult (MeasureText {}) (Object v) = TextMetrics <$> v .: "width"
-parseQueryResult (IsPointInPath {}) o        = parseJSON o
-parseQueryResult (NewImage {}) o             = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (CreateLinearGradient {}) o = CanvasGradient <$> parseJSON o
-parseQueryResult (CreateRadialGradient {}) o = CanvasGradient <$> parseJSON o
-parseQueryResult (CreatePattern {}) o = CanvasPattern <$> parseJSON o
-parseQueryResult (NewCanvas {}) o = uncurry3 CanvasContext <$> parseJSON o
+parseQueryResult (Device {}) o                = uncurry3 DeviceAttributes <$> parseJSON o
+parseQueryResult (ToDataURL {}) o             = parseJSON o
+parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
+parseQueryResult (IsPointInPath {}) o         = parseJSON o
+parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
+parseQueryResult (CreatePattern {}) o         = CanvasPattern <$> parseJSON o
+parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
-                                         <$> (o .: "width")
-                                         <*> (o .: "height")
-                                         <*> (o .: "data")
-parseQueryResult (Sync {}) _ = return () -- we just accept anything; empty list sent
-parseQueryResult _ _ = fail "no parse in blank-canvas server (internal error)"
+                                           <$> (o .: "width")
+                                           <*> (o .: "height")
+                                           <*> (o .: "data")
+parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
+parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
 uncurry3 :: (t0 -> t1 -> t2 -> t3) -> (t0, t1, t2) -> t3
 uncurry3 f (a,b,c) = f a b c
@@ -209,10 +220,10 @@ newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
-createLinearGradient = Query . CreateLinearGradient
+createLinearGradient = Function . CreateLinearGradient
 
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
-createRadialGradient = Query . CreateRadialGradient
+createRadialGradient = Function . CreateRadialGradient
 
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern

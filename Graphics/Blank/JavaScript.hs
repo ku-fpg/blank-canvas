@@ -296,7 +296,7 @@ jsCanvasImage :: CanvasImage -> String
 jsCanvasImage = showJS
 
 instance JSArg CanvasGradient where
-  showJS (CanvasGradient n) = "gradients[" ++ show n ++ "]"
+  showJS (CanvasGradient n) = "gradient_" ++ show n
 
 jsCanvasGradient :: CanvasGradient -> String
 jsCanvasGradient = showJS
