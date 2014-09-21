@@ -267,22 +267,20 @@ send cxt commands =
       send' (deviceCanvasContext cxt) commands id
   where
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> (String -> String) -> IO b
-      sendBind c (Return a) k    cmds = send' c (k a) cmds
-      sendBind c (Bind m k1) k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd) k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
-      sendBind c (Command cmd) k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
+      sendBind c (Return a)      k cmds = send' c (k a) cmds
+      sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
+      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
+      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
       sendBind c (Function func) k cmds = sendFunc c func k cmds
-      sendBind c (Query query) k cmds = sendQuery c query k cmds
-      sendBind c (With c' m) k  cmds = send' c' (Bind m (With c . k)) cmds
-      sendBind c MyContext k    cmds = send' c (k c) cmds
+      sendBind c (Query query)   k cmds = sendQuery c query k cmds
+      sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
+      sendBind c MyContext       k cmds = send' c (k c) cmds
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> (String -> String) -> IO b
-      sendFunc c q@(CreateLinearGradient _) k cmds = do
-        gId <- atomically getUniq
-        send' c (k $ CanvasGradient gId) (cmds 
-          . (("var gradient_" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
-          . shows q . (";" ++))
-      sendFunc c q@(CreateRadialGradient _) k cmds = do
+      sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
+      sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
+
+      sendGradient c q k cmds = do
         gId <- atomically getUniq
         send' c (k $ CanvasGradient gId) (cmds 
           . (("var gradient_" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
