@@ -290,10 +290,20 @@ jsCanvasContext :: CanvasContext -> String
 jsCanvasContext = showJS
 
 instance JSArg CanvasImage where
-  showJS (CanvasImage n _ _) = "images[" ++ show n ++ "]"
+  showJS (CanvasImage n _ _) = "image_" ++ show n
 
 jsCanvasImage :: CanvasImage -> String
 jsCanvasImage = showJS
+
+jsImageTemplate :: Int -> String -> String -> String
+jsImageTemplate n ctx src = concat [l1, l2, l3, l4, l5]
+  where
+    img = "image_" ++ show n
+    l1 = "var " ++ img ++ " = new Image();"
+    l2 = img ++ ".onload = function(){"
+    l3 = ctx ++ ".drawImage(" ++ img ++ ", 0, 0);};"
+    l4 = img ++ ".onerror = function() {alert('Image " ++ src ++ " not found.'); };"
+    l5 = img ++ ".src = " ++ src
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradient_" ++ show n
@@ -302,7 +312,7 @@ jsCanvasGradient :: CanvasGradient -> String
 jsCanvasGradient = showJS
 
 instance JSArg CanvasPattern where
-  showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
+  showJS (CanvasPattern n) = "patterns_" ++ show n
 
 jsCanvasPattern :: CanvasPattern -> String
 jsCanvasPattern = showJS

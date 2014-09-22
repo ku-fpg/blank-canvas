@@ -122,6 +122,9 @@ module Graphics.Blank
         , local_only
         ) where
 
+import qualified Codec.Picture as JP (readImage)
+import           Codec.Picture.Types (dynamicMap, imageWidth, imageHeight)
+
 import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
@@ -277,8 +280,26 @@ send cxt commands =
       sendBind c MyContext       k cmds = send' c (k c) cmds
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> (String -> String) -> IO b
-      sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
+      sendFunc c q@(NewImage url) k cmds = do
+        dims <- imageSize $ T.unpack url
+        let (w, h) = case dims of
+              Left msg -> (0, 0) -- XXX at a minimum we should report the error
+              Right d  -> d
+            url' = if "/" `T.isPrefixOf` url then T.tail url else url
+        atomically $ do
+          db <- readTVar (localFiles cxt)
+          writeTVar (localFiles cxt) $ S.insert url' $ db
+        gId <- atomically getUniq
+        send' c (k $ CanvasImage gId w h) (cmds 
+          . ((jsImageTemplate gId (showJS c) (show url')) ++) . (";" ++))
+
       sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
+      sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
+      sendFunc c q@(CreatePattern        _) k cmds = do
+        pId <- atomically getUniq
+        send' c (k $ CanvasPattern pId) (cmds
+          . (("var pattern_" ++ show pId ++ " = " ++ showJS c ++ ".") ++)
+          . shows q . (";" ++))
 
       sendGradient c q k cmds = do
         gId <- atomically getUniq
@@ -288,14 +309,6 @@ send cxt commands =
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
       sendQuery c query k cmds = do
-          case query of
-            NewImage url -> do
-              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-              atomically $ do
-                  db <- readTVar (localFiles cxt)
-                  writeTVar (localFiles cxt) $ S.insert url' $ db
-            _ -> return ()
-
           -- send the com
           uq <- atomically $ getUniq
           -- The query function returns a function takes the unique port number of the reply.
@@ -314,6 +327,13 @@ send cxt commands =
               sendToCanvas cxt cmds
               return a
       send' c cmd                   cmds = sendBind c cmd Return cmds
+
+imageSize :: FilePath -> IO (Either String (Int, Int))
+imageSize url = do
+  dImg <- JP.readImage url
+  return $ case dImg of
+    Left msg -> Left msg
+    Right img -> Right (dynamicMap imageWidth img, dynamicMap imageHeight img)
 
 local_only :: Middleware
 local_only = local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"

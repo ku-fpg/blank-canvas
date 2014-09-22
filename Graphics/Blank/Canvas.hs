@@ -136,6 +136,8 @@ eval = Command . Eval
 data Function :: * -> * where
   CreateLinearGradient :: (Double,Double,Double,Double)               -> Function CanvasGradient
   CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> Function CanvasGradient
+  CreatePattern        :: Image image => (image, RepeatDirection)     -> Function CanvasPattern
+  NewImage             :: Text                                        -> Function CanvasImage
 
 instance Show (Function a) where
   show (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
@@ -144,6 +146,9 @@ instance Show (Function a) where
   show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
         ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," 
         ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
+  show (CreatePattern (img,dir)) = "createPattern(" ++ jsImage img ++ "," 
+        ++ jsRepeatDirection dir ++ ")"
+  show (NewImage url) = showJS url
 
 -----------------------------------------------------------------------------
 
@@ -152,8 +157,6 @@ data Query :: * -> * where
         ToDataURL            ::                                            Query Text
         MeasureText          :: Text                                    -> Query TextMetrics
         IsPointInPath        :: (Double, Double)                        -> Query Bool
-        NewImage             :: Text                                    -> Query CanvasImage
-        CreatePattern        :: Image image => (image, RepeatDirection) -> Query CanvasPattern
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
@@ -170,9 +173,6 @@ instance Show (Query a) where
   show ToDataURL                    = "ToDataURL"
   show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
   show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
-  show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
-                                    ++ jsRepeatDirection dir ++ ")"
   show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
   show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
                                    ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
@@ -184,8 +184,6 @@ parseQueryResult (Device {}) o                = uncurry3 DeviceAttributes <$> pa
 parseQueryResult (ToDataURL {}) o             = parseJSON o
 parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o         = parseJSON o
-parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (CreatePattern {}) o         = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
@@ -217,7 +215,7 @@ isPointInPath = Query . IsPointInPath
 -- _after_ loading.
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
-newImage = Query . NewImage
+newImage = Function . NewImage
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient
@@ -226,7 +224,7 @@ createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canv
 createRadialGradient = Function . CreateRadialGradient
 
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = Query . CreatePattern
+createPattern = Function . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
