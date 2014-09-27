@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, OverlappingInstances #-}
+{-# LANGUAGE FlexibleInstances, OverlappingInstances, OverloadedStrings #-}
 
 module Graphics.Blank.JavaScript where
 
@@ -10,24 +10,28 @@ import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
 import           Data.List
+import           Data.Monoid
 import           Data.String
-import           Data.Text (Text, unpack)
-import           Data.Word (Word8)
-
+import           Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import           Data.Text.Lazy.Builder hiding (fromString)
+import           Data.Text.Lazy.Builder.Int
+import           Data.Text.Lazy.Builder.RealFloat
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector)
-
-import           Numeric
+import           Data.Word (Word8)
 
 import           Text.ParserCombinators.ReadP (skipSpaces, string)
 import           Text.ParserCombinators.ReadPrec
 import           Text.Read
+import qualified Text.Show.Text as T
+import           Text.Show.Text hiding (Show)
 
 -------------------------------------------------------------
 
 -- TODO: close off
 class Image a where
-  jsImage :: a -> String
+  jsImage :: a -> Builder
   width  :: Num b => a -> b
   height :: Num b => a -> b
 
@@ -39,7 +43,7 @@ instance Image CanvasImage where
 -- The Image of a canvas is the the canvas context, not the DOM entry, so
 -- you need to indirect back to the DOM here.
 instance Image CanvasContext where
-  jsImage = (++ ".canvas") . jsCanvasContext
+  jsImage = (<> ".canvas") . jsCanvasContext
   width  (CanvasContext _ w _) = fromIntegral w
   height (CanvasContext _ _ h) = fromIntegral h
 
@@ -49,7 +53,7 @@ instance Image CanvasContext where
 
 -- TODO: close off
 class Style a where
-  jsStyle :: a -> String
+  jsStyle :: a -> Builder
 
 instance Style Text                 where { jsStyle = jsText }
 instance Style CanvasGradient       where { jsStyle = jsCanvasGradient }
@@ -57,10 +61,9 @@ instance Style CanvasPattern        where { jsStyle = jsCanvasPattern }
 instance Style (Colour Double)      where { jsStyle = jsColour }
 instance Style (AlphaColour Double) where { jsStyle = jsAlphaColour }
 
-class Style a => CanvasColor a
-
-jsCanvasColor :: CanvasColor color => color -> String
-jsCanvasColor = jsStyle
+class Style a => CanvasColor a where
+  jsCanvasColor :: a -> Builder
+  jsCanvasColor = jsStyle
 
 instance CanvasColor Text
 instance CanvasColor (Colour Double)
@@ -107,11 +110,13 @@ instance Read RepeatDirection where
         <|> (string "no-repeat" >> return NoRepeat)
 
 instance Show RepeatDirection where
-  showsPrec _ rd = showString $ case rd of
-      Repeat   -> "repeat"
-      RepeatX  -> "repeat-x"
-      RepeatY  -> "repeat-y"
-      NoRepeat -> "no-repeat"
+  showsPrec k = showsPrec k . showbPrec k
+
+instance T.Show RepeatDirection where
+  showb Repeat   = "repeat"
+  showb RepeatX  = "repeat-x"
+  showb RepeatY  = "repeat-y"
+  showb NoRepeat = "no-repeat"
 
 -- | The style of the caps on the endpoints of a line.
 data LineEndCap = ButtCap   -- ^ Flat edges
@@ -135,10 +140,12 @@ instance Read LineEndCap where
           _        -> pfail
 
 instance Show LineEndCap where
-  showsPrec _ le = showString $ case le of
-      ButtCap   -> "butt"
-      RoundCap  -> "round"
-      SquareCap -> "square"
+  showsPrec k = showsPrec k . showbPrec k
+
+instance T.Show LineEndCap where
+  showb ButtCap   = "butt"
+  showb RoundCap  = "round"
+  showb SquareCap = "square"
 
 -- | The style of corner that is created when two lines join.
 data LineJoinCorner = BevelCorner -- ^ A filled triangle with a beveled edge
@@ -164,10 +171,12 @@ instance Read LineJoinCorner where
           _       -> pfail
 
 instance Show LineJoinCorner where
-  showsPrec _ corner = showString $ case corner of
-      BevelCorner -> "bevel"
-      RoundCorner -> "round"
-      MiterCorner -> "miter"
+  showsPrec k = showsPrec k . showbPrec k
+
+instance T.Show LineJoinCorner where
+  showb BevelCorner = "bevel"
+  showb RoundCorner = "round"
+  showb MiterCorner = "miter"
 
 -- | The anchor point for text in the current 'DeviceContext'.
 data TextAnchorAlignment = StartAnchor  -- ^ The text is anchored at either its left edge
@@ -199,12 +208,14 @@ instance Read TextAnchorAlignment where
           _        -> pfail
 
 instance Show TextAnchorAlignment where
-  showsPrec _ align = showString $ case align of
-      StartAnchor  -> "start"
-      EndAnchor    -> "end"
-      CenterAnchor -> "center"
-      LeftAnchor   -> "left"
-      RightAnchor  -> "right"
+  showsPrec k = showsPrec k . showbPrec k
+
+instance T.Show TextAnchorAlignment where
+  showb StartAnchor  = "start"
+  showb EndAnchor    = "end"
+  showb CenterAnchor = "center"
+  showb LeftAnchor   = "left"
+  showb RightAnchor  = "right"
 
 -- | The baseline alignment used when drawing text in the current 'DeviceContext'.
 --   The baselines are ordered from highest ('Top') to lowest ('Bottom').
@@ -235,13 +246,15 @@ instance Read TextBaselineAlignment where
           _             -> pfail
 
 instance Show TextBaselineAlignment where
-  showsPrec _ bl = showString $ case bl of
-      TopBaseline         -> "top"
-      HangingBaseline     -> "hanging"
-      MiddleBaseline      -> "middle"
-      AlphabeticBaseline  -> "alphabetic"
-      IdeographicBaseline -> "ideographic"
-      BottomBaseline      -> "bottom"
+  showsPrec k = showsPrec k . showbPrec k
+
+instance T.Show TextBaselineAlignment where
+  showb TopBaseline         = "top"
+  showb HangingBaseline     = "hanging"
+  showb MiddleBaseline      = "middle"
+  showb AlphabeticBaseline  = "alphabetic"
+  showb IdeographicBaseline = "ideographic"
+  showb BottomBaseline      = "bottom"
 
 -------------------------------------------------------------
 
@@ -257,156 +270,160 @@ data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Show, Eq, Ord)
 -------------------------------------------------------------
 
 class JSArg a where
-  showJS :: a -> String
+  showbJS :: a -> Builder
 
 instance JSArg (AlphaColour Double) where
-  showJS aCol
+  showbJS aCol
       | a >= 1    = jsColour rgbCol
-      | a <= 0    = jsLiteralString "rgba(0,0,0,0)"
-      | otherwise = jsLiteralString $ "rgba("
-          ++ show r     ++ ","
-          ++ show g     ++ ","
-          ++ show b     ++ ","
-          ++ jsDouble a ++ ")"
+      | a <= 0    = jsLiteralBuilder "rgba(0,0,0,0)"
+      | otherwise = jsLiteralBuilder $ "rgba("
+          <> showb r    <> singleton ','
+          <> showb g    <> singleton ','
+          <> showb b    <> singleton ','
+          <> jsDouble a <> singleton ')'
     where
       a         = alphaChannel aCol
       rgbCol    = darken (recip a) $ aCol `over` black
       RGB r g b = toSRGB24 rgbCol
 
-jsAlphaColour :: AlphaColour Double -> String
-jsAlphaColour = showJS
+jsAlphaColour :: AlphaColour Double -> Builder
+jsAlphaColour = showbJS
 
 instance JSArg Bool where
-  showJS True  = "true"
-  showJS False = "false"
+  showbJS True  = "true"
+  showbJS False = "false"
 
-jsBool :: Bool -> String
-jsBool = showJS
+jsBool :: Bool -> Builder
+jsBool = showbJS
 
 instance JSArg CanvasContext where
-  showJS (CanvasContext n _ _) = "canvasbuffers[" ++ show n ++ "]"
+  showbJS (CanvasContext n _ _) = "canvasbuffers[" <> showb n <> singleton ']'
 
-jsCanvasContext :: CanvasContext -> String
-jsCanvasContext = showJS
+jsCanvasContext :: CanvasContext -> Builder
+jsCanvasContext = showbJS
 
 instance JSArg CanvasImage where
-  showJS (CanvasImage n _ _) = "images[" ++ show n ++ "]"
+  showbJS (CanvasImage n _ _) = "images[" <> showb n <> singleton ']'
 
-jsCanvasImage :: CanvasImage -> String
-jsCanvasImage = showJS
+jsCanvasImage :: CanvasImage -> Builder
+jsCanvasImage = showbJS
 
 instance JSArg CanvasGradient where
-  showJS (CanvasGradient n) = "gradient_" ++ show n
+  showbJS (CanvasGradient n) = "gradient_" <> showb n
 
-jsCanvasGradient :: CanvasGradient -> String
-jsCanvasGradient = showJS
+jsCanvasGradient :: CanvasGradient -> Builder
+jsCanvasGradient = showbJS
 
 instance JSArg CanvasPattern where
-  showJS (CanvasPattern n) = "patterns[" ++ show n ++ "]"
+  showbJS (CanvasPattern n) = "patterns[" <> showb n <> singleton ']'
 
-jsCanvasPattern :: CanvasPattern -> String
-jsCanvasPattern = showJS
+jsCanvasPattern :: CanvasPattern -> Builder
+jsCanvasPattern = showbJS
 
 instance JSArg (Colour Double) where
-  showJS = jsLiteralString . sRGB24show
+  showbJS = jsLiteralBuilder . fromString . sRGB24show
 
-jsColour :: Colour Double -> String
-jsColour = showJS
+jsColour :: Colour Double -> Builder
+jsColour = showbJS
 
 instance JSArg Double where
-  showJS a = showFFloat (Just 3) a ""
+  showbJS = formatRealFloat Fixed (Just 3)
 
-jsDouble :: Double -> String
-jsDouble = showJS
+jsDouble :: Double -> Builder
+jsDouble = showbJS
 
 instance JSArg ImageData where
-  showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[" ++ vs ++ "])"
+  showbJS (ImageData w h d) = "ImageData(" <> showb w <> singleton ',' <> showb h <> ",[" <> vs <> "])"
      where
-          vs = jsList show $ V.toList d
+          vs = jsList showb $ V.toList d
 
-jsImageData :: ImageData -> String
-jsImageData = showJS
+jsImageData :: ImageData -> Builder
+jsImageData = showbJS
 
 instance JSArg Int where
-  showJS a = show a
+  showbJS = showb
+
+jsInt :: Int -> Builder
+jsInt = showb
 
 instance JSArg LineEndCap where
-  showJS = jsLiteralString . show
+  showbJS = jsLiteralBuilder . showb
 
-jsLineEndCap :: LineEndCap -> String
-jsLineEndCap = showJS
+jsLineEndCap :: LineEndCap -> Builder
+jsLineEndCap = showbJS
 
 instance JSArg LineJoinCorner where
-  showJS = jsLiteralString . show
+  showbJS = jsLiteralBuilder . showb
 
-jsLineJoinCorner :: LineJoinCorner -> String
-jsLineJoinCorner = showJS
+jsLineJoinCorner :: LineJoinCorner -> Builder
+jsLineJoinCorner = showbJS
 
-jsList :: (a -> String) -> [a] -> String
-jsList js = concat . intersperse "," . map js
+jsList :: (a -> Builder) -> [a] -> Builder
+jsList js = mconcat . intersperse "," . map js
 
 instance JSArg RepeatDirection where
-  showJS = jsLiteralString . show
+  showbJS = jsLiteralBuilder . showb
 
-jsRepeatDirection :: RepeatDirection -> String
-jsRepeatDirection = showJS
+jsRepeatDirection :: RepeatDirection -> Builder
+jsRepeatDirection = showbJS
 
 instance JSArg Text where
-  showJS = jsLiteralString . unpack
+  showbJS = jsLiteralBuilder . fromText
 
-jsText :: Text -> String
-jsText = showJS
+jsText :: Text -> Builder
+jsText = showbJS
 
 instance JSArg TextAnchorAlignment where
-  showJS = jsLiteralString . show
+  showbJS = jsLiteralBuilder . showb
 
-jsTextAnchorAlignment :: TextAnchorAlignment -> String
-jsTextAnchorAlignment = showJS
+jsTextAnchorAlignment :: TextAnchorAlignment -> Builder
+jsTextAnchorAlignment = showbJS
 
 instance JSArg TextBaselineAlignment where
-  showJS = jsLiteralString . show
+  showbJS = jsLiteralBuilder . showb
 
-jsTextBaselineAlignment :: TextBaselineAlignment -> String
-jsTextBaselineAlignment = showJS
+jsTextBaselineAlignment :: TextBaselineAlignment -> Builder
+jsTextBaselineAlignment = showbJS
 
 -- The following was from our Sunroof compiler.
 -- -------------------------------------------------------------
 -- String Conversion Utilities: Haskell -> JS
 -- -------------------------------------------------------------
 
--- | Transform a Haskell string into a string representing a JS string literal.
-jsLiteralString :: String -> String
-jsLiteralString = jsQuoteString . jsEscapeString
+-- | Convert a Builder to a representation as a JS string literal.
+jsLiteralBuilder :: Builder -> Builder
+jsLiteralBuilder = jsQuoteBuilder . jsEscapeBuilder
 
--- | Add quotes to a string.
-jsQuoteString :: String -> String
-jsQuoteString s = "\"" ++ s ++ "\""
+-- | Add quotes to a Builder.
+jsQuoteBuilder :: Builder -> Builder
+jsQuoteBuilder s = singleton '\"' <> s <> singleton '\"'
 
--- | Transform a character to a string that represents its JS
+-- | Transform a character to a lazy Text that represents its JS
 --   unicode escape sequence.
-jsUnicodeChar :: Char -> String
+jsUnicodeChar :: Char -> TL.Text
 jsUnicodeChar c =
-  let hex = showHex (ord c) ""
-  in ('\\':'u': replicate (4 - length hex) '0') ++ hex
+  let hex = toLazyText . hexadecimal $ ord c
+  in ("\\u" <> TL.replicate (4 - TL.length hex) (TL.singleton '0')) <> hex
+
+-- | Correctly replace a Builder's characters by the JS escape sequences.
+jsEscapeBuilder :: Builder -> Builder
+jsEscapeBuilder = fromLazyText . TL.concatMap jsEscapeChar . toLazyText
 
 -- | Correctly replace Haskell characters by the JS escape sequences.
-jsEscapeString :: String -> String
-jsEscapeString [] = []
-jsEscapeString (c:cs) = case c of
-  -- Backslash has to remain backslash in JS.
-  '\\' -> '\\' : '\\' : jsEscapeString cs
-  -- Special control sequences.
-  '\0' -> jsUnicodeChar '\0' ++ jsEscapeString cs -- Ambigous with numbers
-  '\a' -> jsUnicodeChar '\a' ++ jsEscapeString cs -- Non JS
-  '\b' -> '\\' : 'b' : jsEscapeString cs
-  '\f' -> '\\' : 'f' : jsEscapeString cs
-  '\n' -> '\\' : 'n' : jsEscapeString cs
-  '\r' -> '\\' : 'r' : jsEscapeString cs
-  '\t' -> '\\' : 't' : jsEscapeString cs
-  '\v' -> '\\' : 'v' : jsEscapeString cs
-  '\"' -> '\\' : '\"' : jsEscapeString cs
-  '\'' -> '\\' : '\'' : jsEscapeString cs
-  -- Non-control ASCII characters can remain as they are.
-  c' | not (isControl c') && isAscii c' -> c' : jsEscapeString cs
-  -- All other non ASCII signs are escaped to unicode.
-  c' -> jsUnicodeChar c' ++ jsEscapeString cs
+jsEscapeChar :: Char -> TL.Text
+jsEscapeChar '\\' = "\\\\"
+-- Special control sequences.
+jsEscapeChar '\0' = jsUnicodeChar '\0' -- Ambigous with numbers
+jsEscapeChar '\a' = jsUnicodeChar '\a' -- Non JS
+jsEscapeChar '\b' = "\\b"
+jsEscapeChar '\f' = "\\f"
+jsEscapeChar '\n' = "\\n"
+jsEscapeChar '\r' = "\\r"
+jsEscapeChar '\t' = "\\t"
+jsEscapeChar '\v' = "\\v"
+jsEscapeChar '\"' = "\\\""
+jsEscapeChar '\'' = "\\'"
+-- Non-control ASCII characters can remain as they are.
+jsEscapeChar c' | not (isControl c') && isAscii c' = TL.singleton c'
+-- All other non ASCII signs are escaped to unicode.
+jsEscapeChar c' = jsUnicodeChar c'
