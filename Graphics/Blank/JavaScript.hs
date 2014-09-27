@@ -403,7 +403,7 @@ jsQuoteBuilder s = singleton '\"' <> s <> singleton '\"'
 jsUnicodeChar :: Char -> TL.Text
 jsUnicodeChar c =
   let hex = toLazyText . hexadecimal $ ord c
-  in ("\\u" <> TL.replicate (4 - TL.length hex) (TL.singleton '0')) <> hex
+  in "\\u" <> TL.replicate (4 - TL.length hex) (TL.singleton '0') <> hex
 
 -- | Correctly replace a Builder's characters by the JS escape sequences.
 jsEscapeBuilder :: Builder -> Builder

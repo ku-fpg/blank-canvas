@@ -7,11 +7,10 @@ import           Control.Monad (ap, liftM2)
 
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
-import qualified Data.ByteString.Lazy as DBL
-import           Data.Char (chr)
 import           Data.Monoid
 import           Data.Text (Text)
 import           Data.Text.Lazy.Builder
+import           Data.Text.Lazy.Encoding (decodeUtf8)
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
@@ -100,10 +99,7 @@ instance Show Command where
   showsPrec k = showsPrec k . showbPrec k
 
 instance T.Show Command where
-  -- TODO: Remove unpack call
-  showb (Trigger e) = "Trigger("
-         <> fromString (map (chr . fromEnum) . DBL.unpack $ encode e)
-         <> singleton ')'
+  showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
   showb (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
          <> jsDouble off <> singleton ',' <> jsCanvasColor rep
          <> singleton ')'

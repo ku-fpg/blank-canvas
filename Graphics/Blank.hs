@@ -272,8 +272,9 @@ send cxt commands =
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> (Builder -> Builder) -> IO b
       sendBind c (Return a)      k cmds = send' c (k a) cmds
       sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds . ((jsCanvasContext c <> singleton '.') <>) . (showb cmd <>) . (singleton ';' <>))
-      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds . (showb cmd <>) . (singleton ';' <>))
+      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds .
+        ((jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';') <>))
+      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds . ((showb cmd <> singleton ';') <>))
       sendBind c (Function func) k cmds = sendFunc c func k cmds
       sendBind c (Query query)   k cmds = sendQuery c query k cmds
       sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
@@ -287,8 +288,7 @@ send cxt commands =
       sendGradient c q k cmds = do
         gId <- atomically getUniq
         send' c (k $ CanvasGradient gId) (cmds 
-          . (("var gradient_" <> showb gId <> " = " <> showbJS c <> singleton '.') <>) 
-          . (showb q <>) . (singleton ';' <>))
+          . (("var gradient_" <> showb gId <> " = " <> showbJS c <> singleton '.' <> showb q <> singleton ';') <>))
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (Builder -> Builder) -> IO b
       sendQuery c query k cmds = do
