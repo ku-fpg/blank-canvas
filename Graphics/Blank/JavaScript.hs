@@ -295,15 +295,14 @@ instance JSArg CanvasImage where
 jsCanvasImage :: CanvasImage -> String
 jsCanvasImage = showJS
 
-jsImageTemplate :: Int -> String -> String -> String
-jsImageTemplate n ctx src = concat [l1, l2, l3, l4, l5]
+jsImageTemplate :: Int -> String -> String
+jsImageTemplate n src = concat [l1, l2, l3, l4]
   where
     img = "image_" ++ show n
     l1 = "var " ++ img ++ " = new Image();"
     l2 = img ++ ".onload = function(){"
-    l3 = ctx ++ ".drawImage(" ++ img ++ ", 0, 0);};"
-    l4 = img ++ ".onerror = function() {alert('Image " ++ src ++ " not found.'); };"
-    l5 = img ++ ".src = " ++ src
+    l3 = img ++ ".onerror = function() {alert('Image " ++ src ++ " not found.'); };"
+    l4 = img ++ ".src = " ++ src
 
 instance JSArg CanvasGradient where
   showJS (CanvasGradient n) = "gradient_" ++ show n

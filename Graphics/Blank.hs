@@ -291,7 +291,7 @@ send cxt commands =
           writeTVar (localFiles cxt) $ S.insert url' $ db
         gId <- atomically getUniq
         send' c (k $ CanvasImage gId w h) (cmds 
-          . ((jsImageTemplate gId (showJS c) (show url')) ++) . (";" ++))
+          . ((jsImageTemplate gId (show url')) ++) . (";" ++))
 
       sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
