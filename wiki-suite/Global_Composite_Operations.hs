@@ -1,23 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Global_Composite_Operations where
 
-import Graphics.Blank
 import qualified Data.Text as Text
-import Wiki -- (578,430)
+import           Graphics.Blank
+import           Wiki -- (578,430)
 
-
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     send context $ do
-        
-        tempCanvas <- newCanvas (round (width context),round (height context))
+
+        tempCanvas <- newCanvas (round (width context  :: Double),
+                                 round (height context :: Double))
         console_log tempCanvas
-        (w,h) <- return (round (width context),round (height context))
+        (w,h) <- return (round (width context  :: Double) :: Int,
+                         round (height context :: Double) :: Int)
         console_log $ Text.pack $ show $ (w,h)
         
         let squareWidth = 55;
         let circleRadius = 35;
         let shapeOffset = 50;
-        let operationOffset = 150;
 
         let compss = 
              [["source-atop", "source-in", "source-out", "source-over"]

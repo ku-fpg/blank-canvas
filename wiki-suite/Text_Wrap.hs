@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Text_Wrap where
 
-import Graphics.Blank
+import           Data.Monoid
 import qualified Data.Text as Text
-import Data.Monoid
-import Wiki -- (578,200)
+import           Graphics.Blank
+import           Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     let r = devicePixelRatio context
     send context $ do
@@ -21,7 +22,7 @@ main = blankCanvas 3000 $ \ context -> do
         message = "All the world's a stage, and all the men and women merely players. " <>
                   "They have their exits and their entrances; And one man in his time plays many parts."
 
-        wrapText wc []   x y maxWidth lineHeight = return ()
+        wrapText _  []   _ _ _        _          = return ()
         wrapText wc text x y maxWidth lineHeight = do
              TextMetrics testWidth <- measureText $ Text.unwords $ take (wc+1) $ text
              if (testWidth > maxWidth && wc > 0) || length text <= wc

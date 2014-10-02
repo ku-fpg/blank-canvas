@@ -4,6 +4,7 @@ module Rounded_Corners where
 import Graphics.Blank
 import Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     send context $ do
         

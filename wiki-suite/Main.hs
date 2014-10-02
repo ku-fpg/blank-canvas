@@ -55,10 +55,12 @@ import qualified Custom_Transform
 
 import System.Environment
 
+main :: IO ()
 main = do 
      args <- getArgs 
      main2 args
 
+main2 :: [String] -> IO ()
 main2 ["Arc"] = Arc.main
 main2 ["Bezier_Curve"] = Bezier_Curve.main
 main2 ["Bounce"] = Bounce.main
@@ -112,5 +114,3 @@ main2 ["Translate_Transform"] = Translate_Transform.main
 main2 ["Scale_Transform"] = Scale_Transform.main
 main2 ["Rotate_Transform"] = Rotate_Transform.main
 main2 ["Custom_Transform"] = Custom_Transform.main
-
-

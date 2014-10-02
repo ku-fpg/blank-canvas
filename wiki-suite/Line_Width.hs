@@ -4,6 +4,7 @@ module Line_Width where
 import Graphics.Blank
 import Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     send context $ do
         moveTo(100,150)

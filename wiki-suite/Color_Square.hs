@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Color_Square where
 
-import Graphics.Blank
 import qualified Data.Vector.Unboxed as V
-import Data.Vector.Unboxed (Vector)
-import Wiki -- (300,300)
+import           Graphics.Blank
+import           Wiki -- (300,300)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     let v = V.fromList
     	  $ concat

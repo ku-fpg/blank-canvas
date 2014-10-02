@@ -4,6 +4,7 @@ module Miter_Limit where
 import Graphics.Blank
 import Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
   send context $ do
     clearRect(0,0,150,150);
@@ -23,7 +24,7 @@ main = blankCanvas 3000 $ \ context -> do
     beginPath()
     moveTo(0,100)
     sequence_ [ lineTo((fromIntegral i ** 1.5)*2,75+(if i `mod` 2 == 0 then 25 else -25))
-    	      | i <-[0..20]
+    	      | i <- [0..20] :: [Int]
 	      ]
     stroke();
 

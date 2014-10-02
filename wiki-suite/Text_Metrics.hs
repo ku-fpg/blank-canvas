@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Text_Metrics where
 
-import Graphics.Blank
+import           Data.Monoid
 import qualified Data.Text as Text
-import Data.Monoid
-import Wiki -- (578,200)
+import           Graphics.Blank
+import           Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     send context $ do        
         let x = width context / 2

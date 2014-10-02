@@ -4,6 +4,7 @@ module Is_Point_In_Path where
 import Graphics.Blank
 import Wiki -- (400,400)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
 
     send context $ do

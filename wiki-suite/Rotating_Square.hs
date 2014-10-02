@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Rotating_Square where
 
-import Graphics.Blank
 import Control.Concurrent
+import Graphics.Blank
 import Wiki -- (384,384)
 
 main :: IO ()
@@ -27,7 +27,7 @@ loop context n = do
                 stroke()
                 restore()
         threadDelay (20 * 1000)	
-        v <- wiki $ return $ round (n*100)
+        v <- wiki $ return (round (n*100) :: Int)
         wiki $ whenM (v `mod` 2 == 0) $ do
                 file <- wiki $ anim_png "Rotating_Square"
                 wiki $ snapShot context $ file

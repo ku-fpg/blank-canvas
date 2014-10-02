@@ -4,6 +4,7 @@ module Arc where
 import Graphics.Blank
 import Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     send context $ do
         let centerX = width context / 2;
@@ -11,7 +12,6 @@ main = blankCanvas 3000 $ \ context -> do
         let radius = 75;
         let startingAngle = 1.1 * pi
         let endingAngle = 1.9 * pi
-        let counterclockwise = False
         lineWidth 15
         strokeStyle "black"
 

@@ -4,6 +4,7 @@ module Favicon where
 import Graphics.Blank                     -- import the blank canvas
 import Wiki -- (32,32)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do -- start blank canvas on port 3000
         send context $ do                 -- send commands to this specific context
 

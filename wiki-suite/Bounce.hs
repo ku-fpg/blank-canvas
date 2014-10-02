@@ -1,12 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Bounce where
 
-import Graphics.Blank
-import Data.Time.Clock
 import Control.Concurrent
-import Control.Concurrent.STM
-import Data.Text(Text)
 import Control.Monad -- wiki $
+import Data.Text (Text)
+import Graphics.Blank
 import Wiki -- (512,384)
 
 main :: IO ()
@@ -21,7 +19,6 @@ epoch = []
 
 type State = ([Ball Color])
 
-
 showBall :: (Double, Double) -> Text -> Canvas ()
 showBall (x,y) col = do
         beginPath()
@@ -34,8 +31,8 @@ showBall (x,y) col = do
 moveBall :: Ball a -> Ball a
 moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
 
+go :: DeviceContext -> IO ()
 go context = do
-
      let bounce :: Ball a -> Ball a
          bounce ((x,y),d,a)
             | y + 25 >= height context && d > 0 = ((x,y),-(d-0.5)*0.97,a)
@@ -68,4 +65,3 @@ go context = do
 
 
      loop ([((100,100),0,"blue")],cycle ["red","blue","green","orange","cyan"])
-      

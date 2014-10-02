@@ -2,34 +2,32 @@
 -- wiki generator support
 
 module Wiki where
-        
-import Graphics.Blank
-import Data.ByteString.Base64  -- Not sure why to use this, vs this *.URL version. This one works, though.
-import qualified Data.ByteString as B
-import Data.Char
-import System.Exit
+
+import           Control.Concurrent
+import           Control.Concurrent.STM
 import qualified Control.Monad as M
-import Text.Printf
-import Data.Time.Clock
-import Data.Time.Clock.POSIX
-import System.Process
-import Data.Text.Encoding
-import qualified Data.Text as Text
-import Control.Concurrent
-import System.Posix.Process	
-import System.Process
-import Control.Concurrent.STM
-import System.IO.Unsafe
-import Data.Text(Text)
---import Trace.Hpc.Reflect
---import Trace.Hpc.Tix
-import Data.List (isPrefixOf)
+
+import           Data.Text (Text)
+import           Data.Time.Clock.POSIX
+
+import           Graphics.Blank
+
+import           System.Exit
+import           System.IO.Unsafe
+import           System.Posix.Process
+import           System.Process
+
+import           Text.Printf
+
+-- import           Trace.Hpc.Reflect
+-- import           Trace.Hpc.Tix
 
 snapShot :: DeviceContext -> FilePath -> IO ()
 snapShot context fileName = do
         txt <- send context $ do
 
-                tempCanvas <- newCanvas (round (width context + 20),round (height context + 20))
+                tempCanvas <- newCanvas (round (width context + 20  :: Double),
+                                         round (height context + 20 :: Double))
 
 		top <- myCanvasContext
 
@@ -86,7 +84,7 @@ close context = do
 --        writeFile ("tix/tix_" ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".tix") $ show $ Tix tix'
         send context $ eval "open(location, '_self').close()"
         threadDelay (1000 * 1000);
-        print "dieing"
+        putStrLn "dieing"
         p <- getProcessID 
         callProcess "kill" [show p]
         quit
@@ -100,7 +98,7 @@ whenM = M.when
 anim_png :: String -> IO String
 anim_png nm = do
    n <- getPOSIXTime                
-   return $ "tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".png"
+   return $ "tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000 :: Double) :: Integer) ++ ".png"
 
 build_anim :: String -> Int -> IO ()
 build_anim nm pz = do

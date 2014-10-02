@@ -1,13 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Tic_Tac_Toe where
 
-import Graphics.Blank
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Debug.Trace
-import Wiki -- (512,384)
-import Control.Concurrent -- wiki $
+import           Control.Concurrent -- wiki $
 
+import qualified Data.Map as Map
+import           Data.Map (Map)
+import           Data.Text (Text)
+
+-- import           Debug.Trace
+
+import           Graphics.Blank
+
+import           Wiki -- (512,384)
+
+main :: IO ()
 main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> loop context Map.empty X
 
 data XO = X | O  deriving (Eq,Ord,Show)
@@ -56,13 +62,18 @@ loop context board turn = do
                 where r = round (x * 3.3333)
 
         let press = (width context / 2 + fromIntegral x * (sz / 4),height context / 2 + fromIntegral y * (sz / 4)) -- wiki $
-                where (x,y) = head [ ix | (ix,Nothing) 		      		       	           -- wiki $
-                                                 <- [ ((x,y),Map.lookup (x,y) board)		   -- wiki $
-                                                    | y <- [-1,0,1]	      			   -- wiki $
-                                                    , x <- [-1,0,1]				   -- wiki $
-                                                    ]]	   					   -- wiki $
+                where (x,y) = head [ ix | (ix,Nothing)                                   -- wiki $
+                                                 <- [ ((x',y'),Map.lookup (x',y') board) -- wiki $
+                                                    | y' <- [-1,0,1]                     -- wiki $
+                                                    , x' <- [-1,0,1]                     -- wiki $
+                                                    ]]                                   -- wiki $
 
-        wiki $ forkIO $ send context $ trigger $ Event { eMetaKey = False    , ePageXY = return $ press, eType = "keypress", eWhich = Nothing}
+        _ <- wiki $ forkIO $ send context $ trigger $ Event {
+              eMetaKey = False
+            , ePageXY = return $ press
+            , eType = "keypress"
+            , eWhich = Nothing
+        }
         event <- wait context
 
         file <- wiki $ anim_png "Tic_Tac_Toe"
@@ -82,7 +93,7 @@ loop context board turn = do
                                                     -- already something here
                                            Just _ -> loop context board turn
 
-
+xColor, oColor, boardColor :: Text
 xColor = "#ff0000"
 oColor = "#00a000"
 boardColor = "#000080"
@@ -119,4 +130,3 @@ bigLine (x,y) (x',y') = do
         strokeStyle boardColor
         lineCap "round"
         stroke()
-

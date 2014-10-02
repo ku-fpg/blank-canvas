@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Get_Image_Data_URL where
 
-import Graphics.Blank
-import Wiki -- (578,350)
 import qualified Data.Text as Text
+import           Graphics.Blank
+import           Wiki -- (578,350)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     url <- send context $ do
         beginPath();

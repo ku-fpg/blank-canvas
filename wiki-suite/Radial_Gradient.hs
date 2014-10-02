@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Radial_Gradient where
 
-import Graphics.Blank
+import           Graphics.Blank
 import qualified Graphics.Blank.Style as Style
-import Wiki -- (578,200)
+import           Wiki -- (578,200)
 
+main :: IO ()
 main = blankCanvas 3000 $ \ context -> do
     send context $ do
         rect(0, 0, width context, height context)
