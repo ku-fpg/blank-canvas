@@ -75,3 +75,5 @@ executable wiki-suite
                       Tic_Tac_Toe
                       Translate_Transform
                       Wiki
+
+                      Paths_wiki_suite
