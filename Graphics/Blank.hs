@@ -133,7 +133,6 @@ import           Data.Aeson.Types (parse)
 import           Data.List as L
 import           Data.Monoid ((<>))
 import qualified Data.Set as S
-import           Data.String
 import qualified Data.Text as T
 import           Data.Text (Text)
 import qualified Data.Text.Lazy as LT
