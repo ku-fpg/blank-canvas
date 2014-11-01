@@ -142,7 +142,7 @@ import           Graphics.Blank.Canvas hiding (addColorStop)
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
-import           Graphics.Blank.Generated hiding (fillStyle, strokeStyle, shadowColor)
+import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, shadowColor)
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
 import           Graphics.Blank.Utils
@@ -366,6 +366,9 @@ instance Num Options where
 
 fillStyle :: Text -> Canvas ()
 fillStyle = Generated.fillStyle
+
+font :: Text -> Canvas()
+font = Generated.font
 
 strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle

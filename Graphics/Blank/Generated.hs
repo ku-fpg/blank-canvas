@@ -18,7 +18,7 @@ instance Show Method where
   show (FillRect (a1,a2,a3,a4)) = "fillRect(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ ")"
   show (FillStyle (a1)) = "fillStyle = (" ++ jsStyle a1 ++ ")"
   show (FillText (a1,a2,a3)) = "fillText(" ++ jsText a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ ")"
-  show (Font (a1)) = "font = (" ++ jsText a1 ++ ")"
+  show (Font (a1)) = "font = (" ++ jsCanvasFont a1 ++ ")"
   show (GlobalAlpha (a1)) = "globalAlpha = (" ++ jsDouble a1 ++ ")"
   show (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" ++ jsText a1 ++ ")"
   show (LineCap (a1)) = "lineCap = (" ++ jsLineEndCap a1 ++ ")"
@@ -87,7 +87,7 @@ fillStyle = Method . FillStyle
 fillText :: (Text, Double, Double) -> Canvas ()
 fillText = Method . FillText
 
-font :: Text -> Canvas ()
+font :: CanvasFont canvasFont => canvasFont -> Canvas ()
 font = Method . Font
 
 globalAlpha :: Double -> Canvas ()

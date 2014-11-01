@@ -12,7 +12,6 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Graphics.Blank.JavaScript
 
-
 -- | Clear the screen. Restores the default transformation matrix.
 clearCanvas :: Canvas ()
 clearCanvas = do
@@ -98,7 +97,7 @@ drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
 putImageDataAt :: (ImageData, Double, Double) -> Canvas ()
 putImageDataAt (imgData, dx, dy) = Method $ PutImageData (imgData, [dx, dy])
 
--- | Acts like 'putImageDataDirty', but with four extra 'Double' arguments that specify
+-- | Acts like 'putImageDataAt', but with four extra 'Double' arguments that specify
 --   which region of the 'ImageData' (the dirty rectangle) should be drawn. The third
 --   and fourth 'Double's specify the dirty rectangle's x- and y- coordinates, and the
 --   fifth and sixth 'Double's specify the dirty rectangle's width and height.

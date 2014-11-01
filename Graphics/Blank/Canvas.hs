@@ -59,7 +59,7 @@ data Method
         | FillRect (Double, Double, Double, Double)
         | forall style . Style style => FillStyle style
         | FillText (Text, Double, Double)
-        | Font Text
+        | forall canvasFont . CanvasFont canvasFont => Font canvasFont
         | GlobalAlpha Double
         | GlobalCompositeOperation Text
         | LineCap LineEndCap

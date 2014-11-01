@@ -49,6 +49,7 @@ data-files:
 
 Library
   Exposed-modules:     Graphics.Blank,
+                       Graphics.Blank.Font,
                        Graphics.Blank.GHCi,
                        Graphics.Blank.Style
   other-modules:       Graphics.Blank.Canvas,
@@ -56,27 +57,31 @@ Library
                        Graphics.Blank.Events,
                        Graphics.Blank.Generated,
                        Graphics.Blank.JavaScript,
+                       Graphics.Blank.Parser,
+                       Graphics.Blank.Types.CSS,
+                       Graphics.Blank.Types.Font,
                        Graphics.Blank.Utils,
                        Paths_blank_canvas
 
   default-language:    Haskell2010
-  build-depends:       aeson              >= 0.7   && < 0.9,
+  build-depends:       aeson              >= 0.7     && < 0.9,
                        base64-bytestring  == 1.0.*,
-                       base               >= 4.3.1 && < 4.8,
+                       base               >= 4.3.1   && < 4.8,
                        bytestring         == 0.10.*,
-                       colour             >= 2.2   && < 3.0,
+                       case-insensitive   >= 1.0.0.1 && < 1.3,
+                       colour             >= 2.2     && < 3.0,
                        containers         == 0.5.*,
                        data-default-class == 0.0.*,
                        http-types         == 0.8.*,
                        kansas-comet       == 0.3.*,
-                       scotty             >= 0.8   && < 0.10,
-                       stm                >= 2.2   && < 2.5,
-                       text               >= 1.1   && < 1.3,
-                       transformers       >= 0.3   && < 0.5,
+                       scotty             >= 0.8     && < 0.10,
+                       stm                >= 2.2     && < 2.5,
+                       text               >= 1.1     && < 1.3,
+                       transformers       >= 0.3     && < 0.5,
                        wai                == 3.*,
-                       wai-extra          >= 3.0.1 && < 3.1,
+                       wai-extra          >= 3.0.1   && < 3.1,
                        warp               == 3.*,
-                       vector             >= 0.10  && < 0.11
+                       vector             >= 0.10    && < 0.11
 
   GHC-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations
   GHC-prof-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations -auto-all -fsimpl-tick-factor=100000
