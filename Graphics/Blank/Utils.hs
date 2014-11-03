@@ -35,7 +35,7 @@ infixr 0 #
 -- > grd # addColorStop(0, "#8ED6FF");
 --
 --   This can be seen as equivalent of @grd.addColorStop(0, "#8ED6FF")@.
-(#) :: a -> (a -> Canvas b) -> Canvas b
+(#) :: a -> (a -> b) -> b
 (#) obj act = act obj
 
 -- | Read a file, and generate a data URL.

@@ -95,8 +95,8 @@ data Font = FontProperties
 -- @
 -- ('defFont' ["Gill Sans Extrabold", 'sansSerif']) {
 --     'fontStyle'  = 'italic'
---   , 'fontSize'   = 'px' 12
---   , 'lineHeight' = 'px' 14
+--   , 'fontSize'   = 12 # 'px'
+--   , 'lineHeight' = 14 # 'px'
 -- }
 -- @
 defFont :: [FontFamily] -> Font
@@ -405,8 +405,8 @@ instance Show FontWeight where
 -- 
 -- @
 -- ('defFont' ['sansSerif']) { 'fontSize' = 'xxSmall' }
--- ('defFont' ['sansSerif']) { 'fontSize' = 'pt' 30 }
--- ('defFont' ['sansSerif']) { 'fontSize' = 'percent' 50 }
+-- ('defFont' ['sansSerif']) { 'fontSize' = 30 # 'pt' }
+-- ('defFont' ['sansSerif']) { 'fontSize' = 50 # 'percent' }
 -- @
 data FontSize = XXSmallSize
               | XSmallSize
@@ -507,8 +507,8 @@ instance Show FontSize where
 -- @
 -- ('defFont' ['sansSerif']) { 'lineHeight' = 'normal' }
 -- ('defFont' ['sansSerif']) { 'lineHeight' = 50 }
--- ('defFont' ['sansSerif']) { 'lineHeight' = 'em' 30 }
--- ('defFont' ['sansSerif']) { 'lineHeight' = 'percent' 70 }
+-- ('defFont' ['sansSerif']) { 'lineHeight' = 30 # 'em' }
+-- ('defFont' ['sansSerif']) { 'lineHeight' = 70 # 'percent' }
 -- @
 data LineHeight = NormalLineHeight -- ^ Default.
                 | LineHeightNumber Double
@@ -580,8 +580,8 @@ instance Show LineHeight where
 -- These are all of type @['FontFamily']@:
 -- 
 -- @
--- ['FontFamilyName' "Helvetica", 'serif']
--- ["Helvetica", "serif"] :: ['FontFamily']
+-- ['FontFamilyName' \"Helvetica\", 'serif']
+-- [\"Helvetica\", "serif"] :: ['FontFamily']
 -- "Helvetica, serif" :: ['FontFamily']
 -- @
 data FontFamily = FontFamilyName Text -- ^ The name of a custom font family.
