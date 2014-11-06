@@ -179,6 +179,7 @@ import           Data.Word
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types.CSS
 
 import           Prelude hiding (tan)
 
@@ -186,9 +187,6 @@ import           Prelude hiding (tan)
 -- A value ranging from 0.0 to 1.0. A color with an alpha value of 0.0 is 'transparent',
 -- and a color with an alpha value of 1.0 is opaque.
 type Alpha = Double
-
--- | A value ranging from 0.0 to 100.0.
-type Percentage = Double
 
 -- |
 -- Specifies a 'Colour' by its red, green, and blue components, where each component

@@ -12,18 +12,31 @@ import           Data.Ix
 import           Data.List
 import           Data.String
 import           Data.Text (Text, unpack)
-import           Data.Word (Word8)
-
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector)
+import           Data.Word (Word8)
+
+import           Graphics.Blank.Parser
+import           Graphics.Blank.Types.Font
 
 import           Numeric
 
-import           Text.ParserCombinators.ReadP (skipSpaces, string)
-import           Text.ParserCombinators.ReadPrec
-import           Text.Read
+import           Text.ParserCombinators.ReadP (choice, skipSpaces)
+import           Text.ParserCombinators.ReadPrec (lift)
+import           Text.Read (Read(..), parens, readListPrecDefault)
 
--------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+class CanvasFont a where
+    jsCanvasFont :: a -> String
+
+instance CanvasFont Text where
+    jsCanvasFont = jsText
+
+instance CanvasFont Font where
+    jsCanvasFont = jsFont
+
+-----------------------------------------------------------------------------
 
 -- TODO: close off
 class Image a where
@@ -85,12 +98,28 @@ newtype CanvasPattern = CanvasPattern Int deriving (Show,Eq,Ord)
 
 -- | The direction in which a 'CanvasPattern' repeats.
 data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
-                                --   and vertically.
+                                --   and vertically (default).
                      | RepeatX  -- ^ The pattern repeats only horizontally.
                      | RepeatY  -- ^ The pattern repeats only vertically.
                      | NoRepeat -- ^ The pattern displays only once and
                                 --   does not repeat.
   deriving Eq
+
+-- | Shorthand for 'Repeat', with a quote to distinguish it from 'repeat'.
+repeat' :: RepeatDirection
+repeat' = Repeat
+
+-- | Shorthand for 'RepeatX'.
+repeatX :: RepeatDirection
+repeatX = RepeatX
+
+-- | Shorthand for 'RepeatY'.
+repeatY :: RepeatDirection
+repeatY = RepeatY
+
+-- | Shorthand for 'NoRepeat'.
+noRepeat :: RepeatDirection
+noRepeat = NoRepeat
 
 instance Default RepeatDirection where
   def = Repeat
@@ -101,10 +130,13 @@ instance IsString RepeatDirection where
 instance Read RepeatDirection where
   readPrec = parens . lift $ do
       skipSpaces
-      (string "repeat"          >> return Repeat)
-        <|> (string "repeat-x"  >> return RepeatX)
-        <|> (string "repeat-y"  >> return RepeatY)
-        <|> (string "no-repeat" >> return NoRepeat)
+      choice
+          [ Repeat   <$ stringCI "repeat"
+          , RepeatX  <$ stringCI "repeat-x"
+          , RepeatY  <$ stringCI "repeat-y"
+          , NoRepeat <$ stringCI "no-repeat"
+          ]
+  readListPrec = readListPrecDefault
 
 instance Show RepeatDirection where
   showsPrec _ rd = showString $ case rd of
@@ -114,10 +146,18 @@ instance Show RepeatDirection where
       NoRepeat -> "no-repeat"
 
 -- | The style of the caps on the endpoints of a line.
-data LineEndCap = ButtCap   -- ^ Flat edges
+data LineEndCap = ButtCap   -- ^ Flat edges (default).
                 | RoundCap  -- ^ Semicircular end caps
                 | SquareCap -- ^ Square end caps
   deriving Eq
+
+-- | Shorthand for 'ButtCap'.
+butt :: LineEndCap
+butt = ButtCap
+
+-- | Shorthand for 'SquareCap'.
+square :: LineEndCap
+square = SquareCap
 
 instance Default LineEndCap where
   def = ButtCap
@@ -126,13 +166,17 @@ instance IsString LineEndCap where
   fromString = read
 
 instance Read LineEndCap where
-  readPrec = parens $ do
-      Ident s <- lexP
-      case s of
-          "butt"   -> return ButtCap  
-          "round"  -> return RoundCap 
-          "square" -> return SquareCap
-          _        -> pfail
+  readPrec = parens . lift $ do
+      skipSpaces
+      choice
+          [ ButtCap   <$ stringCI "butt"
+          , RoundCap  <$ stringCI "round"
+          , SquareCap <$ stringCI "square"
+          ]
+  readListPrec = readListPrecDefault
+
+instance RoundProperty LineEndCap where
+  round' = RoundCap
 
 instance Show LineEndCap where
   showsPrec _ le = showString $ case le of
@@ -145,8 +189,16 @@ data LineJoinCorner = BevelCorner -- ^ A filled triangle with a beveled edge
                                   --   connects two lines.
                     | RoundCorner -- ^ A filled arc connects two lines.
                     | MiterCorner -- ^ A filled triangle with a sharp edge
-                                  --   connects two lines.
+                                  --   connects two lines (default).
   deriving Eq
+
+-- | Shorthand for 'BevelCorner'.
+bevel :: LineJoinCorner
+bevel = BevelCorner
+
+-- | Shorthand for 'MiterCorner'.
+miter :: LineJoinCorner
+miter = MiterCorner
 
 instance Default LineJoinCorner where
   def = MiterCorner
@@ -155,13 +207,17 @@ instance IsString LineJoinCorner where
   fromString = read
 
 instance Read LineJoinCorner where
-  readPrec = parens $ do
-      Ident s <- lexP
-      case s of
-          "bevel" -> return BevelCorner
-          "round" -> return RoundCorner
-          "miter" -> return MiterCorner
-          _       -> pfail
+  readPrec = parens . lift $ do
+      skipSpaces
+      choice
+          [ BevelCorner <$ stringCI "bevel"
+          , RoundCorner <$ stringCI "round"
+          , MiterCorner <$ stringCI "miter"
+          ]
+  readListPrec = readListPrecDefault
+
+instance RoundProperty LineJoinCorner where
+  round' = RoundCorner
 
 instance Show LineJoinCorner where
   showsPrec _ corner = showString $ case corner of
@@ -181,6 +237,26 @@ data TextAnchorAlignment = StartAnchor  -- ^ The text is anchored at either its 
                          | RightAnchor  -- ^ the text is anchored at its right edge.
   deriving Eq
 
+-- | Shorthand for 'StartAnchor'.
+start :: TextAnchorAlignment
+start = StartAnchor
+
+-- | Shorthand for 'EndAnchor'.
+end :: TextAnchorAlignment
+end = EndAnchor
+
+-- | Shorthand for 'CenterAnchor'.
+center :: TextAnchorAlignment
+center = CenterAnchor
+
+-- | Shorthand for 'LeftAnchor'.
+left :: TextAnchorAlignment
+left = LeftAnchor
+
+-- | Shorthand for 'RightAnchor'.
+right :: TextAnchorAlignment
+right = RightAnchor
+
 instance Default TextAnchorAlignment where
   def = StartAnchor
 
@@ -188,15 +264,16 @@ instance IsString TextAnchorAlignment where
   fromString = read
 
 instance Read TextAnchorAlignment where
-  readPrec = parens $ do
-      Ident s <- lexP
-      case s of
-          "start"  -> return StartAnchor
-          "end"    -> return EndAnchor
-          "center" -> return CenterAnchor
-          "left"   -> return LeftAnchor
-          "right"  -> return RightAnchor
-          _        -> pfail
+  readPrec = parens . lift $ do
+      skipSpaces
+      choice
+          [ StartAnchor  <$ stringCI "start"
+          , EndAnchor    <$ stringCI "end"
+          , CenterAnchor <$ stringCI "center"
+          , LeftAnchor   <$ stringCI "left"
+          , RightAnchor  <$ stringCI "right"
+          ]
+  readListPrec = readListPrecDefault
 
 instance Show TextAnchorAlignment where
   showsPrec _ align = showString $ case align of
@@ -216,6 +293,30 @@ data TextBaselineAlignment = TopBaseline
                            | BottomBaseline
   deriving (Bounded, Eq, Ix, Ord)
 
+-- | Shorthand for 'TopBaseline'.
+top :: TextBaselineAlignment
+top = TopBaseline
+
+-- | Shorthand for 'HangingBaseline'.
+hanging :: TextBaselineAlignment
+hanging = HangingBaseline
+
+-- | Shorthand for 'MiddleBaseline'.
+middle :: TextBaselineAlignment
+middle = MiddleBaseline
+
+-- | Shorthand for 'AlphabeticBaseline'.
+alphabetic :: TextBaselineAlignment
+alphabetic = AlphabeticBaseline
+
+-- | Shorthand for 'IdeographicBaseline'.
+ideographic :: TextBaselineAlignment
+ideographic = IdeographicBaseline
+
+-- | Shorthand for 'BottomBaseline'.
+bottom :: TextBaselineAlignment
+bottom = BottomBaseline
+
 instance Default TextBaselineAlignment where
   def = AlphabeticBaseline
 
@@ -223,16 +324,17 @@ instance IsString TextBaselineAlignment where
   fromString = read
 
 instance Read TextBaselineAlignment where
-  readPrec = parens $ do
-      Ident s <- lexP
-      case s of
-          "top"         -> return TopBaseline
-          "hanging"     -> return HangingBaseline
-          "middle"      -> return MiddleBaseline
-          "alphabetic"  -> return AlphabeticBaseline
-          "ideographic" -> return IdeographicBaseline
-          "bottom"      -> return BottomBaseline
-          _             -> pfail
+  readPrec = parens . lift $ do
+      skipSpaces
+      choice
+          [ TopBaseline         <$ stringCI "top"
+          , HangingBaseline     <$ stringCI "hanging"
+          , MiddleBaseline      <$ stringCI "middle"
+          , AlphabeticBaseline  <$ stringCI "alphabetic"
+          , IdeographicBaseline <$ stringCI "ideographic"
+          , BottomBaseline      <$ stringCI "bottom"
+          ]
+  readListPrec = readListPrecDefault
 
 instance Show TextBaselineAlignment where
   showsPrec _ bl = showString $ case bl of
@@ -242,6 +344,10 @@ instance Show TextBaselineAlignment where
       AlphabeticBaseline  -> "alphabetic"
       IdeographicBaseline -> "ideographic"
       BottomBaseline      -> "bottom"
+
+class RoundProperty a where
+  -- | Shorthand for 'RoundCap' or 'RoundCorner', with a quote to distinguish it from 'round'.
+  round' :: a
 
 -------------------------------------------------------------
 
@@ -318,6 +424,12 @@ instance JSArg Double where
 
 jsDouble :: Double -> String
 jsDouble = showJS
+
+instance JSArg Font where
+  showJS = jsLiteralString . show
+
+jsFont :: Font -> String
+jsFont = showJS
 
 instance JSArg ImageData where
   showJS (ImageData w h d) = "ImageData(" ++ show w ++ "," ++ show h ++ ",[" ++ vs ++ "])"
