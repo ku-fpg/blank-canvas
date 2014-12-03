@@ -20,7 +20,7 @@ Description:      blank-canvas is a Haskell binding to the complete
                      &#32;&#32;&#32;&#32;moveTo(50,50)
                      &#32;&#32;&#32;&#32;lineTo(200,100)
                      &#32;&#32;&#32;&#32;lineWidth 10
-                     &#32;&#32;&#32;&#32;strokeStyle "red"
+                     &#32;&#32;&#32;&#32;strokeStyle \"red\"
                      &#32;&#32;&#32;&#32;stroke()                              -- this draws the ink into the canvas
                   @
 		  .
