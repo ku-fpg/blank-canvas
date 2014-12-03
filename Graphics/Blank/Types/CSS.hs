@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE NoImplicitPrelude, TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
 import Data.Functor
@@ -7,6 +7,8 @@ import Data.String
 import Graphics.Blank.Parser
 
 import Numeric
+
+import Prelude hiding (rem)
 
 import Text.Read (Read(..), readListPrecDefault)
 import Text.ParserCombinators.ReadP (choice)
@@ -48,10 +50,9 @@ ex = fromLength . Ex
 ch :: LengthProperty a => Double -> a
 ch = fromLength . Ch
 
--- | Constructs a 'LengthProperty' value with 'Rem' units. This function has a quote
---  to distinguish it from 'rem'.
-rem' :: LengthProperty a => Double -> a
-rem' = fromLength . Rem
+-- | Constructs a 'LengthProperty' value with 'Rem' units.
+rem :: LengthProperty a => Double -> a
+rem = fromLength . Rem
 
 -- | Constructs a 'LengthProperty' value with 'Vh' units.
 vh :: LengthProperty a => Double -> a
@@ -81,10 +82,10 @@ mm = fromLength . Mm
 cm :: LengthProperty a => Double -> a
 cm = fromLength . Cm
 
--- | Constructs a 'LengthProperty' value with 'Im' units. This function has a quote
---   to distinguish it from the Haskell keyword.
-in' :: LengthProperty a => Double -> a
-in' = fromLength . In
+-- | Constructs a 'LengthProperty' value with 'Im' units. This function has an
+--   underscore to distinguish it from the Haskell keyword.
+in_ :: LengthProperty a => Double -> a
+in_ = fromLength . In
 
 -- | Constructs a 'LengthProperty' value with 'Pt' units.
 pt :: LengthProperty a => Double -> a

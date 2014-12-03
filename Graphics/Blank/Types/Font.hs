@@ -616,12 +616,12 @@ cursive = CursiveFamily
 fantasy :: FontFamily
 fantasy = FantasyFamily
 
--- |
--- Make sure to have two separate IsString instances so that single font families
--- and lists of font families alike can be converted from string literals.
 instance IsString FontFamily where
     fromString = read
 
+-- |
+-- There are two separate 'IsString' instances for 'FontFamily' so that single font
+-- families and lists of font families alike can be converted from string literals.
 instance IsString [FontFamily] where
     fromString = read
 
@@ -644,13 +644,14 @@ readFontFamily quoted = do
     name <- if quoted
                then munch (/= '\"')
                else unwords <$> sepBy1 cssIdent (munch1 isSpace)
+    let ciName = mk name
     return $ case () of
-         _ | mk name == mk "serif"      -> SerifFamily
-         _ | mk name == mk "sans-serif" -> SansSerifFamily
-         _ | mk name == mk "monospace"  -> MonospaceFamily
-         _ | mk name == mk "cursive"    -> CursiveFamily
-         _ | mk name == mk "fantasy"    -> FantasyFamily
-         _otherwise                     -> FontFamilyName $ T.pack name
+         _ | ciName == mk "serif"      -> SerifFamily
+         _ | ciName == mk "sans-serif" -> SansSerifFamily
+         _ | ciName == mk "monospace"  -> MonospaceFamily
+         _ | ciName == mk "cursive"    -> CursiveFamily
+         _ | ciName == mk "fantasy"    -> FantasyFamily
+         _otherwise                    -> FontFamilyName $ T.pack name
 
 instance Show FontFamily where
     showsPrec d (FontFamilyName name) = showsPrec d name

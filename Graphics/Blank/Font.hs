@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 module Graphics.Blank.Font
     ( -- * Overloaded @font@
       font
@@ -9,7 +10,7 @@ module Graphics.Blank.Font
     , em
     , ex
     , ch
-    , rem'
+    , rem
     , vh
     , vw
     , vmin
@@ -17,7 +18,7 @@ module Graphics.Blank.Font
     , px
     , mm
     , cm
-    , in'
+    , in_
     , pt
     , pc
     -- * Percentages
@@ -29,3 +30,5 @@ import Graphics.Blank.Generated
 import Graphics.Blank.JavaScript
 import Graphics.Blank.Types.CSS
 import Graphics.Blank.Types.Font
+
+import Prelude hiding (rem)
