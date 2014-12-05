@@ -1,5 +1,5 @@
 Name:                blank-canvas
-Version:             0.5.0.1
+Version:             0.5.0.2
 Synopsis:            HTML5 Canvas Graphics Library
 
 Description:      blank-canvas is a Haskell binding to the complete
@@ -73,7 +73,7 @@ Library
                        containers         == 0.5.*,
                        data-default-class == 0.0.*,
                        http-types         == 0.8.*,
-                       kansas-comet       == 0.3.*,
+                       kansas-comet       == 0.3.2,
                        scotty             >= 0.8     && < 0.10,
                        stm                >= 2.2     && < 2.5,
                        text               >= 1.1     && < 1.3,
@@ -81,7 +81,9 @@ Library
                        wai                == 3.*,
                        wai-extra          >= 3.0.1   && < 3.1,
                        warp               == 3.*,
-                       vector             >= 0.10    && < 0.11
+                       vector             >= 0.10    && < 0.11,
+                       websockets         >= 0.8,
+                       wai-websockets        == 3.*
 
   GHC-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations
   GHC-prof-options:  -Wall -fno-warn-orphans -fno-warn-warnings-deprecations -auto-all -fsimpl-tick-factor=100000

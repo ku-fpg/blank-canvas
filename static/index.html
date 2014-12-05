@@ -106,14 +106,14 @@
 		var o = {};
 		o.metaKey = e.metaKey;
                 o.type    = e.type;
-		if (e.pageXY != undefined) { 
-	            o.pageXY = e.pageXY; 
+		if (e.pageXY != undefined) {
+	            o.pageXY = e.pageXY;
   	        }
 		if (e.pageX != undefined && e.pageY != undefined) {
 		    o.pageXY = [e.pageX,e.pageY];
                 }
-                if (e.which != undefined) { 
-                    o.which = e.which; 
+                if (e.which != undefined) {
+                    o.which = e.which;
                 }
                 $.kc.event(o);
             }

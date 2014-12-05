@@ -162,6 +162,8 @@ import           System.IO.Unsafe (unsafePerformIO)
 import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
 import qualified Web.Scotty.Comet as KC
+import qualified Network.WebSockets as WS
+import qualified Network.Wai.Handler.WebSockets as WaiWS
 
 -- | blankCanvas is the main entry point into blank-canvas.
 -- A typical invocation would be
@@ -199,41 +201,6 @@ blankCanvas opts actions = do
         let kc_opts :: KC.Options
             kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
 
-
-
-        KC.connect kc_opts $ \ kc_doc -> do
-                -- register the events we want to watch for
-                KC.send kc_doc $ T.unlines
-                   [ "register(" <> T.pack(show nm) <> ");"
-                   | nm <- events opts
-                   ]
-
-                queue <- atomically newTChan
-                _ <- forkIO $ forever $ do
-                        val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
-                        case fromJSON val of
-                           Success (event :: Event) -> do
-                                   atomically $ writeTChan queue event
-                           _ -> return ()
-
-
-                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals
-
-                -- A bit of bootstrapping
-                DeviceAttributes w h dpr <- send cxt0 device
-                -- print (DeviceAttributes w h dpr)
-
-                let cxt1 = cxt0
-                         { ctx_width = w
-                         , ctx_height = h
-                         , ctx_devicePixelRatio = dpr
-                         }
-
-                (actions $ cxt1) `catch` \ (e :: SomeException) -> do
-                        print ("Exception in blank-canvas application:"  :: String)
-                        print e
-                        throw e
-
         get "/"                 $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js"   $ file $ dataDir ++ "/static/jquery-json.js"
@@ -250,13 +217,51 @@ blankCanvas opts actions = do
             file $ (root opts ++ "/" ++ T.unpack fileName)
           else do
             Scotty.next
-
+        KC.connect kc_opts $ web_app locals opts actions
         return ()
 
    runSettings (setPort (port opts)
                $ setTimeout 5
                $ defaultSettings
-               ) app
+               ) $ WaiWS.websocketsOr WS.defaultConnectionOptions (KC.socketApplication $ web_app locals opts actions) app
+
+
+web_app :: TVar (S.Set Text) -> Options -> (DeviceContext -> IO ()) -> KC.Document -> IO ()
+
+web_app locals opts actions kc_doc = do
+        -- register the events we want to watch for
+        KC.send kc_doc $ T.unlines
+           [ "register(" <> T.pack(show nm) <> ");"
+           | nm <- events opts
+           ]
+        queue <- atomically newTChan
+        _ <- forkIO $ control kc_doc queue
+        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals
+
+        -- A bit of bootstrapping
+        DeviceAttributes w h dpr <- send cxt0 device
+        -- print (DeviceAttributes w h dpr)
+
+        let cxt1 = cxt0
+                 { ctx_width = w
+                 , ctx_height = h
+                 , ctx_devicePixelRatio = dpr
+                 }
+
+        (actions $ cxt1) `catch` \ (e :: SomeException) -> do
+                print ("Exception in blank-canvas application:"  :: String)
+                print e
+                throw e
+        return ()
+
+
+control :: KC.Document -> TChan Event -> IO ()
+control doc queue = forever $ do
+        val <- atomically $ readTChan $ (KC.eventQueue doc)
+        case fromJSON val of
+           Success (event :: Event) -> do
+                   atomically $ writeTChan queue event
+           _ -> return ()
 
 -- | Sends a set of Canvas commands to the canvas. Attempts
 -- to common up as many commands as possible. Should not crash.
@@ -281,8 +286,8 @@ send cxt commands =
 
       sendGradient c q k cmds = do
         gId <- atomically getUniq
-        send' c (k $ CanvasGradient gId) (cmds 
-          . (("var gradient_" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
+        send' c (k $ CanvasGradient gId) (cmds
+          . (("var gradient_" ++ show gId ++ " = " ++ showJS c ++ ".") ++)
           . shows q . (";" ++))
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
@@ -295,9 +300,8 @@ send cxt commands =
                   writeTVar (localFiles cxt) $ S.insert url' $ db
             _ -> return ()
 
-          -- send the com
+
           uq <- atomically $ getUniq
-          -- The query function returns a function takes the unique port number of the reply.
           sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ "," ++ showJS c ++ ");") ++))
           v <- KC.getReply (theComet cxt) uq
           case parse (parseQueryResult query) v of
