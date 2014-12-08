@@ -274,8 +274,8 @@ send cxt commands =
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
       sendBind c (Return a)      k cmds = send' c (k a) cmds
       sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd)    k cmds = send' c (k ()) (jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';' <> cmds)
-      sendBind c (Command cmd)   k cmds = send' c (k ()) (showb cmd <> singleton ';' <> cmds)
+      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
+      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
       sendBind c (Function func) k cmds = sendFunc c func k cmds
       sendBind c (Query query)   k cmds = sendQuery c query k cmds
       sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
@@ -288,9 +288,9 @@ send cxt commands =
       sendGradient :: CanvasContext -> Function a -> (CanvasGradient -> Canvas b) -> Builder -> IO b
       sendGradient c q k cmds = do
         gId <- atomically getUniq
-        send' c (k $ CanvasGradient gId) $ "var gradient_" <> showb gId
-            <> " = "   <> jsCanvasContext c <> singleton '.'
-            <> showb q <> singleton ';'     <> cmds
+        send' c (k $ CanvasGradient gId) $ cmds <> "var gradient_"
+            <> showb gId     <> " = "   <> jsCanvasContext c
+            <> singleton '.' <> showb q <> singleton ';'
 
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> Builder -> IO b
       sendQuery c query k cmds = do
@@ -305,7 +305,7 @@ send cxt commands =
           -- send the com
           uq <- atomically $ getUniq
           -- The query function returns a function takes the unique port number of the reply.
-          sendToCanvas cxt $ showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");" <> cmds
+          sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
           v <- KC.getReply (theComet cxt) uq
           case parse (parseQueryResult query) v of
             Error msg -> fail msg
