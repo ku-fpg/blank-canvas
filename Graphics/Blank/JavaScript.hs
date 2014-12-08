@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances, NoImplicitPrelude, OverloadedStrings, TemplateHaskell #-}
-
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.JavaScript where
 
 import           Control.Applicative
