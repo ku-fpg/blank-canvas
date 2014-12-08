@@ -35,7 +35,40 @@ import           Text.Show.Text.Data.Floating (showbFFloat)
 import           Text.Show.Text.Data.Integral (showbHex)
 import           Text.Show.Text.TH (deriveShow)
 
------------------------------------------------------------------------------
+-------------------------------------------------------------
+
+-- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
+data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasContext)
+
+-- | A handle to the Image. CanvasImages can not be destroyed.
+data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasImage)
+
+-- | A handle to the CanvasGradient. CanvasGradients can not be destroyed.
+newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasGradient)
+
+-- | A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
+newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasPattern)
+
+-------------------------------------------------------------
+
+-- | 'ImageData' is a transliteration of the JavaScript ImageData,
+--   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
+--  width, height, data can be projected from 'ImageData',
+--  'Vector.length' can be used to find the length.
+--
+--   Note: 'ImageData' lives on the server, not the client.
+
+data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
+$(deriveShow ''ImageData)
+
+instance (T.Show a, Unbox a) => T.Show (Vector a) where
+    showbPrec p v = showbParen (p > appPrec) $ "fromList " <> showb (toList v)
+
+-------------------------------------------------------------
 
 -- TODO: close off
 class Image a where
@@ -77,20 +110,6 @@ jsCanvasColor = jsStyle
 instance CanvasColor Text
 instance CanvasColor (Colour Double)
 instance CanvasColor (AlphaColour Double)
-
--------------------------------------------------------------
-
--- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
-data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
-
--- | A handle to the Image. CanvasImages can not be destroyed.
-data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
-
--- | A handle to the CanvasGradient. CanvasGradients can not be destroyed.
-newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
-
--- | A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
-newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
 
 -------------------------------------------------------------
 
@@ -359,17 +378,6 @@ class RoundProperty a where
 
 -------------------------------------------------------------
 
--- | 'ImageData' is a transliteration of the JavaScript ImageData,
---   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
---  width, height, data can be projected from 'ImageData',
---  'Vector.length' can be used to find the length.
---
---   Note: 'ImageData' lives on the server, not the client.
-
-data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
-
--------------------------------------------------------------
-
 class JSArg a where
     showbJS :: a -> Builder
 
@@ -537,19 +545,3 @@ jsEscapeChar '\'' = "\\'"
 jsEscapeChar c' | not (isControl c') && isAscii c' = TL.singleton c'
 -- All other non ASCII signs are escaped to unicode.
 jsEscapeChar c' = jsUnicodeChar c'
-
--------------------------------------------------------------------------------
-
--- Due to a Template Haskell bug (https://ghc.haskell.org/trac/ghc/ticket/9871),
--- attempting to put these instance declarations up with their respective data
--- declarations causes all of the identifiers afterward to fall out of scope.
--- In the meantime, we'll put the TH instances here to avoid problems.
-
-$(deriveShow ''CanvasContext)
-$(deriveShow ''CanvasImage)
-$(deriveShow ''CanvasGradient)
-$(deriveShow ''CanvasPattern)
-$(deriveShow ''ImageData)
-
-instance (T.Show a, Unbox a) => T.Show (Vector a) where
-    showbPrec p v = showbParen (p > appPrec) $ "fromList " <> showb (toList v)

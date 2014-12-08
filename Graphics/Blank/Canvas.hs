@@ -24,6 +24,15 @@ import qualified Text.Show.Text as T (Show)
 import           Text.Show.Text hiding (Show)
 import           Text.Show.Text.TH (deriveShow)
 
+data DeviceAttributes = DeviceAttributes Int Int Double deriving S.Show
+$(deriveShow ''DeviceAttributes)
+
+-- | The 'width' argument of 'TextMetrics' can trivially be projected out.
+data TextMetrics = TextMetrics Double deriving S.Show
+$(deriveShow ''TextMetrics)
+
+-----------------------------------------------------------------------------
+
 data Canvas :: * -> * where
         Method    :: Method                      -> Canvas ()     -- <context>.<method>
         Command   :: Command                     -> Canvas ()     -- <command>
@@ -170,11 +179,6 @@ data Query :: * -> * where
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
 
-data DeviceAttributes = DeviceAttributes Int Int Double deriving S.Show
-
--- | The 'width' argument of 'TextMetrics' can trivially be projected out.
-data TextMetrics = TextMetrics Double deriving S.Show
-
 instance S.Show (Query a) where
   showsPrec p = (++) . toString . showbPrec p
 
@@ -256,13 +260,3 @@ getImageData = Query . GetImageData
 -- | Send all commands to the browser, wait for the browser to ack, then continue.
 sync :: Canvas ()
 sync = Query $ Sync
-
--------------------------------------------------------------------------------
-
--- Due to a Template Haskell bug (https://ghc.haskell.org/trac/ghc/ticket/9871),
--- attempting to put these instance declarations up with their respective data
--- declarations causes all of the identifiers afterward to fall out of scope.
--- In the meantime, we'll put the TH instances here to avoid problems.
-
-$(deriveShow ''DeviceAttributes)
-$(deriveShow ''TextMetrics)
