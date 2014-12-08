@@ -1,28 +1,34 @@
-{-# LANGUAGE TemplateHaskell, GADTs, KindSignatures, ScopedTypeVariables, OverloadedStrings, FlexibleInstances, OverlappingInstances #-}
+{-# LANGUAGE FlexibleInstances, GADTs, KindSignatures, NoImplicitPrelude, OverlappingInstances,
+             OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
 
 module Graphics.Blank.Canvas where
 
 import           Control.Applicative
 import           Control.Monad (ap, liftM2)
 
-import           Graphics.Blank.Events
-import           Graphics.Blank.JavaScript
-
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
-import           Data.Char (chr)
-
-import qualified Data.ByteString.Lazy as DBL
 import           Data.Monoid
-import qualified Data.Text as Text
 import           Data.Text (Text)
+import           Data.Text.Lazy.Builder
+import           Data.Text.Lazy.Encoding (decodeUtf8)
 
+import           Graphics.Blank.Events
+import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types.Font
+
+import           Prelude hiding (Show)
+
+import qualified Text.Show as S (Show)
+import qualified Text.Show.Text as T (Show)
+import           Text.Show.Text hiding (Show)
+import           Text.Show.Text.TH (deriveShow)
 
 data Canvas :: * -> * where
         Method    :: Method                      -> Canvas ()     -- <context>.<method>
         Command   :: Command                     -> Canvas ()     -- <command>
-        Function  :: (Show a) => Function a      -> Canvas a
-        Query     :: (Show a) => Query a         -> Canvas a
+        Function  :: T.Show a => Function a      -> Canvas a
+        Query     :: T.Show a => Query a         -> Canvas a
         With      :: CanvasContext -> Canvas a   -> Canvas a
         MyContext ::                                Canvas CanvasContext
         Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
@@ -42,7 +48,6 @@ instance Functor Canvas where
 instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
   mempty  = return mempty
-
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
@@ -95,12 +100,16 @@ data Command
   | forall msg . JSArg msg => Log msg
   | Eval Text
 
-instance Show Command where
-  show (Trigger e) = "Trigger(" ++ map (chr . fromEnum) (DBL.unpack (encode e)) ++ ")"
-  show (AddColorStop (off,rep) g)
-     = showJS g ++ ".addColorStop(" ++ showJS off ++ "," ++ jsStyle rep ++ ")"
-  show (Log msg) = "console.log(" ++ showJS msg ++ ")"
-  show (Eval cmd) = Text.unpack cmd -- no escaping or interpretation
+instance S.Show Command where
+  showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show Command where
+  showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
+  showb (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
+         <> jsDouble off <> singleton ',' <> jsCanvasColor rep
+         <> singleton ')'
+  showb (Log msg) = "console.log(" <> showbJS msg <> singleton ')'
+  showb (Eval cmd) = fromText cmd -- no escaping or interpretation
 
 -----------------------------------------------------------------------------
 
@@ -137,13 +146,16 @@ data Function :: * -> * where
   CreateLinearGradient :: (Double,Double,Double,Double)               -> Function CanvasGradient
   CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> Function CanvasGradient
 
-instance Show (Function a) where
-  show (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
-        ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS x1 ++ "," 
-        ++ showJS y1 ++ ")"
-  show (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
-        ++ showJS x0 ++ "," ++ showJS y0 ++ "," ++ showJS r0 ++ "," 
-        ++ showJS x1 ++ "," ++ showJS y1 ++ "," ++ showJS r1 ++ ")"
+instance S.Show (Function a) where
+  showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show (Function a) where
+  showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
+        <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','
+        <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ')'
+  showb (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
+        <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ',' 
+        <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ',' <> jsDouble r1 <> singleton ')'
 
 -----------------------------------------------------------------------------
 
@@ -158,25 +170,30 @@ data Query :: * -> * where
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
 
-data DeviceAttributes = DeviceAttributes Int Int Double
-        deriving Show
+data DeviceAttributes = DeviceAttributes Int Int Double deriving S.Show
 
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
-data TextMetrics = TextMetrics Double
-        deriving Show
+data TextMetrics = TextMetrics Double deriving S.Show
 
-instance Show (Query a) where
-  show Device                       = "Device"
-  show ToDataURL                    = "ToDataURL"
-  show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
-  show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
-  show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
-                                    ++ jsRepeatDirection dir ++ ")"
-  show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
-                                   ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
-  show Sync                         = "Sync"
+instance S.Show (Query a) where
+  showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show (Query a) where
+  showb Device                       = "Device"
+  showb ToDataURL                    = "ToDataURL"
+  showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
+  showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
+                                                        <> jsDouble y <> singleton ')'
+  showb (NewImage url)               = "NewImage(" <> jsText url <> singleton ')'
+  showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
+                                              <> jsRepeatDirection dir <> singleton ')'
+  showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
+                                                    <> jsInt y <> singleton ')'
+  showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
+                                                       <> jsDouble sy <> singleton ','
+                                                       <> jsDouble sw <> singleton ','
+                                                       <> jsDouble sh <> singleton ')'
+  showb Sync                         = "Sync"
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -239,3 +256,13 @@ getImageData = Query . GetImageData
 -- | Send all commands to the browser, wait for the browser to ack, then continue.
 sync :: Canvas ()
 sync = Query $ Sync
+
+-------------------------------------------------------------------------------
+
+-- Due to a Template Haskell bug (https://ghc.haskell.org/trac/ghc/ticket/9871),
+-- attempting to put these instance declarations up with their respective data
+-- declarations causes all of the identifiers afterward to fall out of scope.
+-- In the meantime, we'll put the TH instances here to avoid problems.
+
+$(deriveShow ''DeviceAttributes)
+$(deriveShow ''TextMetrics)

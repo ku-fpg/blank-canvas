@@ -1,52 +1,89 @@
+{-# LANGUAGE NoImplicitPrelude, OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
-import Graphics.Blank.Canvas
-import Graphics.Blank.JavaScript
-import Data.Text (Text)
+import           Data.Monoid ((<>))
+import           Data.Text (Text)
 
-instance Show Method where
-  show (Arc (a1,a2,a3,a4,a5,a6)) = "arc(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ "," ++ jsDouble a5 ++ "," ++ jsBool a6 ++ ")"
-  show (ArcTo (a1,a2,a3,a4,a5)) = "arcTo(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ "," ++ jsDouble a5 ++ ")"
-  show BeginPath = "beginPath()"
-  show (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ "," ++ jsDouble a5 ++ "," ++ jsDouble a6 ++ ")"
-  show (ClearRect (a1,a2,a3,a4)) = "clearRect(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ ")"
-  show Clip = "clip()"
-  show ClosePath = "closePath()"
-  show (DrawImage (a1,a2)) = "drawImage(" ++ jsImage a1 ++ "," ++ jsList jsDouble a2 ++ ")"
-  show Fill = "fill()"
-  show (FillRect (a1,a2,a3,a4)) = "fillRect(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ ")"
-  show (FillStyle (a1)) = "fillStyle = (" ++ jsStyle a1 ++ ")"
-  show (FillText (a1,a2,a3)) = "fillText(" ++ jsText a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ ")"
-  show (Font (a1)) = "font = (" ++ jsCanvasFont a1 ++ ")"
-  show (GlobalAlpha (a1)) = "globalAlpha = (" ++ jsDouble a1 ++ ")"
-  show (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" ++ jsText a1 ++ ")"
-  show (LineCap (a1)) = "lineCap = (" ++ jsLineEndCap a1 ++ ")"
-  show (LineJoin (a1)) = "lineJoin = (" ++ jsLineJoinCorner a1 ++ ")"
-  show (LineTo (a1,a2)) = "lineTo(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ ")"
-  show (LineWidth (a1)) = "lineWidth = (" ++ jsDouble a1 ++ ")"
-  show (MiterLimit (a1)) = "miterLimit = (" ++ jsDouble a1 ++ ")"
-  show (MoveTo (a1,a2)) = "moveTo(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ ")"
-  show (PutImageData (a1,a2)) = "putImageData(" ++ jsImageData a1 ++ "," ++ jsList jsDouble a2 ++ ")"
-  show (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ ")"
-  show (Rect (a1,a2,a3,a4)) = "rect(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ ")"
-  show Restore = "restore()"
-  show (Rotate (a1)) = "rotate(" ++ jsDouble a1 ++ ")"
-  show Save = "save()"
-  show (Scale (a1,a2)) = "scale(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ ")"
-  show (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ "," ++ jsDouble a5 ++ "," ++ jsDouble a6 ++ ")"
-  show (ShadowBlur (a1)) = "shadowBlur = (" ++ jsDouble a1 ++ ")"
-  show (ShadowColor (a1)) = "shadowColor = (" ++ jsCanvasColor a1 ++ ")"
-  show (ShadowOffsetX (a1)) = "shadowOffsetX = (" ++ jsDouble a1 ++ ")"
-  show (ShadowOffsetY (a1)) = "shadowOffsetY = (" ++ jsDouble a1 ++ ")"
-  show Stroke = "stroke()"
-  show (StrokeRect (a1,a2,a3,a4)) = "strokeRect(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ ")"
-  show (StrokeStyle (a1)) = "strokeStyle = (" ++ jsStyle a1 ++ ")"
-  show (StrokeText (a1,a2,a3)) = "strokeText(" ++ jsText a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ ")"
-  show (TextAlign (a1)) = "textAlign = (" ++ jsTextAnchorAlignment a1 ++ ")"
-  show (TextBaseline (a1)) = "textBaseline = (" ++ jsTextBaselineAlignment a1 ++ ")"
-  show (Transform (a1,a2,a3,a4,a5,a6)) = "transform(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ "," ++ jsDouble a3 ++ "," ++ jsDouble a4 ++ "," ++ jsDouble a5 ++ "," ++ jsDouble a6 ++ ")"
-  show (Translate (a1,a2)) = "translate(" ++ jsDouble a1 ++ "," ++ jsDouble a2 ++ ")"
+import           Graphics.Blank.Canvas
+import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types.Font
+
+import           Prelude hiding (Show)
+
+import qualified Text.Show as S (Show)
+import qualified Text.Show.Text as T (Show)
+import           Text.Show.Text (showb, showbPrec, singleton, toString)
+
+instance S.Show Method where
+  showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show Method where
+  showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
+         <> jsDouble a5 <> singleton ',' <> jsBool a6   <> singleton ')'
+  showb (ArcTo (a1,a2,a3,a4,a5)) = "arcTo("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ','
+         <> jsDouble a4 <> singleton ',' <> jsDouble a5 <> singleton ')'
+  showb BeginPath = "beginPath()"
+  showb (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
+         <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
+  showb (ClearRect (a1,a2,a3,a4)) = "clearRect("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
+  showb Clip = "clip()"
+  showb ClosePath = "closePath()"
+  showb (DrawImage (a1,a2)) = "drawImage(" <> jsImage a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
+  showb Fill = "fill()"
+  showb (FillRect (a1,a2,a3,a4)) = "fillRect("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
+  showb (FillStyle (a1)) = "fillStyle = (" <> jsStyle a1 <> singleton ')'
+  showb (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
+  showb (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
+  showb (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
+  showb (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
+  showb (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
+  showb (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
+  showb (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showb (LineWidth (a1)) = "lineWidth = (" <> jsDouble a1 <> singleton ')'
+  showb (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
+  showb (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showb (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
+  showb (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
+  showb (Rect (a1,a2,a3,a4)) = "rect("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
+  showb Restore = "restore()"
+  showb (Rotate (a1)) = "rotate(" <> jsDouble a1 <> singleton ')'
+  showb Save = "save()"
+  showb (Scale (a1,a2)) = "scale(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showb (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
+         <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
+  showb (ShadowBlur (a1)) = "shadowBlur = (" <> jsDouble a1 <> singleton ')'
+  showb (ShadowColor (a1)) = "shadowColor = (" <> jsCanvasColor a1 <> singleton ')'
+  showb (ShadowOffsetX (a1)) = "shadowOffsetX = (" <> jsDouble a1 <> singleton ')'
+  showb (ShadowOffsetY (a1)) = "shadowOffsetY = (" <> jsDouble a1 <> singleton ')'
+  showb Stroke = "stroke()"
+  showb (StrokeRect (a1,a2,a3,a4)) = "strokeRect("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
+  showb (StrokeStyle (a1)) = "strokeStyle = (" <> jsStyle a1 <> singleton ')'
+  showb (StrokeText (a1,a2,a3)) = "strokeText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
+  showb (TextAlign (a1)) = "textAlign = (" <> jsTextAnchorAlignment a1 <> singleton ')'
+  showb (TextBaseline (a1)) = "textBaseline = (" <> jsTextBaselineAlignment a1 <> singleton ')'
+  showb (Transform (a1,a2,a3,a4,a5,a6)) = "transform("
+         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
+         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
+         <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
+  showb (Translate (a1,a2)) = "translate(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
 
 -- DSL
 
