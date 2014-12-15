@@ -43,6 +43,18 @@ instance Image CanvasContext where
   width  (CanvasContext _ w _) = fromIntegral w
   height (CanvasContext _ _ h) = fromIntegral h
 
+class Audio a where -- NickS addition
+  jsAudio    :: a -> String
+  audLength  :: Num b => a -> b
+  filler     :: Num b => a -> b
+
+data AudioInfo = AudioInfo Int Int Int deriving (Show,Eq,Ord)
+
+instance Audio AudioInfo where         
+  jsAudio                     = jsAudioInfo
+  audLength (AudioInfo _ l _) = fromIntegral l
+  filler    (AudioInfo _ _ f) = fromIntegral f --This is included so that I can use uncurry3 for prelim testing
+
 -- instance Element Video  -- Not supported
 
 -----------------------------------------------------------------------------
@@ -275,6 +287,12 @@ instance JSArg (AlphaColour Double) where
 
 jsAlphaColour :: AlphaColour Double -> String
 jsAlphaColour = showJS
+
+instance JSArg AudioInfo where --NickS addition
+  showJS (AudioInfo n _ _ ) = "sounds[" ++ show n ++ "]"
+
+jsAudioInfo :: AudioInfo -> String
+jsAudioInfo = showJS
 
 instance JSArg Bool where
   showJS True  = "true"

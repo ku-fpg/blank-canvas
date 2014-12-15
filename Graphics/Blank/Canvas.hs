@@ -157,6 +157,7 @@ data Query :: * -> * where
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
+        NewAudio             :: Text                                    -> Query AudioInfo --NickS addition
 
 data DeviceAttributes = DeviceAttributes Int Int Double
         deriving Show
@@ -177,6 +178,8 @@ instance Show (Query a) where
   show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
                                    ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
   show Sync                         = "Sync"
+  show (NewAudio txt)               = "NewAudio(" ++ showJS txt ++ ")" -- NickS addition
+  -- show (NewAudio _)               = "NewAudio(1,2)" -- NickS addition
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -191,6 +194,7 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
+parseQueryResult (NewAudio {}) o              = uncurry3 AudioInfo <$> parseJSON o                                           
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
@@ -218,6 +222,9 @@ isPointInPath = Query . IsPointInPath
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
+
+newAudio :: Text -> Canvas AudioInfo
+newAudio = Query . NewAudio
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient

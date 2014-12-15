@@ -11,6 +11,7 @@
         <script type="text/javascript">
             var session = 0; // global session number
             var images = [];
+	    var sounds = [];
             var patterns = [];
             var canvasbuffers = [];
             var c = null;
@@ -138,6 +139,22 @@
                 return imgData;
              }
 
+            function NewAudio(src) {
+                return function (u,c) {
+		    var audio = new Audio();
+                    var count = sounds.push(audio);
+		    audio.onload = function () {
+				  $.kc.reply(u,[count - 1,0,0]); // The 0 is filler, need to 
+				  }                              // figure out how parseQueryResults and parseJSON work
+                    audio.src = src;
+                    //var canvas = document.createElement('canvas');
+                    //canvas.width = w;
+                    //canvas.height = h;
+                    //var count = canvasbuffers.push(canvas.getContext("2d"));
+                    //$.kc.reply(u,[count - 1,w,h]);
+                }
+            }
+
             $(document).ready(function() {
                 // Make the canvas the size of the window
                 var w = $(window).width();
@@ -164,7 +181,7 @@
                 $("#canvas").css("height",h + "px");
                 c = getContext("2d");
                 canvasbuffers.push(c);
-                $.kc.connect("/blank");
+                $.kc.connect("blank");
             });
         </script>
     </body>
