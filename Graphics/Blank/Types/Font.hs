@@ -1,49 +1,5 @@
-{-# LANGUAGE FlexibleInstances #-}
-module Graphics.Blank.Types.Font
-    ( -- * @font@
-      Font(..)
-    , defFont
-    , caption
-    , icon
-    , menu
-    , messageBox
-    , smallCaption
-    , statusBar
-    -- * @font-style@
-    , FontStyle(..)
-    , italic
-    , oblique
-    -- * @font-variant@
-    , FontVariant(..)
-    , smallCaps
-    -- * @font-weight@
-    , FontWeight(..)
-    , bold
-    , bolder
-    , lighter
-    -- * @font-size@
-    , FontSize(..)
-    , xxSmall
-    , xSmall
-    , small
-    , medium
-    , large
-    , xLarge
-    , xxLarge
-    , larger
-    , smaller
-    -- * @line-height@
-    , LineHeight(..)
-    -- * @font-family@
-    , FontFamily(..)
-    , serif
-    , sansSerif
-    , monospace
-    , cursive
-    , fantasy
-    -- * Normal values
-    , NormalProperty(..)
-    ) where
+{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
+module Graphics.Blank.Types.Font where
 
 import           Control.Applicative
 import           Control.Monad
@@ -55,17 +11,35 @@ import           Data.List
 import           Data.Maybe
 import           Data.Monoid
 import           Data.String
-import qualified Data.Text as T
+import qualified Data.Text as TS
 import           Data.Text (Text)
+import qualified Data.Text.Lazy.Builder as B (singleton)
 
-import           Graphics.Blank.Types.CSS
+import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
+import           Graphics.Blank.Types.CSS
+
+import           Prelude hiding (Show)
 
 import qualified Text.ParserCombinators.ReadP as ReadP
 import           Text.ParserCombinators.ReadP hiding ((<++), choice, pfail)
 import qualified Text.ParserCombinators.ReadPrec as ReadPrec
 import           Text.ParserCombinators.ReadPrec (ReadPrec, (<++), lift, pfail)
 import           Text.Read (Read(..), readListPrecDefault)
+import qualified Text.Show as S (Show)
+import qualified Text.Show.Text as T (Show)
+import           Text.Show.Text hiding (Show)
+
+-------------------------------------------------------------------------------
+
+class CanvasFont a where
+    jsCanvasFont :: a -> Builder
+
+instance CanvasFont Text where
+    jsCanvasFont = jsText
+
+instance CanvasFont Font where
+    jsCanvasFont = jsFont
 
 -------------------------------------------------------------------------------
 
@@ -128,6 +102,12 @@ statusBar = StatusBarFont
 
 instance IsString Font where
     fromString = read
+
+instance JSArg Font where
+    showbJS = jsFont
+
+jsFont :: Font -> Builder
+jsFont = jsLiteralBuilder . showb
 
 instance Read Font where
     readPrec = do
@@ -203,27 +183,30 @@ readFontProperties' mbStyle mbVariant mbWeight =
   <*> lift (option def $ skipSpaces *> char '/' *> unlift readPrec)
   <*> (lift (munch1 isSpace) *> readPrec)
 
-instance Show Font where
-    showsPrec d (FontProperties style variant weight size height family)
-        = showsPrec d style
-        . showSpace
-        . showsPrec d variant
-        . showSpace
-        . showsPrec d weight
-        . showSpace
-        . showsPrec d size
-        . showChar '/'
-        . showsPrec d height
-        . showSpace
-        . showsPrec d family
+instance S.Show Font where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show Font where
+    showb (FontProperties style variant weight size height' family)
+        = showb style
+       <> space
+       <> showb variant
+       <> space
+       <> showb weight
+       <> space
+       <> showb size
+       <> B.singleton '/'
+       <> showb height'
+       <> space
+       <> showb family
       where
-        showSpace = showChar ' '
-    showsPrec _ CaptionFont      = showString "caption"
-    showsPrec _ IconFont         = showString "icon"
-    showsPrec _ MenuFont         = showString "menu"
-    showsPrec _ MessageBoxFont   = showString "message-box"
-    showsPrec _ SmallCaptionFont = showString "small-caption"
-    showsPrec _ StatusBarFont    = showString "status-bar"
+        space = B.singleton ' '
+    showb CaptionFont      = "caption"
+    showb IconFont         = "icon"
+    showb MenuFont         = "menu"
+    showb MessageBoxFont   = "message-box"
+    showb SmallCaptionFont = "small-caption"
+    showb StatusBarFont    = "status-bar"
 
 -------------------------------------------------------------------------------
 
@@ -260,11 +243,13 @@ instance Read FontStyle where
             ]
     readListPrec = readListPrecDefault
 
-instance Show FontStyle where
-    showsPrec _ fs = showString $ case fs of
-        NormalStyle  -> "normal"
-        ItalicStyle  -> "italic"
-        ObliqueStyle -> "oblique"
+instance S.Show FontStyle where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show FontStyle where
+    showb NormalStyle  = "normal"
+    showb ItalicStyle  = "italic"
+    showb ObliqueStyle = "oblique"
 
 -------------------------------------------------------------------------------
 
@@ -291,10 +276,12 @@ instance Read FontVariant where
       (NormalVariant <$ stringCI "normal") <|> (SmallCapsVariant <$ stringCI "small-caps")
     readListPrec = readListPrecDefault
 
-instance Show FontVariant where
-    showsPrec _ fv = showString $ case fv of
-        NormalVariant    -> "normal"
-        SmallCapsVariant -> "small-caps"
+instance S.Show FontVariant where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show FontVariant where
+    showb NormalVariant    = "normal"
+    showb SmallCapsVariant = "small-caps"
 
 -------------------------------------------------------------------------------
 
@@ -383,21 +370,23 @@ instance Read FontWeight where
             ]
     readListPrec = readListPrecDefault
 
-instance Show FontWeight where
-    showsPrec _ fw = showString $ case fw of
-          NormalWeight  -> "normal"
-          BoldWeight    -> "bold"
-          BolderWeight  -> "bolder"
-          LighterWeight -> "lighter"
-          Weight100     -> "100"
-          Weight200     -> "200"
-          Weight300     -> "300"
-          Weight400     -> "400"
-          Weight500     -> "500"
-          Weight600     -> "600"
-          Weight700     -> "700"
-          Weight800     -> "800"
-          Weight900     -> "900"
+instance S.Show FontWeight where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show FontWeight where
+    showb NormalWeight  = "normal"
+    showb BoldWeight    = "bold"
+    showb BolderWeight  = "bolder"
+    showb LighterWeight = "lighter"
+    showb Weight100     = "100"
+    showb Weight200     = "200"
+    showb Weight300     = "300"
+    showb Weight400     = "400"
+    showb Weight500     = "500"
+    showb Weight600     = "600"
+    showb Weight700     = "700"
+    showb Weight800     = "800"
+    showb Weight900     = "900"
 
 -------------------------------------------------------------------------------
 
@@ -487,18 +476,21 @@ instance Read FontSize where
             ]
     readListPrec = readListPrecDefault
 
-instance Show FontSize where
-    showsPrec _ XXSmallSize            = showString "xx-small"
-    showsPrec _ XSmallSize             = showString "x-small"
-    showsPrec _ SmallSize              = showString "small"
-    showsPrec _ MediumSize             = showString "medium"
-    showsPrec _ LargeSize              = showString "large"
-    showsPrec _ XLargeSize             = showString "x-large"
-    showsPrec _ XXLargeSize            = showString "xx-large"
-    showsPrec _ LargerSize             = showString "larger"
-    showsPrec _ SmallerSize            = showString "smaller"
-    showsPrec d (FontSizeLength l)     = showsPrec d l
-    showsPrec _ (FontSizePercentage p) = jsDoubleS p . showChar '%'
+instance S.Show FontSize where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show FontSize where
+    showb XXSmallSize            = "xx-small"
+    showb XSmallSize             = "x-small"
+    showb SmallSize              = "small"
+    showb MediumSize             = "medium"
+    showb LargeSize              = "large"
+    showb XLargeSize             = "x-large"
+    showb XXLargeSize            = "xx-large"
+    showb LargerSize             = "larger"
+    showb SmallerSize            = "smaller"
+    showb (FontSizeLength l)     = showb l
+    showb (FontSizePercentage p) = jsDouble p <> B.singleton '%'
 
 -------------------------------------------------------------------------------
 
@@ -557,11 +549,14 @@ instance Read LineHeight where
             ]
     readListPrec = readListPrecDefault
 
-instance Show LineHeight where
-    showsPrec _ NormalLineHeight         = showString "normal"
-    showsPrec _ (LineHeightNumber n)     = jsDoubleS n
-    showsPrec d (LineHeightLength l)     = showsPrec d l
-    showsPrec _ (LineHeightPercentage p) = jsDoubleS p . showChar '%'
+instance S.Show LineHeight where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show LineHeight where
+    showb NormalLineHeight         = "normal"
+    showb (LineHeightNumber n)     = jsDouble n
+    showb (LineHeightLength l)     = showb l
+    showb (LineHeightPercentage p) = jsDouble p <> B.singleton '%'
 
 -------------------------------------------------------------------------------
 
@@ -651,19 +646,23 @@ readFontFamily quoted = do
          _ | ciName == mk "monospace"  -> MonospaceFamily
          _ | ciName == mk "cursive"    -> CursiveFamily
          _ | ciName == mk "fantasy"    -> FantasyFamily
-         _otherwise                    -> FontFamilyName $ T.pack name
+         _otherwise                    -> FontFamilyName $ TS.pack name
 
-instance Show FontFamily where
-    showsPrec d (FontFamilyName name) = showsPrec d name
-    showsPrec _ SerifFamily           = showString "serif"
-    showsPrec _ SansSerifFamily       = showString "sans-serif"
-    showsPrec _ MonospaceFamily       = showString "monospace"
-    showsPrec _ CursiveFamily         = showString "cursive"
-    showsPrec _ FantasyFamily         = showString "fantasy"
+instance S.Show FontFamily where
+    showsPrec p = (++) . toString . showbPrec p
+    showList    = (++) . toString . showbList
+
+instance T.Show FontFamily where
+    showb (FontFamilyName name) = showb name
+    showb SerifFamily           = "serif"
+    showb SansSerifFamily       = "sans-serif"
+    showb MonospaceFamily       = "monospace"
+    showb CursiveFamily         = "cursive"
+    showb FantasyFamily         = "fantasy"
     
     -- Omit the square brackets when showing a list of font families so that
     -- it matches the CSS syntax.
-    showList = mconcat . intersperse (showChar ',') . map shows
+    showbList = jsList showb
 
 -------------------------------------------------------------------------------
 

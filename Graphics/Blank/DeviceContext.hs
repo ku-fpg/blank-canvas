@@ -6,10 +6,11 @@ import           Control.Concurrent.STM
 import           Data.Set (Set)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
-import qualified Data.Text as T
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
+
+import           Text.Show.Text (Builder, toText)
 
 import qualified Web.Scotty.Comet as KC
 
@@ -44,9 +45,9 @@ devicePixelRatio ::  DeviceContext -> Double
 devicePixelRatio = ctx_devicePixelRatio
 
 -- | internal command to send a message to the canvas.
-sendToCanvas :: DeviceContext -> ShowS -> IO ()
+sendToCanvas :: DeviceContext -> Builder -> IO ()
 sendToCanvas cxt cmds = do
-        KC.send (theComet cxt) $ "try{" <> T.pack (cmds "}catch(e){alert('JavaScript Failure: '+e.message);}")
+        KC.send (theComet cxt) . toText $ "try{" <> cmds <> "}catch(e){alert('JavaScript Failure: '+e.message);}"
 
 -- | wait for any event. blocks.
 wait :: DeviceContext -> IO Event

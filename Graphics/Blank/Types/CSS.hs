@@ -1,18 +1,21 @@
-{-# LANGUAGE NoImplicitPrelude, TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
-import Data.Functor
-import Data.String
+import           Data.Functor ((<$))
+import           Data.Monoid ((<>))
+import           Data.String
 
-import Graphics.Blank.Parser
+import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Parser
 
-import Numeric
+import           Prelude hiding (Show, rem)
 
-import Prelude hiding (rem)
-
-import Text.Read (Read(..), readListPrecDefault)
-import Text.ParserCombinators.ReadP (choice)
-import Text.ParserCombinators.ReadPrec (lift)
+import           Text.ParserCombinators.ReadP (choice)
+import           Text.ParserCombinators.ReadPrec (lift)
+import           Text.Read (Read(..), readListPrecDefault)
+import qualified Text.Show as S (Show)
+import qualified Text.Show.Text as T (Show)
+import           Text.Show.Text (showb, showbPrec, toString)
 
 -- | Denotes CSS distance measurements, especially in the context of 'Font's.
 data Length = Em   { runLength :: Double } -- ^ The height of the current font.
@@ -119,24 +122,26 @@ instance Read Length where
             ]
     readListPrec = readListPrecDefault
 
-instance Show Length where
-    showsPrec _ l = jsDoubleS (runLength l) . showUnits
+instance S.Show Length where
+    showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show Length where
+    showb l = jsDouble (runLength l) <> showbUnits l
       where
-        showUnits = showString $ case l of
-            Em   _ -> "em"
-            Ex   _ -> "ex"
-            Ch   _ -> "ch"
-            Rem  _ -> "rem"
-            Vh   _ -> "vh"
-            Vw   _ -> "vw"
-            Vmin _ -> "vmin"
-            Vmax _ -> "vmax"
-            Px   _ -> "px"
-            Mm   _ -> "mm"
-            Cm   _ -> "cm"
-            In   _ -> "in"
-            Pt   _ -> "pt"
-            Pc   _ -> "pc"
+        showbUnits (Em   _) = "em"
+        showbUnits (Ex   _) = "ex"
+        showbUnits (Ch   _) = "ch"
+        showbUnits (Rem  _) = "rem"
+        showbUnits (Vh   _) = "vh"
+        showbUnits (Vw   _) = "vw"
+        showbUnits (Vmin _) = "vmin"
+        showbUnits (Vmax _) = "vmax"
+        showbUnits (Px   _) = "px"
+        showbUnits (Mm   _) = "mm"
+        showbUnits (Cm   _) = "cm"
+        showbUnits (In   _) = "in"
+        showbUnits (Pt   _) = "pt"
+        showbUnits (Pc   _) = "pc"
 
 -- | A value ranging from 0.0 to 100.0.
 type Percentage = Double
@@ -147,7 +152,3 @@ class PercentageProperty a where
 
 instance PercentageProperty Percentage where
     percent = id
-
--- | A generalized version of 'jsDouble' from Graphics.Blank.JavaScript
-jsDoubleS :: Double -> ShowS
-jsDoubleS = showFFloat $ Just 3

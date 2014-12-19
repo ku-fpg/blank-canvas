@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, GADTs, KindSignatures, CPP, BangPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE GADTs, OverloadedStrings, ScopedTypeVariables #-}
 
 -- | blank-canvas is a Haskell binding to the complete HTML5 Canvas
 --   API. blank-canvas allows Haskell users to write, in Haskell,
@@ -131,7 +131,7 @@ import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
-import           Data.Monoid ((<>))
+import           Data.Monoid ((<>), mempty)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Text (Text)
@@ -156,8 +156,14 @@ import           Network.Wai.Handler.Warp
 
 import           Paths_blank_canvas
 
+import           Prelude hiding (show)
+
 import           System.IO.Unsafe (unsafePerformIO)
 -- import           System.Mem.StableName
+
+import qualified Text.Show as S (show)
+import qualified Text.Show.Text as T (show)
+import           Text.Show.Text (Builder, showb, singleton)
 
 import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
@@ -204,7 +210,7 @@ blankCanvas opts actions = do
         KC.connect kc_opts $ \ kc_doc -> do
                 -- register the events we want to watch for
                 KC.send kc_doc $ T.unlines
-                   [ "register(" <> T.pack(show nm) <> ");"
+                   [ "register(" <> T.show nm <> ");"
                    | nm <- events opts
                    ]
 
@@ -230,7 +236,7 @@ blankCanvas opts actions = do
                          }
 
                 (actions $ cxt1) `catch` \ (e :: SomeException) -> do
-                        print ("Exception in blank-canvas application:"  :: String)
+                        print ("Exception in blank-canvas application:" :: String)
                         print e
                         throw e
 
@@ -263,29 +269,30 @@ blankCanvas opts actions = do
 
 send :: DeviceContext -> Canvas a -> IO a
 send cxt commands =
-      send' (deviceCanvasContext cxt) commands id
+      send' (deviceCanvasContext cxt) commands mempty
   where
-      sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
       sendBind c (Return a)      k cmds = send' c (k a) cmds
       sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
-      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
+      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
+      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
       sendBind c (Function func) k cmds = sendFunc c func k cmds
       sendBind c (Query query)   k cmds = sendQuery c query k cmds
       sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
       sendBind c MyContext       k cmds = send' c (k c) cmds
 
-      sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
       sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
 
+      sendGradient :: CanvasContext -> Function a -> (CanvasGradient -> Canvas b) -> Builder -> IO b
       sendGradient c q k cmds = do
         gId <- atomically getUniq
-        send' c (k $ CanvasGradient gId) (cmds 
-          . (("var gradient_" ++ show gId ++ " = " ++ showJS c ++ ".") ++) 
-          . shows q . (";" ++))
+        send' c (k $ CanvasGradient gId) $ cmds <> "var gradient_"
+            <> showb gId     <> " = "   <> jsCanvasContext c
+            <> singleton '.' <> showb q <> singleton ';'
 
-      sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> (String -> String) -> IO b
+      sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> Builder -> IO b
       sendQuery c query k cmds = do
           case query of
             NewImage url -> do
@@ -298,14 +305,13 @@ send cxt commands =
           -- send the com
           uq <- atomically $ getUniq
           -- The query function returns a function takes the unique port number of the reply.
-          sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ "," ++ showJS c ++ ");") ++))
+          sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
           v <- KC.getReply (theComet cxt) uq
           case parse (parseQueryResult query) v of
             Error msg -> fail msg
-            Success a -> do
-                    send' c (k a) id
+            Success a -> send' c (k a) mempty
 
-      send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
+      send' :: CanvasContext -> Canvas a -> Builder -> IO a
       -- Most of these can be factored out, except return
       send' c (Bind m k)            cmds = sendBind c m k cmds
       send' _ (With c m)            cmds = send' c m cmds  -- This is a bit of a hack
@@ -333,7 +339,7 @@ mimeTypes filePath
   | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
   | ".png" `L.isSuffixOf` filePath = return "image/png"
   | ".gif" `L.isSuffixOf` filePath = return "image/gif"
-  | otherwise = fail $ "do not understand mime type for : " ++ show filePath
+  | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
 
 -------------------------------------------------
 

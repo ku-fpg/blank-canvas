@@ -1,9 +1,50 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 module Graphics.Blank.Font
     ( -- * Overloaded @font@
       font
     , CanvasFont(..)
-    , module Graphics.Blank.Types.Font
+      -- * @font@
+    , Font(..)
+    , defFont
+    , caption
+    , icon
+    , menu
+    , messageBox
+    , smallCaption
+    , statusBar
+    -- * @font-style@
+    , FontStyle(..)
+    , italic
+    , oblique
+    -- * @font-variant@
+    , FontVariant(..)
+    , smallCaps
+    -- * @font-weight@
+    , FontWeight(..)
+    , bold
+    , bolder
+    , lighter
+    -- * @font-size@
+    , FontSize(..)
+    , xxSmall
+    , xSmall
+    , small
+    , medium
+    , large
+    , xLarge
+    , xxLarge
+    , larger
+    , smaller
+    -- * @line-height@
+    , LineHeight(..)
+    -- * @font-family@
+    , FontFamily(..)
+    , serif
+    , sansSerif
+    , monospace
+    , cursive
+    , fantasy
+    -- * Normal values
+    , NormalProperty(..)
     -- * Lengths
     , Length(..)
     , LengthProperty(..)
@@ -27,7 +68,6 @@ module Graphics.Blank.Font
     ) where
 
 import Graphics.Blank.Generated
-import Graphics.Blank.JavaScript
 import Graphics.Blank.Types.CSS
 import Graphics.Blank.Types.Font
 

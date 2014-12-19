@@ -62,7 +62,7 @@ while(<F>) {
 			$dsl .= "$name :: $type\n";
 			if ($args eq "") {
 				$dsl .= "$name () = Method $cmd\n";
-				$show .= "  show $cmd = \"$name()\"\n";
+				$show .= "  showb $cmd = \"$name()\"\n";
 			} else {
 				$dsl .= "$name = Method . $cmd\n";
 				@ins = ();
@@ -71,11 +71,11 @@ while(<F>) {
 					push(@ins,"a$n");
 					$n++;
  				}
- 				$show .= "  show ($cmd (" . join(',',@ins) . ")) = \"$name";
+ 				$show .= "  showb ($cmd (" . join(',',@ins) . ")) = \"$name";
 				if (defined $isAssign{$cmd}) {
 				  $show .= " = ";
 				} 
-				$show .= "(\" ++ ";
+				$show .= "(\" <> ";
 				@outs = ();
 				$n = 1;
 				for $arg (@args) {
@@ -88,8 +88,8 @@ while(<F>) {
                                      }
 				     $n++;
 				}
-				$show .= join(" ++ \",\" ++ ",@outs);
-				$show .= " ++ \")\"\n";
+				$show .= join(" <> singleton ',' <> ",@outs);
+				$show .= " <> singleton ')'\n";
 			}
 
 		}
@@ -111,15 +111,29 @@ while(<F>) {
 #print "$show\n";
 
 open(G,">Graphics/Blank/Generated.hs");
+print G "{-# LANGUAGE OverloadedStrings #-}\n";
 print G "{-# OPTIONS_GHC -fno-warn-orphans #-}\n";
 print G "module Graphics.Blank.Generated where\n";
 print G "\n";
-print G "import Graphics.Blank.Canvas\n";
-print G "import Graphics.Blank.JavaScript\n";
-print G "import Data.Text (Text)\n";
+
+print G "import           Data.Monoid ((<>))\n";
+print G "import           Data.Text (Text)\n";
+print G "\n";
+print G "import           Graphics.Blank.Canvas\n";
+print G "import           Graphics.Blank.JavaScript\n";
+print G "import           Graphics.Blank.Types.Font\n";
+print G "\n";
+print G "import           Prelude hiding (Show)\n";
+print G "\n";
+print G "import qualified Text.Show as S (Show)\n";
+print G "import qualified Text.Show.Text as T (Show)\n";
+print G "import           Text.Show.Text (showb, showbPrec, singleton, toString)\n";
 
 print G "\n";
-print G "instance Show Method where\n";
+print G "instance S.Show Method where\n";
+print G "  showsPrec p = (++) . toString . showbPrec p\n";
+print G "\n";
+print G "instance T.Show Method where\n";
 print G "$show\n";
 print G "-- DSL\n$dsl\n";
 
