@@ -211,4 +211,3 @@ transform = Method . Transform
 
 translate :: (Double, Double) -> Canvas ()
 translate = Method . Translate
-
