@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, NoImplicitPrelude, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE GADTs, OverloadedStrings, ScopedTypeVariables #-}
 
 -- | blank-canvas is a Haskell binding to the complete HTML5 Canvas
 --   API. blank-canvas allows Haskell users to write, in Haskell,

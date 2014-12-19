@@ -1,4 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 module Graphics.Blank.Font
     ( -- * Overloaded @font@
       font

@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude, OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
 import           Data.Functor ((<$))

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, KindSignatures, NoImplicitPrelude, OverlappingInstances,
+{-# LANGUAGE FlexibleInstances, GADTs, KindSignatures, OverlappingInstances,
              OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
 
 module Graphics.Blank.Canvas where

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, NoImplicitPrelude, OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.JavaScript where
 
