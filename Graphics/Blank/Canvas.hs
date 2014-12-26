@@ -179,7 +179,6 @@ instance Show (Query a) where
                                    ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
   show Sync                         = "Sync"
   show (NewAudio txt)               = "NewAudio(" ++ showJS txt ++ ")" -- NickS addition
-  -- show (NewAudio _)               = "NewAudio(1,2)" -- NickS addition
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a

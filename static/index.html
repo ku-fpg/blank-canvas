@@ -145,13 +145,9 @@
                     var count = sounds.push(audio);
 		    audio.onload = function () {
 				  $.kc.reply(u,[count - 1,0,0]); // The 0 is filler, need to 
-				  }                              // figure out how parseQueryResults and parseJSON work
+                    };                                           // figure out how parseQueryResults and parseJSON work
+	            audio.onerror = function() { alert("Audio " + src + "not found.\nAdd as a URL to fix this.");};
                     audio.src = src;
-                    //var canvas = document.createElement('canvas');
-                    //canvas.width = w;
-                    //canvas.height = h;
-                    //var count = canvasbuffers.push(canvas.getContext("2d"));
-                    //$.kc.reply(u,[count - 1,w,h]);
                 }
             }
 
