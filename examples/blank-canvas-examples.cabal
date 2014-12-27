@@ -33,7 +33,7 @@ executable blank-canvas-example-trivial
     buildable:	       False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5
+                       blank-canvas == 0.5
   hs-source-dirs:      trivial
   default-language:    Haskell2010
   GHC-options:         -threaded -Wall
@@ -45,7 +45,7 @@ executable blank-canvas-example-html5canvastutorial
     buildable:	       False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5,
+                       blank-canvas == 0.5,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      html5canvastutorial
   default-language:    Haskell2010
@@ -71,7 +71,7 @@ executable blank-canvas-example-rotate-square
     buildable:	       False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5
+                       blank-canvas == 0.5
   hs-source-dirs:      rotate-square
   default-language:    Haskell2010
   GHC-options:         -threaded -Wall
@@ -83,7 +83,7 @@ executable blank-canvas-example-splat
     buildable:         False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5
+                       blank-canvas == 0.5
   hs-source-dirs:      splat
   default-language:    Haskell2010
   GHC-options:         -threaded -Wall
@@ -95,7 +95,7 @@ executable blank-canvas-example-square
     buildable:	       False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5
+                       blank-canvas == 0.5
   hs-source-dirs:      square
   default-language:    Haskell2010
   GHC-options:         -threaded -Wall
@@ -107,7 +107,7 @@ executable blank-canvas-example-text
     buildable:         False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5,
+                       blank-canvas == 0.5,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      text
   default-language:    Haskell2010
@@ -120,7 +120,7 @@ executable blank-canvas-example-tictactoe
     buildable:	       False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5,
+                       blank-canvas == 0.5,
                        containers   >= 0.5 && < 0.6,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      tictactoe
@@ -135,7 +135,7 @@ executable blank-canvas-example-bounce
     buildable:	       False
   main-is:             Main.hs
   build-depends:       base         >= 4.6 && < 4.8,
-                       blank-canvas >= 0.5,
+                       blank-canvas == 0.5,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      bounce
   default-language:    Haskell2010
