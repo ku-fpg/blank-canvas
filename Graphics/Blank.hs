@@ -99,6 +99,8 @@ module Graphics.Blank
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
+        , newAudio --NickS addition
+        , AudioInfo -- NickS addition
         , with
         , myCanvasContext
         , deviceCanvasContext

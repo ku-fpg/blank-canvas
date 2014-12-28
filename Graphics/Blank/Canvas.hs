@@ -178,26 +178,28 @@ data Query :: * -> * where
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
+        NewAudio             :: Text                                    -> Query AudioInfo --NickS addition
 
-instance S.Show (Query a) where
-  showsPrec p = (++) . toString . showbPrec p
+data DeviceAttributes = DeviceAttributes Int Int Double
+        deriving Show
 
-instance T.Show (Query a) where
-  showb Device                       = "Device"
-  showb ToDataURL                    = "ToDataURL"
-  showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
-  showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
-                                                        <> jsDouble y <> singleton ')'
-  showb (NewImage url)               = "NewImage(" <> jsText url <> singleton ')'
-  showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
-                                              <> jsRepeatDirection dir <> singleton ')'
-  showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
-                                                    <> jsInt y <> singleton ')'
-  showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
-                                                       <> jsDouble sy <> singleton ','
-                                                       <> jsDouble sw <> singleton ','
-                                                       <> jsDouble sh <> singleton ')'
-  showb Sync                         = "Sync"
+-- | The 'width' argument of 'TextMetrics' can trivially be projected out.
+data TextMetrics = TextMetrics Double
+        deriving Show
+
+instance Show (Query a) where
+  show Device                       = "Device"
+  show ToDataURL                    = "ToDataURL"
+  show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
+  show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
+  show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
+                                    ++ jsRepeatDirection dir ++ ")"
+  show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
+  show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
+                                   ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
+  show Sync                         = "Sync"
+  show (NewAudio txt)               = "NewAudio(" ++ showJS txt ++ ")" -- NickS addition
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -212,6 +214,7 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
+parseQueryResult (NewAudio {}) o              = uncurry3 AudioInfo <$> parseJSON o                                           
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
@@ -239,6 +242,9 @@ isPointInPath = Query . IsPointInPath
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
+
+newAudio :: Text -> Canvas AudioInfo
+newAudio = Query . NewAudio
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient
