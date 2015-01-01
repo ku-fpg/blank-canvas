@@ -180,26 +180,47 @@ data Query :: * -> * where
         Sync                 ::                                            Query ()
         NewAudio             :: Text                                    -> Query AudioInfo --NickS addition
 
-data DeviceAttributes = DeviceAttributes Int Int Double
-        deriving Show
+-- data DeviceAttributes = DeviceAttributes Int Int Double
+--         deriving Show
 
--- | The 'width' argument of 'TextMetrics' can trivially be projected out.
-data TextMetrics = TextMetrics Double
-        deriving Show
+-- -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
+-- data TextMetrics = TextMetrics Double
+--         deriving Show
 
-instance Show (Query a) where
-  show Device                       = "Device"
-  show ToDataURL                    = "ToDataURL"
-  show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
-  show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
-  show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
-                                    ++ jsRepeatDirection dir ++ ")"
-  show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
-  show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
-                                   ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
-  show Sync                         = "Sync"
-  show (NewAudio txt)               = "NewAudio(" ++ showJS txt ++ ")" -- NickS addition
+-- instance Show (Query a) where
+--   show Device                       = "Device"
+--   show ToDataURL                    = "ToDataURL"
+--   show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
+--   show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
+--   show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
+--   show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
+--                                     ++ jsRepeatDirection dir ++ ")"
+--   show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
+--   show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
+--                                    ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
+--   show Sync                         = "Sync"
+--   show (NewAudio txt)               = "NewAudio(" ++ showJS txt ++ ")" -- NickS addition
+
+instance S.Show (Query a) where
+  showsPrec p = (++) . toString . showbPrec p
+
+instance T.Show (Query a) where
+  showb Device                       = "Device"
+  showb ToDataURL                    = "ToDataURL"
+  showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
+  showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
+                                                        <> jsDouble y <> singleton ')'
+  showb (NewImage url)               = "NewImage(" <> jsText url <> singleton ')'
+  showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
+                                                        <> jsRepeatDirection dir <> singleton ')'
+  showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
+                                                    <> jsInt y <> singleton ')'
+  showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
+                                                       <> jsDouble sy <> singleton ','
+                                                       <> jsDouble sw <> singleton ','
+                                                       <> jsDouble sh <> singleton ')'
+  showb Sync                         = "Sync"
+  showb (NewAudio txt)               = "NewAudio(" <> jsText txt <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a

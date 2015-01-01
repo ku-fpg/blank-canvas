@@ -1,6 +1,7 @@
 module Graphics.Blank.Parser where
 
 import Control.Applicative hiding (many, optional)
+import Control.Monad (void)
 
 import Data.CaseInsensitive (mk)
 import Data.Char

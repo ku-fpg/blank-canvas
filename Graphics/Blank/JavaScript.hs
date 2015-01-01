@@ -65,6 +65,10 @@ $(deriveShow ''CanvasPattern)
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
 
+-- data AudioInfo = AudioInfo Int Int Int deriving (Show,Eq,Ord)
+data AudioInfo = AudioInfo !Int !Int !Int deriving (Eq, Ord, S.Show)
+$(deriveShow ''AudioInfo)
+
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
     showbPrec p v = showbParen (p > appPrec) $ "fromList " <> showb (toList v)
 
@@ -88,12 +92,16 @@ instance Image CanvasContext where
     width  (CanvasContext _ w _) = fromIntegral w
     height (CanvasContext _ _ h) = fromIntegral h
 
-class Audio a where -- NickS addition
-  jsAudio    :: a -> String
-  audLength  :: Num b => a -> b
-  filler     :: Num b => a -> b
+-- class Audio a where -- NickS addition
+--   jsAudio    :: a -> String
+--   audLength  :: Num b => a -> b
+--   filler     :: Num b => a -> b
 
-data AudioInfo = AudioInfo Int Int Int deriving (Show,Eq,Ord)
+class Audio a where -- NickS addition
+    jsAudio    :: a -> Builder
+    audLength  :: Num b => a -> b
+    filler     :: Num b => a -> b    
+
 
 instance Audio AudioInfo where         
   jsAudio                     = jsAudioInfo
@@ -411,10 +419,10 @@ jsAlphaColour aCol
     RGB r g b = toSRGB24 rgbCol
 
 instance JSArg AudioInfo where --NickS addition
-  showJS (AudioInfo n _ _ ) = "sounds[" ++ show n ++ "]"
+  showbJS = jsAudioInfo
 
-jsAudioInfo :: AudioInfo -> String
-jsAudioInfo = showJS
+jsAudioInfo :: AudioInfo -> Builder
+jsAudioInfo (AudioInfo n _ _ ) = "sounds[" <> showb n <> B.singleton ']'
 
 instance JSArg Bool where
     showbJS = jsBool
