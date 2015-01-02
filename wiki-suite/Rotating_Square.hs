@@ -26,7 +26,7 @@ loop context n = do
                 strokeStyle "green"
                 stroke()
                 restore()
-        threadDelay (20 * 1000)	
+        threadDelay (20 * 1000)
         v <- wiki $ return (round (n*100) :: Int)
         wiki $ whenM (v `mod` 2 == 0) $ do
                 file <- wiki $ anim_png "Rotating_Square"

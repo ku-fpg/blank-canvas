@@ -10,7 +10,7 @@ main = blankCanvas 3000 $ \ context -> do
         let rectWidth = 150;
         let rectHeight = 75;
         translate(width context / 2, height context / 2);
-	rotate (pi/4);
+        rotate (pi/4);
 
         fillStyle "blue";
         fillRect(rectWidth / (-2), rectHeight / (-2), rectWidth, rectHeight);

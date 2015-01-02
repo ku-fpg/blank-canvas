@@ -189,18 +189,16 @@ instance S.Show Font where
 instance T.Show Font where
     showb (FontProperties style variant weight size height' family)
         = showb style
-       <> space
+       <> showbSpace
        <> showb variant
-       <> space
+       <> showbSpace
        <> showb weight
-       <> space
+       <> showbSpace
        <> showb size
        <> B.singleton '/'
        <> showb height'
-       <> space
+       <> showbSpace
        <> showb family
-      where
-        space = B.singleton ' '
     showb CaptionFont      = "caption"
     showb IconFont         = "icon"
     showb MenuFont         = "menu"

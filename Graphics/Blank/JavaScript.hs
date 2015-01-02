@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.JavaScript where
 
@@ -9,7 +9,10 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.Monoid ((<>), mconcat)
+#if !(MIN_VERSION_base(4,8,0))
+import           Data.Monoid (mconcat)
+#endif
+import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
 import           Data.Text (Text)
@@ -18,8 +21,6 @@ import qualified Data.Text.Lazy.Builder as B (singleton)
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector, Unbox, toList)
 import           Data.Word (Word8)
-
-import           GHC.Show (appPrec)
 
 import           Graphics.Blank.Parser
 
@@ -65,8 +66,9 @@ $(deriveShow ''CanvasPattern)
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
 
+-- Borrowed from @text-show-instances@
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
-    showbPrec p v = showbParen (p > appPrec) $ "fromList " <> showb (toList v)
+    showbPrec p = showbUnary "fromList" p . toList
 
 -------------------------------------------------------------
 
@@ -454,7 +456,9 @@ instance JSArg ImageData where
     showbJS = jsImageData
 
 jsImageData :: ImageData -> Builder
-jsImageData (ImageData w h d) = "ImageData(" <> showb w <> B.singleton ',' <> showb h <> ",[" <> vs <> "])"
+jsImageData (ImageData w h d) = "ImageData(" <> showb w
+    <> B.singleton ',' <> showb h
+    <> ",[" <> vs <> "])"
   where
     vs = jsList showb $ V.toList d
 

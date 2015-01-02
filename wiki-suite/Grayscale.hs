@@ -24,7 +24,7 @@ main = do
                                  ( 0.34 * fromIntegral r 
                                  + 0.5 * fromIntegral g
                                  + 0.16 * fromIntegral b :: Double)
-                  in [brightness,brightness,brightness,a]	     
+                  in [brightness,brightness,brightness,a] 
                 | (r,g,b,a) <- group4 $ V.toList $ v
                 ]
         

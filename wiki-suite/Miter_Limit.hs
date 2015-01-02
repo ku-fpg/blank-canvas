@@ -24,8 +24,8 @@ main = blankCanvas 3000 $ \ context -> do
     beginPath()
     moveTo(0,100)
     sequence_ [ lineTo((fromIntegral i ** 1.5)*2,75+(if i `mod` 2 == 0 then 25 else -25))
-    	      | i <- [0..20] :: [Int]
-	      ]
+              | i <- [0..20] :: [Int]
+              ]
     stroke();
 
   wiki $ snapShot context "images/Miter_Limit.png"

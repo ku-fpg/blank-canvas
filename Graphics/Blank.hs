@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE CPP, GADTs, OverloadedStrings, ScopedTypeVariables #-}
 
 -- | blank-canvas is a Haskell binding to the complete HTML5 Canvas
 --   API. blank-canvas allows Haskell users to write, in Haskell,
@@ -131,7 +131,10 @@ import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
-import           Data.Monoid ((<>), mempty)
+#if !(MIN_VERSION_base(4,8,0))
+import           Data.Monoid (mempty)
+#endif
+import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Text (Text)

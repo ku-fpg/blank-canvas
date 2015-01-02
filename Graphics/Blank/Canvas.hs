@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, GADTs, KindSignatures, OverlappingInstances,
+{-# LANGUAGE FlexibleInstances, GADTs, KindSignatures,
              OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
 
 module Graphics.Blank.Canvas where
@@ -259,4 +259,4 @@ getImageData = Query . GetImageData
 
 -- | Send all commands to the browser, wait for the browser to ack, then continue.
 sync :: Canvas ()
-sync = Query $ Sync
+sync = Query Sync

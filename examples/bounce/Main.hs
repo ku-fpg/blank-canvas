@@ -55,7 +55,7 @@ go context = do
                      [ showBall xy col
                      | (xy,_,col) <- balls
                      ]
-             threadDelay (20 * 1000)	                   
+             threadDelay (20 * 1000) 
 
              es <- flush context
              if (null es) then return () else print es

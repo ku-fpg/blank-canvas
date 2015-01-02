@@ -13,7 +13,7 @@ main = blankCanvas 3000 $ \ context -> do -- start blank canvas on port 3000
                 strokeStyle "red"
                 stroke()                  -- this draws the ink into the canvas
 
-		drawImage(context,[50,50])
+                drawImage(context,[50,50])
 
         wiki $ snapShot context "images/Draw_Device.png"
         wiki $ close context

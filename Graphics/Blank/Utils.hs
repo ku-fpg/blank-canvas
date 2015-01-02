@@ -44,8 +44,8 @@ infixr 0 #
 --
 readDataURL :: Text -> FilePath -> IO Text
 readDataURL mime_type filePath = do
-	    dat <- B.readFile filePath
-	    return $ "data:" <> mime_type <> ";base64," <> decodeUtf8 (encode dat)
+    dat <- B.readFile filePath
+    return $ "data:" <> mime_type <> ";base64," <> decodeUtf8 (encode dat)
 
 -- | Find the mime type for a data URL.
 --

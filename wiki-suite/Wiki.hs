@@ -29,7 +29,7 @@ snapShot context fileName = do
                 tempCanvas <- newCanvas (round (width context + 20  :: Double),
                                          round (height context + 20 :: Double))
 
-		top <- myCanvasContext
+                top <- myCanvasContext
 
                 with tempCanvas $ do
                         -- print a border, because we can (looks better in wiki)
@@ -70,7 +70,7 @@ snapShot context fileName = do
                         drawImage(top,[1,1])
                         toDataURL() -- of tempCanvas
 
-        writeDataURL fileName txt			
+        writeDataURL fileName txt
 
 wiki :: a -> a
 wiki = id
@@ -113,9 +113,9 @@ count = unsafePerformIO $ newTVarIO 1
 counter :: (Int -> Bool) -> (Int -> IO ()) -> IO ()
 counter p k = do
     n <- atomically $ do
-       	    v <- readTVar count
-	    writeTVar count $! v + 1
-	    return v
+           v <- readTVar count
+           writeTVar count $! v + 1
+           return v
     if p n then k n else return ()
 
 

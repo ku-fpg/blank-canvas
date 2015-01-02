@@ -15,11 +15,11 @@ main = blankCanvas 3000 $ \ context -> do
         lineWidth 15
         strokeStyle "black"
 
-	beginPath()
+        beginPath()
         arc(centerX - 50, centerY, radius, startingAngle, endingAngle, False)
         stroke()
 
-	beginPath()
+        beginPath()
         strokeStyle "blue"
         arc(centerX + 50, centerY, radius, startingAngle, endingAngle, True)
         stroke()

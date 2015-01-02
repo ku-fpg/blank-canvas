@@ -27,5 +27,5 @@ loop context n = do
                 strokeStyle "green"
                 stroke()
                 restore()
-        threadDelay (20 * 1000)	
+        threadDelay (20 * 1000)
         loop context (n + 0.01)

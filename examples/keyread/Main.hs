@@ -10,9 +10,9 @@ import           Data.Monoid((<>))
 import           Graphics.Blank
 
 data State = State
-     	     { keys :: [Int]    -- key *codes* for pressed keys
-     	     , step :: Int
-     	     }
+             { keys :: [Int]    -- key *codes* for pressed keys
+             , step :: Int
+             }
      deriving Show
 
 main :: IO ()
@@ -38,11 +38,11 @@ control :: DeviceContext -> State -> IO a
 control context state = do
         event <- wait context
         let down_keys = case (eType event,eWhich event) of
-	    	          ("keydown",Just c) -> [c]
-			  _ -> []
+                          ("keydown",Just c) -> [c]
+                          _ -> []
         let up_keys = case (eType event,eWhich event) of
-	    	          ("keyup",Just c) -> [c]
-			  _ -> []
+                          ("keyup",Just c) -> [c]
+                          _ -> []
         let current_keys = [ k | k <- nub (keys state ++ down_keys), not (k `elem` up_keys) ]
         let state' = state { step = step state + 1, keys = current_keys }
         loop context state'
