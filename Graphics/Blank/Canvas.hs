@@ -180,27 +180,6 @@ data Query :: * -> * where
         Sync                 ::                                            Query ()
         NewAudio             :: Text                                    -> Query AudioInfo --NickS addition
 
--- data DeviceAttributes = DeviceAttributes Int Int Double
---         deriving Show
-
--- -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
--- data TextMetrics = TextMetrics Double
---         deriving Show
-
--- instance Show (Query a) where
---   show Device                       = "Device"
---   show ToDataURL                    = "ToDataURL"
---   show (MeasureText txt)            = "MeasureText(" ++ showJS txt ++ ")"
---   show (IsPointInPath (x,y))        = "IsPointInPath(" ++ showJS x ++ "," ++ showJS y ++ ")"
---   show (NewImage url)               = "NewImage(" ++ showJS url ++ ")"
---   show (CreatePattern (img,dir))    = "CreatePattern(" ++ jsImage img ++ "," 
---                                     ++ jsRepeatDirection dir ++ ")"
---   show (NewCanvas (x,y))            = "NewCanvas(" ++ showJS x ++ "," ++ showJS y ++ ")"
---   show (GetImageData (sx,sy,sw,sh)) = "GetImageData(" ++ showJS sx ++ "," ++ showJS sy 
---                                    ++ "," ++ showJS sw ++ "," ++ showJS sh ++ ")"
---   show Sync                         = "Sync"
---   show (NewAudio txt)               = "NewAudio(" ++ showJS txt ++ ")" -- NickS addition
-
 instance S.Show (Query a) where
   showsPrec p = (++) . toString . showbPrec p
 

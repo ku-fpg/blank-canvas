@@ -302,6 +302,11 @@ send cxt commands =
               atomically $ do
                   db <- readTVar (localFiles cxt)
                   writeTVar (localFiles cxt) $ S.insert url' $ db
+            NewAudio url -> do
+              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
+              atomically $ do
+                  db <- readTVar (localFiles cxt)
+                  writeTVar (localFiles cxt) $ S.insert url' $ db
             _ -> return ()
 
           -- send the com
@@ -341,6 +346,9 @@ mimeTypes filePath
   | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
   | ".png" `L.isSuffixOf` filePath = return "image/png"
   | ".gif" `L.isSuffixOf` filePath = return "image/gif"
+  -- | ".mp3" `L.isSuffixOf` filePath = return "audio/mpeg"
+  -- | ".ogg" `L.isSuffixOf` filePath = return "audio/ogg"
+  -- | ".wav" `L.isSuffixOf` filePath = return "audio/vnd.wave"
   | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
 
 -------------------------------------------------
