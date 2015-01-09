@@ -20,7 +20,7 @@ import qualified Web.Scotty.Comet as KC
 -- rather 'getContext' is implied (when using 'send').
 
 data DeviceContext = DeviceContext
-        { theComet             :: KC.Document     -- ^ The mechansims for sending commands
+        { theComet             :: KC.Document     -- ^ The mechanisms for sending commands
         , eventQueue           :: EventQueue      -- ^ A single (typed) event queue
         , ctx_width            :: !Int
         , ctx_height           :: !Int
