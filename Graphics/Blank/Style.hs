@@ -532,7 +532,7 @@ lightgray = Names.lightgray
 lightgreen :: Colour Double
 lightgreen = Names.lightgreen
 
--- | @#D3D3D3@, @rgb(211, 211, 211)@, @hsl(0, 0%, 83%)@. Same as 'lightgrey'.
+-- | @#D3D3D3@, @rgb(211, 211, 211)@, @hsl(0, 0%, 83%)@. Same as 'lightgray'.
 lightgrey :: Colour Double
 lightgrey = Names.lightgrey
 
