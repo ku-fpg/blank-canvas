@@ -16,6 +16,8 @@ module Graphics.Blank.Style
         , hsl
         , hsla
           -- * @colour@ reexports
+        , Colour
+        , AlphaColour
         , readColourName
         , aliceblue
         , antiquewhite
