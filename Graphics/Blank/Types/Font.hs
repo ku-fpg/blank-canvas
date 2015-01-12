@@ -58,7 +58,7 @@ data Font = FontProperties
   | MessageBoxFont   -- ^ The font used in dialog boxes.
   | SmallCaptionFont -- ^ The font used for labeling small controls.
   | StatusBarFont    -- ^ The font used in window status bars.
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- |
 -- Creates a new font from the 'FontFamily' list, using the 'Default' instances
@@ -213,7 +213,7 @@ data FontStyle = NormalStyle  -- ^ Selects a font classified as normal (default)
                | ItalicStyle  -- ^ Selects a font that is labeled italic, or if one is not available,
                               --   one labeled oblique.
                | ObliqueStyle -- ^ Selects a font that is labeled oblique.
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'ItalicStyle'.
 italic :: FontStyle
@@ -254,7 +254,7 @@ instance T.Show FontStyle where
 -- | Specifies the face of a 'Font'.
 data FontVariant = NormalVariant    -- ^ A normal font face (default).
                  | SmallCapsVariant -- ^ A font face with small capital letters for lowercase characters.
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'SmallCapsVariant'.
 smallCaps :: FontVariant
@@ -306,7 +306,7 @@ data FontWeight = NormalWeight -- ^ Default.
                 | Weight700
                 | Weight800
                 | Weight900
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'BoldWeight'.
 bold :: FontWeight
@@ -406,7 +406,7 @@ data FontSize = XXSmallSize
               | SmallerSize
               | FontSizeLength Length
               | FontSizePercentage Percentage
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'XXSmallSize'.
 xxSmall :: FontSize
@@ -504,7 +504,7 @@ data LineHeight = NormalLineHeight -- ^ Default.
                 | LineHeightNumber Double
                 | LineHeightLength Length
                 | LineHeightPercentage Percentage
-  deriving Eq
+  deriving (Eq, Ord)
 
 lineHeightError :: a
 lineHeightError = error "no arithmetic for line-height"
@@ -587,7 +587,7 @@ data FontFamily = FontFamilyName Text -- ^ The name of a custom font family.
                 | CursiveFamily       -- ^ A generic font family with cursive glyphs.
                 | FantasyFamily       -- ^ A generic font family where glyphs have
                                       --   decorative, playful representations.
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'SerifFamily'.
 serif :: FontFamily

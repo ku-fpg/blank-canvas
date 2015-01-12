@@ -32,7 +32,7 @@ data Length = Em   { runLength :: Double } -- ^ The height of the current font.
             | In   { runLength :: Double } -- ^ One inch (~2.54 centimeters).
             | Pt   { runLength :: Double } -- ^ One point (1/72 inches).
             | Pc   { runLength :: Double } -- ^ One pica (12 points).
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Designates CSS properties that can consist of a 'Length'.
 class LengthProperty a where

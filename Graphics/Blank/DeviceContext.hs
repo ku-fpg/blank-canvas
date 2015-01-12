@@ -26,7 +26,7 @@ data DeviceContext = DeviceContext
         , ctx_height           :: !Int
         , ctx_devicePixelRatio :: !Double
         , localFiles           :: TVar (Set Text) -- ^ approved local files
-        }
+        } deriving Eq
 
 instance Image DeviceContext where
   jsImage = jsImage . deviceCanvasContext

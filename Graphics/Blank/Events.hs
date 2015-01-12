@@ -32,7 +32,7 @@ data Event = Event
         , eType    :: EventName          -- "Describes the nature of the event." jquery
         , eWhich   :: Maybe Int          -- magic code for key presses
         }
-        deriving (Show)
+        deriving (Eq, Ord, Show)
 $(deriveShow ''Event)
 
 instance FromJSON Event where
