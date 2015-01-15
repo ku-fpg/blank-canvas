@@ -342,6 +342,7 @@ mimeTypes filePath
   | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
   | ".png" `L.isSuffixOf` filePath = return "image/png"
   | ".gif" `L.isSuffixOf` filePath = return "image/gif"
+  | ".svg" `L.isSuffixOf` filePath = return "image/svg+xml"
   | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
 
 -------------------------------------------------
