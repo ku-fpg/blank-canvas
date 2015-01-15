@@ -6,7 +6,8 @@ API changes
 API additions
  * A new ADT for `Font`s has been added in `Graphics.Blank.Font` that can be used in place of `Text`. For example, `"30pt Calibri"` is equivalent to `(defFont "Calibri") { fontSize = 30 # pt }`.
  * A generalized `font` function of type `CanvasFont canvasFont => canvasFont -> Canvas ()` was added to `Graphics.Blank.Font` that can accept a `Text` or `Font` argument. The `font` function in `Graphics.Blank` remains of type `Text -> Canvas ()`.
-* Added `Eq`, `Ord`, and `Show` instances for more data types
+ * Added `Eq`, `Ord`, and `Show` instances for more data types
+ * Added support for SVG images
 
 Additions
  * Allowed building with `base-4.8.0.0`
