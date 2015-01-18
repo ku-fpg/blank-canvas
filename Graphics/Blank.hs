@@ -346,9 +346,10 @@ mimeTypes filePath
   | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
   | ".png" `L.isSuffixOf` filePath = return "image/png"
   | ".gif" `L.isSuffixOf` filePath = return "image/gif"
-  -- | ".mp3" `L.isSuffixOf` filePath = return "audio/mpeg"
-  -- | ".ogg" `L.isSuffixOf` filePath = return "audio/ogg"
-  -- | ".wav" `L.isSuffixOf` filePath = return "audio/vnd.wave"
+  | ".mp3" `L.isSuffixOf` filePath = return "audio/mpeg"
+  | ".ogg" `L.isSuffixOf` filePath = return "audio/ogg"
+  | ".ogx" `L.isSuffixOf` filePath = return "audio/ogg"
+  | ".wav" `L.isSuffixOf` filePath = return "audio/wav"
   | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
 
 -------------------------------------------------

@@ -178,7 +178,7 @@ data Query :: * -> * where
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
-        NewAudio             :: Text                                    -> Query AudioInfo --NickS addition
+        NewAudio             :: Text                                    -> Query AudioInfo
 
 instance S.Show (Query a) where
   showsPrec p = (++) . toString . showbPrec p
@@ -214,7 +214,7 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
-parseQueryResult (NewAudio {}) o              = uncurry3 AudioInfo <$> parseJSON o                                           
+parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o                                           
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 

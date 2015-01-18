@@ -143,9 +143,10 @@
                 return function (u,c) {
                     var audio = new Audio();
                     var count = sounds.push(audio);
+                    var dur   = audio.duration;
                     audio.onload = function () {
-                                 $.kc.reply(u,[count - 1,0,0]); // The 0 is filler, need to 
-                   };                                           // figure out how parseQueryResults and parseJSON work
+                                 $.kc.reply(u,[count - 1,dur]);
+                   };
                     audio.onerror = function() { alert("Audio " + src + " not found.\nAdd as a URL to fix this.");};
                     audio.src = src;
                 }

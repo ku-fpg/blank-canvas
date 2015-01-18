@@ -66,7 +66,7 @@ data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
 
 -- data AudioInfo = AudioInfo Int Int Int deriving (Show,Eq,Ord)
-data AudioInfo = AudioInfo !Int !Int !Int deriving (Eq, Ord, S.Show)
+data AudioInfo = AudioInfo !Int !Double deriving (Eq, Ord, S.Show)
 $(deriveShow ''AudioInfo)
 
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
@@ -92,21 +92,13 @@ instance Image CanvasContext where
     width  (CanvasContext _ w _) = fromIntegral w
     height (CanvasContext _ _ h) = fromIntegral h
 
--- class Audio a where -- NickS addition
---   jsAudio    :: a -> String
---   audLength  :: Num b => a -> b
---   filler     :: Num b => a -> b
-
-class Audio a where -- NickS addition
+class Audio a where
     jsAudio    :: a -> Builder
-    audLength  :: Num b => a -> b
-    filler     :: Num b => a -> b    
-
+    duration   :: Fractional b => a -> b
 
 instance Audio AudioInfo where         
   jsAudio                     = jsAudioInfo
-  audLength (AudioInfo _ l _) = fromIntegral l
-  filler    (AudioInfo _ _ f) = fromIntegral f --This is included so that I can use uncurry3 for prelim testing
+  duration  (AudioInfo _ d)   = realToFrac d
 
 -- instance Element Video  -- Not supported
 
@@ -418,11 +410,11 @@ jsAlphaColour aCol
     rgbCol    = darken (recip a) $ aCol `over` black
     RGB r g b = toSRGB24 rgbCol
 
-instance JSArg AudioInfo where --NickS addition
+instance JSArg AudioInfo where
   showbJS = jsAudioInfo
 
 jsAudioInfo :: AudioInfo -> Builder
-jsAudioInfo (AudioInfo n _ _ ) = "sounds[" <> showb n <> B.singleton ']'
+jsAudioInfo (AudioInfo n _ ) = "sounds[" <> showb n <> B.singleton ']'
 
 instance JSArg Bool where
     showbJS = jsBool
