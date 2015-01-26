@@ -143,11 +143,15 @@
                 return function (u,c) {
                     var audio = new Audio();
                     var count = sounds.push(audio);
-                    var dur   = audio.duration;
-                    audio.onload = function () {
-                                 $.kc.reply(u,[count - 1,dur]);
-                   };
-                    audio.onerror = function() { alert("Audio " + src + " not found.\nAdd as a URL to fix this.");};
+                    // var dur   = audio.duration;
+                    //
+                    // I commented this out because there's a chance that the browser won't
+                    // know the audio duration until it's "loaded" (i.e., it can be played
+                    // through). Further testing might be wise.
+                    audio.oncanplaythrough = function () {
+                                 $.kc.reply(u,[count - 1,audio.duration]);
+                    };
+                    audio.onerror = function() { alert("Audio " + src + " not found.\nAdd as a URL to fix this."); };
                     audio.src = src;
                 }
             }
