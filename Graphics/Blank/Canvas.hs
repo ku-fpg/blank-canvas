@@ -178,6 +178,7 @@ data Query :: * -> * where
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
+        NewAudio             :: Text                                    -> Query AudioInfo
 
 instance S.Show (Query a) where
   showsPrec p = (++) . toString . showbPrec p
@@ -190,7 +191,7 @@ instance T.Show (Query a) where
                                                         <> jsDouble y <> singleton ')'
   showb (NewImage url)               = "NewImage(" <> jsText url <> singleton ')'
   showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
-                                              <> jsRepeatDirection dir <> singleton ')'
+                                                        <> jsRepeatDirection dir <> singleton ')'
   showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
                                                     <> jsInt y <> singleton ')'
   showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
@@ -198,6 +199,7 @@ instance T.Show (Query a) where
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
   showb Sync                         = "Sync"
+  showb (NewAudio txt)               = "NewAudio(" <> jsText txt <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -212,6 +214,7 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
+parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o                                           
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
@@ -239,6 +242,9 @@ isPointInPath = Query . IsPointInPath
 -- The assumption is you are using local images, so loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
+
+newAudio :: Text -> Canvas AudioInfo
+newAudio = Query . NewAudio
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient

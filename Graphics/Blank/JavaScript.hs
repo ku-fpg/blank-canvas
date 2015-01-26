@@ -66,6 +66,9 @@ $(deriveShow ''CanvasPattern)
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
 
+data AudioInfo = AudioInfo !Int !Double deriving (Eq, Ord, S.Show)
+$(deriveShow ''AudioInfo)
+
 -- Borrowed from @text-show-instances@
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
     showbPrec p = showbUnary "fromList" p . toList
@@ -89,6 +92,14 @@ instance Image CanvasContext where
     jsImage = (<> ".canvas") . jsCanvasContext
     width  (CanvasContext _ w _) = fromIntegral w
     height (CanvasContext _ _ h) = fromIntegral h
+
+class Audio a where
+    jsAudio    :: a -> Builder
+    duration   :: Fractional b => a -> b
+
+instance Audio AudioInfo where         
+  jsAudio                     = jsAudioInfo
+  duration  (AudioInfo _ d)   = realToFrac d
 
 -- instance Element Video  -- Not supported
 
@@ -399,6 +410,12 @@ jsAlphaColour aCol
     a         = alphaChannel aCol
     rgbCol    = darken (recip a) $ aCol `over` black
     RGB r g b = toSRGB24 rgbCol
+
+instance JSArg AudioInfo where
+  showbJS = jsAudioInfo
+
+jsAudioInfo :: AudioInfo -> Builder
+jsAudioInfo (AudioInfo n _ ) = "sounds[" <> showb n <> B.singleton ']'
 
 instance JSArg Bool where
     showbJS = jsBool

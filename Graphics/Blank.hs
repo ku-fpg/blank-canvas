@@ -99,6 +99,8 @@ module Graphics.Blank
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
+        , newAudio --NickS addition
+        , AudioInfo -- NickS addition
         , with
         , myCanvasContext
         , deviceCanvasContext
@@ -295,14 +297,18 @@ send cxt commands =
             <> showb gId     <> " = "   <> jsCanvasContext c
             <> singleton '.' <> showb q <> singleton ';'
 
+      fileQuery :: Text -> IO ()
+      fileQuery url = do
+          let url' = if "/" `T.isPrefixOf` url then T.tail url else url
+          atomically $ do
+              db <- readTVar (localFiles cxt)
+              writeTVar (localFiles cxt) $ S.insert url' $ db
+
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> Builder -> IO b
       sendQuery c query k cmds = do
           case query of
-            NewImage url -> do
-              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-              atomically $ do
-                  db <- readTVar (localFiles cxt)
-                  writeTVar (localFiles cxt) $ S.insert url' $ db
+            NewImage url -> fileQuery url
+            NewAudio url -> fileQuery url
             _ -> return ()
 
           -- send the com
@@ -343,6 +349,10 @@ mimeTypes filePath
   | ".png" `L.isSuffixOf` filePath = return "image/png"
   | ".gif" `L.isSuffixOf` filePath = return "image/gif"
   | ".svg" `L.isSuffixOf` filePath = return "image/svg+xml"
+  | ".mp3" `L.isSuffixOf` filePath = return "audio/mpeg"
+  | ".ogg" `L.isSuffixOf` filePath = return "audio/ogg"
+  | ".ogx" `L.isSuffixOf` filePath = return "audio/ogg"
+  | ".wav" `L.isSuffixOf` filePath = return "audio/wav"
   | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
 
 -------------------------------------------------

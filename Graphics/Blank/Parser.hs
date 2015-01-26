@@ -5,7 +5,7 @@ import Control.Applicative hiding (many, optional)
 import Data.CaseInsensitive (mk)
 import Data.Char
 import Data.Ix
-import Data.Functor
+import Data.Functor (void)
 
 import Text.ParserCombinators.ReadP
 import Text.ParserCombinators.ReadPrec (ReadPrec, readPrec_to_P)
