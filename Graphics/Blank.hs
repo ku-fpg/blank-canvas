@@ -256,7 +256,7 @@ blankCanvas opts actions = do
           db <- liftIO $ atomically $ readTVar $ locals
           if fileName `S.member` db
           then do
-            mime <- mimeTypes (T.unpack fileName)
+            let mime = mimeType fileName
             Scotty.setHeader "Content-Type" $ LT.fromStrict $ mime
             file $ (root opts ++ "/" ++ T.unpack fileName)
           else do
@@ -343,22 +343,30 @@ getUniq = do
     writeTVar uniqVar (u + 1)
     return u
 
-mimeTypes :: Monad m => FilePath -> m Text
-mimeTypes filePath
-  | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
-  | ".png" `L.isSuffixOf` filePath = return "image/png"
-  | ".gif" `L.isSuffixOf` filePath = return "image/gif"
-  | ".svg" `L.isSuffixOf` filePath = return "image/svg+xml"
-  | ".mp3" `L.isSuffixOf` filePath = return "audio/mpeg"
-  | ".ogg" `L.isSuffixOf` filePath = return "audio/ogg"
-  | ".ogx" `L.isSuffixOf` filePath = return "audio/ogg"
-  | ".wav" `L.isSuffixOf` filePath = return "audio/wav"
-  | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
+mimeType :: Text -> Text
+mimeType filePath
+    -- Images
+    | isSuffix [".bmp"]                   = "image/bmp"
+    | isSuffix [".gif"]                   = "image/gif"
+    | isSuffix [".ico"]                   = "image/x-icon"
+    | isSuffix [".jpg"]                   = "image/jpeg"
+    | isSuffix [".png"]                   = "image/png"
+    | isSuffix [".svg"]                   = "image/svg+xml"
+    -- Audio
+    | isSuffix [".aac"]                   = "audio/x-aac"
+    | isSuffix [".mpga", ".mp2", ".mp2a",
+                ".mp3",  ".m2a", ".m3a"]  = "audio/mpeg"
+    | isSuffix [".oga", ".ogg", ".spx"]   = "audio/ogg"
+    | isSuffix [".opus"]                  = "audio/opus"
+    | isSuffix [".wav"]                   = "audio/x-wav"
+    | otherwise = error $ "do not understand mime type for : " ++ S.show filePath
+  where
+    isSuffix :: [Text] -> Bool
+    isSuffix = any (`T.isSuffixOf` filePath)
+
+-- TODO: Add extra mime types
 
 -------------------------------------------------
-
--- TODO: add extra mime types
-
 
 data Options = Options
         { port   :: Int              -- ^ which port do we issue the blank canvas using
