@@ -213,7 +213,7 @@ data FontStyle = NormalStyle  -- ^ Selects a font classified as normal (default)
                | ItalicStyle  -- ^ Selects a font that is labeled italic, or if one is not available,
                               --   one labeled oblique.
                | ObliqueStyle -- ^ Selects a font that is labeled oblique.
-  deriving (Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ord)
 
 -- | Shorthand for 'ItalicStyle'.
 italic :: FontStyle
@@ -254,7 +254,7 @@ instance T.Show FontStyle where
 -- | Specifies the face of a 'Font'.
 data FontVariant = NormalVariant    -- ^ A normal font face (default).
                  | SmallCapsVariant -- ^ A font face with small capital letters for lowercase characters.
-  deriving (Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ord)
 
 -- | Shorthand for 'SmallCapsVariant'.
 smallCaps :: FontVariant
@@ -306,7 +306,7 @@ data FontWeight = NormalWeight -- ^ Default.
                 | Weight700
                 | Weight800
                 | Weight900
-  deriving (Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ord)
 
 -- | Shorthand for 'BoldWeight'.
 bold :: FontWeight
