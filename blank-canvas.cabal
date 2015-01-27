@@ -73,6 +73,7 @@ Library
                        containers         == 0.5.*,
                        data-default-class == 0.0.*,
                        http-types         == 0.8.*,
+                       mime-types         >= 0.1.0.3 && < 0.2,
                        kansas-comet       >= 0.3.2   && < 0.4,
                        scotty             >= 0.8     && < 0.10,
                        stm                >= 2.2     && < 2.5,

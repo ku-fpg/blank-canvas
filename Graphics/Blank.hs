@@ -133,6 +133,7 @@ import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
+import qualified Data.Map as M (lookup)
 #if !(MIN_VERSION_base(4,8,0))
 import           Data.Monoid (mempty)
 #endif
@@ -140,6 +141,7 @@ import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Text (Text)
+import           Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as LT
 
 import qualified Graphics.Blank.Canvas as Canvas
@@ -153,6 +155,7 @@ import           Graphics.Blank.JavaScript hiding (width, height)
 import           Graphics.Blank.Utils
 
 import qualified Network.HTTP.Types as H
+import           Network.Mime (defaultMimeMap, fileNameExtensions)
 import           Network.Wai (Middleware, responseLBS)
 import           Network.Wai.Middleware.Local
 import           Network.Wai.Handler.Warp
@@ -344,27 +347,12 @@ getUniq = do
     return u
 
 mimeType :: Text -> Text
-mimeType filePath
-    -- Images
-    | isSuffix [".bmp"]                   = "image/bmp"
-    | isSuffix [".gif"]                   = "image/gif"
-    | isSuffix [".ico"]                   = "image/x-icon"
-    | isSuffix [".jpg"]                   = "image/jpeg"
-    | isSuffix [".png"]                   = "image/png"
-    | isSuffix [".svg"]                   = "image/svg+xml"
-    -- Audio
-    | isSuffix [".aac"]                   = "audio/x-aac"
-    | isSuffix [".mpga", ".mp2", ".mp2a",
-                ".mp3",  ".m2a", ".m3a"]  = "audio/mpeg"
-    | isSuffix [".oga", ".ogg", ".spx"]   = "audio/ogg"
-    | isSuffix [".opus"]                  = "audio/opus"
-    | isSuffix [".wav"]                   = "audio/x-wav"
-    | otherwise = error $ "do not understand mime type for : " ++ S.show filePath
+mimeType filePath = go $ fileNameExtensions filePath
   where
-    isSuffix :: [Text] -> Bool
-    isSuffix = any (`T.isSuffixOf` filePath)
-
--- TODO: Add extra mime types
+    go [] = error $ "do not understand mime type for : " ++ S.show filePath
+    go (e:es) = case M.lookup e defaultMimeMap of
+                     Nothing -> go es
+                     Just mt -> decodeUtf8 mt
 
 -------------------------------------------------
 
