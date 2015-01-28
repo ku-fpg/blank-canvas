@@ -99,8 +99,10 @@ module Graphics.Blank
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
-        , newAudio --NickS addition
-        , AudioInfo -- NickS addition
+          -- ** Audio functionality
+        , newAudio 
+        , AudioInfo
+        , play
         , with
         , myCanvasContext
         , deviceCanvasContext
@@ -281,6 +283,7 @@ send cxt commands =
       sendBind c (Function func) k cmds = sendFunc c func k cmds
       sendBind c (Query query)   k cmds = sendQuery c query k cmds
       sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
+      sendBind c (AudMethod cmd) k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
       sendBind c MyContext       k cmds = send' c (k c) cmds
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b

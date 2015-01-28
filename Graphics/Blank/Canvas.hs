@@ -41,6 +41,7 @@ data Canvas :: * -> * where
         With      :: CanvasContext -> Canvas a   -> Canvas a
         MyContext ::                                Canvas CanvasContext
         Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
+        AudMethod :: AudMethod                   -> Canvas ()     -- <audiofile>.<method>
         Return    :: a                           -> Canvas a
 
 instance Monad Canvas where
@@ -102,6 +103,10 @@ data Method
         | TextBaseline TextBaselineAlignment
         | Transform (Double, Double, Double, Double, Double, Double)
         | Translate (Double, Double)
+
+data AudMethod
+        = forall audio . Audio audio => Play audio
+        -- |          
 
 data Command
   = Trigger Event
