@@ -103,6 +103,7 @@ module Graphics.Blank
         , newAudio 
         , AudioInfo
         , play
+        , pauseAud
         , with
         , myCanvasContext
         , deviceCanvasContext

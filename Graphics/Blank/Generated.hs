@@ -20,6 +20,7 @@ instance S.Show Method where
 
 instance T.Show AudMethod where
   showb (Play audio) = jsAudio audio <> ".play()"
+  showb (Pause audio)= jsAudio audio <> ".pause()"
   
 instance T.Show Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
@@ -156,6 +157,9 @@ moveTo = Method . MoveTo
 
 play :: Audio audio => audio -> Canvas ()
 play = AudMethod . Play
+
+pauseAud :: Audio audio => audio -> Canvas ()
+pauseAud = AudMethod . Pause
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()

@@ -106,7 +106,7 @@ data Method
 
 data AudMethod
         = forall audio . Audio audio => Play audio
-        -- |          
+        | forall audio . Audio audio => Pause audio
 
 data Command
   = Trigger Event

@@ -3,6 +3,8 @@ module Main where
 
 import Graphics.Blank
 -- import Paths_blank_canvas_examples (getDataDir)
+import Control.Concurrent
+import Network.CGI
 
 main :: IO ()
 main = do
@@ -18,3 +20,12 @@ main = do
       fillText("test",800,200)
       play florence
       drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      -- drawImage(img,[70,50])
+      pauseAud florence
