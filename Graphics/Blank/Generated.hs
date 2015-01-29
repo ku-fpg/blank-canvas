@@ -13,10 +13,10 @@ import           Prelude hiding (Show)
 
 import qualified Text.Show as S (Show)
 import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text (showb, showbPrec, singleton, toString)
+import           Text.Show.Text (FromTextShow(..), showb, singleton)
 
 instance S.Show Method where
-  showsPrec p = (++) . toString . showbPrec p
+  showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("

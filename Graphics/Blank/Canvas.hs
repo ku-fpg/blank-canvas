@@ -110,7 +110,7 @@ data Command
   | Eval Text
 
 instance S.Show Command where
-  showsPrec p = (++) . toString . showbPrec p
+  showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show Command where
   showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
@@ -156,7 +156,7 @@ data Function :: * -> * where
   CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> Function CanvasGradient
 
 instance S.Show (Function a) where
-  showsPrec p = (++) . toString . showbPrec p
+  showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show (Function a) where
   showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
@@ -181,7 +181,7 @@ data Query :: * -> * where
         NewAudio             :: Text                                    -> Query AudioInfo
 
 instance S.Show (Query a) where
-  showsPrec p = (++) . toString . showbPrec p
+  showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show (Query a) where
   showb Device                       = "Device"

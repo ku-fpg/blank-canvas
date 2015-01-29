@@ -15,7 +15,7 @@ import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
 import qualified Text.Show as S (Show)
 import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text (showb, showbPrec, toString)
+import           Text.Show.Text (FromTextShow(..), showb)
 
 -- | Denotes CSS distance measurements, especially in the context of 'Font's.
 data Length = Em   { runLength :: Double } -- ^ The height of the current font.
@@ -123,7 +123,7 @@ instance Read Length where
     readListPrec = readListPrecDefault
 
 instance S.Show Length where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show Length where
     showb l = jsDouble (runLength l) <> showbUnits l

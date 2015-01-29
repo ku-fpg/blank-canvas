@@ -184,7 +184,7 @@ readFontProperties' mbStyle mbVariant mbWeight =
   <*> (lift (munch1 isSpace) *> readPrec)
 
 instance S.Show Font where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show Font where
     showb (FontProperties style variant weight size height' family)
@@ -242,7 +242,7 @@ instance Read FontStyle where
     readListPrec = readListPrecDefault
 
 instance S.Show FontStyle where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontStyle where
     showb NormalStyle  = "normal"
@@ -275,7 +275,7 @@ instance Read FontVariant where
     readListPrec = readListPrecDefault
 
 instance S.Show FontVariant where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontVariant where
     showb NormalVariant    = "normal"
@@ -369,7 +369,7 @@ instance Read FontWeight where
     readListPrec = readListPrecDefault
 
 instance S.Show FontWeight where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontWeight where
     showb NormalWeight  = "normal"
@@ -475,7 +475,7 @@ instance Read FontSize where
     readListPrec = readListPrecDefault
 
 instance S.Show FontSize where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontSize where
     showb XXSmallSize            = "xx-small"
@@ -548,7 +548,7 @@ instance Read LineHeight where
     readListPrec = readListPrecDefault
 
 instance S.Show LineHeight where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show LineHeight where
     showb NormalLineHeight         = "normal"
@@ -647,8 +647,8 @@ readFontFamily quoted = do
          _otherwise                    -> FontFamilyName $ TS.pack name
 
 instance S.Show FontFamily where
-    showsPrec p = (++) . toString . showbPrec p
-    showList    = (++) . toString . showbList
+    showsPrec p = showsPrec p . FromTextShow
+    showList    = showsPrec 0 . FromTextShow
 
 instance T.Show FontFamily where
     showb (FontFamilyName name) = showb name

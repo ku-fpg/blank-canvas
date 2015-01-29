@@ -169,7 +169,7 @@ instance Read RepeatDirection where
     readListPrec = readListPrecDefault
 
 instance S.Show RepeatDirection where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show RepeatDirection where
     showb Repeat   = "repeat"
@@ -211,7 +211,7 @@ instance RoundProperty LineEndCap where
     round = RoundCap
 
 instance S.Show LineEndCap where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show LineEndCap where
     showb ButtCap   = "butt"
@@ -254,7 +254,7 @@ instance RoundProperty LineJoinCorner where
     round = RoundCorner
 
 instance S.Show LineJoinCorner where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show LineJoinCorner where
     showb BevelCorner = "bevel"
@@ -312,7 +312,7 @@ instance Read TextAnchorAlignment where
     readListPrec = readListPrecDefault
 
 instance S.Show TextAnchorAlignment where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show TextAnchorAlignment where
     showb StartAnchor  = "start"
@@ -375,7 +375,7 @@ instance Read TextBaselineAlignment where
     readListPrec = readListPrecDefault
 
 instance S.Show TextBaselineAlignment where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show TextBaselineAlignment where
     showb TopBaseline         = "top"
