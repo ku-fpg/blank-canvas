@@ -4,7 +4,6 @@ module Graphics.Blank.Types.Font where
 import           Control.Applicative
 import           Control.Monad
 
-import           Data.CaseInsensitive (mk)
 import           Data.Char
 import           Data.Default.Class
 import           Data.List
@@ -157,7 +156,7 @@ readFontProperties style variant weight =
            
            -- First attempt to parse font-style, then font-variant, then font-weight (unless one
            -- of them has already been parsed, in which case skip to the next property parser.
-           prop <- maybeRead $ readStyle <++ readVariant <++ readWeight
+           prop <- maybeReadPrec $ readStyle <++ readVariant <++ readWeight
            -- Check to see which property, if any, was parsed.
            case prop of
                Just (One style') -> do
@@ -621,30 +620,28 @@ instance IsString [FontFamily] where
 instance Read FontFamily where
     readPrec = lift $ do
         skipSpaces
-        let quoted = between (char '"') (char '"')
-        quoted (readFontFamily True) <|> readFontFamily False
+        ReadP.choice
+          [ SerifFamily     <$ stringCI "serif"
+          , SansSerifFamily <$ stringCI "sans-serif"
+          , MonospaceFamily <$ stringCI "monospace"
+          , CursiveFamily   <$ stringCI "cursive"
+          , FantasyFamily   <$ stringCI "fantasy"
+          , let quoted quote = between (char quote) (char quote)
+             in quoted '"' (readFontFamily $ Just '"')
+                  <|> quoted '\'' (readFontFamily $ Just '\'')
+                  <|> readFontFamily Nothing
+          ]
     
     -- readListPrec is overloaded so that it will read in a comma-separated list of
     -- family names not delimited by square brackets, as per the CSS syntax.
     readListPrec = lift . sepBy1 (unlift readPrec) $ skipSpaces *> char ','
 
--- |
--- FontFamilyNames can either be a series of whitespace-separated CSS identifiers
--- (parsed with cssIdent) or a series of characters delimited by quotation marks.
--- Use the Bool argument to distinguish between the two.
-readFontFamily :: Bool -> ReadP FontFamily
-readFontFamily quoted = do
-    name <- if quoted
-               then munch (/= '\"')
-               else unwords <$> sepBy1 cssIdent (munch1 isSpace)
-    let ciName = mk name
-    return $ case () of
-         _ | ciName == mk "serif"      -> SerifFamily
-         _ | ciName == mk "sans-serif" -> SansSerifFamily
-         _ | ciName == mk "monospace"  -> MonospaceFamily
-         _ | ciName == mk "cursive"    -> CursiveFamily
-         _ | ciName == mk "fantasy"    -> FantasyFamily
-         _otherwise                    -> FontFamilyName $ TS.pack name
+readFontFamily :: Maybe Char -> ReadP FontFamily
+readFontFamily mQuote = do
+    name <- case mQuote of
+        Just quote -> munch (/= quote)
+        Nothing    -> unwords <$> sepBy1 cssIdent (munch1 isSpace)
+    return . FontFamilyName $ TS.pack name
 
 instance S.Show FontFamily where
     showsPrec p = showsPrec p . FromTextShow

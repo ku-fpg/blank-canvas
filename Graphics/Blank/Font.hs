@@ -67,7 +67,7 @@ module Graphics.Blank.Font
     , PercentageProperty(..)
     ) where
 
-import Graphics.Blank.Generated
+import Graphics.Blank.Generated (font)
 import Graphics.Blank.Types.CSS
 import Graphics.Blank.Types.Font
 

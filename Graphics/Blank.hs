@@ -120,6 +120,8 @@ module Graphics.Blank
         , Event(..)
         , EventName
         , EventQueue
+        -- ** Cursor manipulation
+        , cursor
         -- ** Middleware
         , local_only
         ) where
@@ -145,7 +147,7 @@ import           Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as LT
 
 import qualified Graphics.Blank.Canvas as Canvas
-import           Graphics.Blank.Canvas hiding (addColorStop)
+import           Graphics.Blank.Canvas hiding (addColorStop, cursor)
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
@@ -378,7 +380,7 @@ instance Num Options where
                             }
 
 -------------------------------------------------
--- This is the monomorphic version, to stop "ambiguous" errors.
+-- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
 fillStyle :: Text -> Canvas ()
 fillStyle = Generated.fillStyle
@@ -392,8 +394,16 @@ strokeStyle = Generated.strokeStyle
 shadowColor :: Text -> Canvas ()
 shadowColor = Generated.shadowColor
 
+-- | add a Color stop to a Canvas Gradient.
 addColorStop :: (Double, Text) -> CanvasGradient -> Canvas ()
 addColorStop = Canvas.addColorStop
+
+-- | Change the canvas cursor to the specified URL or keyword. Examples:
+-- 
+-- > cursor "url(image.png)"
+-- > cursor "crosshair"
+cursor :: Text -> Canvas ()
+cursor = Canvas.cursor
 
 height :: (Image image, Num a) => image -> a
 height = JavaScript.height

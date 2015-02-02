@@ -15,6 +15,7 @@ import           Data.Text.Lazy.Encoding (decodeUtf8)
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
 import           Prelude hiding (Show)
@@ -174,11 +175,12 @@ data Query :: * -> * where
         MeasureText          :: Text                                    -> Query TextMetrics
         IsPointInPath        :: (Double, Double)                        -> Query Bool
         NewImage             :: Text                                    -> Query CanvasImage
+        NewAudio             :: Text                                    -> Query AudioInfo
         CreatePattern        :: Image image => (image, RepeatDirection) -> Query CanvasPattern
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
+        Cursor               :: CanvasCursor cursor => cursor           -> Query ()
         Sync                 ::                                            Query ()
-        NewAudio             :: Text                                    -> Query AudioInfo
 
 instance S.Show (Query a) where
   showsPrec p = showsPrec p . FromTextShow
@@ -190,6 +192,7 @@ instance T.Show (Query a) where
   showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
                                                         <> jsDouble y <> singleton ')'
   showb (NewImage url)               = "NewImage(" <> jsText url <> singleton ')'
+  showb (NewAudio txt)               = "NewAudio(" <> jsText txt <> singleton ')'
   showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
                                                         <> jsRepeatDirection dir <> singleton ')'
   showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
@@ -198,8 +201,8 @@ instance T.Show (Query a) where
                                                        <> jsDouble sy <> singleton ','
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
+  showb (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
   showb Sync                         = "Sync"
-  showb (NewAudio txt)               = "NewAudio(" <> jsText txt <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -208,13 +211,14 @@ parseQueryResult (ToDataURL {}) o             = parseJSON o
 parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o         = parseJSON o
 parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
+parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o
 parseQueryResult (CreatePattern {}) o         = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
-parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o                                           
+parseQueryResult (Cursor {}) _                = return ()
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
@@ -262,6 +266,13 @@ newCanvas = Query . NewCanvas
 -- | Capture ImageDate from the Canvas.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
 getImageData = Query . GetImageData
+
+-- | Change the canvas cursor to the specified URL or keyword. Examples:
+-- 
+-- > cursor "url(image.png)"
+-- > cursor "crosshair"
+cursor :: CanvasCursor cursor => cursor -> Canvas ()
+cursor = Query . Cursor
 
 -- | Send all commands to the browser, wait for the browser to ack, then continue.
 sync :: Canvas ()
