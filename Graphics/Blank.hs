@@ -101,9 +101,9 @@ module Graphics.Blank
         , newCanvas
           -- ** Audio functionality
         , newAudio 
-        , AudioInfo
-        , play
-        , pauseAud
+        , InfoAudio
+        , playAudio
+        , pauseAudio
         , with
         , myCanvasContext
         , deviceCanvasContext
@@ -277,15 +277,15 @@ send cxt commands =
       send' (deviceCanvasContext cxt) commands mempty
   where
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
-      sendBind c (Return a)      k cmds = send' c (k a) cmds
-      sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
-      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
-      sendBind c (Function func) k cmds = sendFunc c func k cmds
-      sendBind c (Query query)   k cmds = sendQuery c query k cmds
-      sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
-      sendBind c (AudMethod cmd) k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
-      sendBind c MyContext       k cmds = send' c (k c) cmds
+      sendBind c (Return a)        k cmds = send' c (k a) cmds
+      sendBind c (Bind m k1)      k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
+      sendBind c (Method cmd)      k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
+      sendBind c (Command cmd)     k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
+      sendBind c (Function func)   k cmds = sendFunc c func k cmds
+      sendBind c (Query query)     k cmds = sendQuery c query k cmds
+      sendBind c (With c' m)       k cmds = send' c' (Bind m (With c . k)) cmds
+      sendBind c (MethodAudio cmd) k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
+      sendBind c MyContext         k cmds = send' c (k c) cmds
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds

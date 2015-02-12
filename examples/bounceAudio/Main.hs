@@ -68,7 +68,7 @@ go context = do
                 let x = map hit $ balls
                     y = elem True x
                 sound <- newAudio "music/ballbounce.wav"
-                when y $ play sound -- When a ball is at the bottom of the Canvas, play the bounce sound
+                when y $ playAudio sound -- When a ball is at the bottom of the Canvas, play the bounce sound
 
              threadDelay (20 * 1000)	                   
 

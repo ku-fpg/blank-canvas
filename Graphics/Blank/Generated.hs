@@ -18,9 +18,9 @@ import           Text.Show.Text (showb, showbPrec, singleton, toString)
 instance S.Show Method where
   showsPrec p = (++) . toString . showbPrec p
 
-instance T.Show AudMethod where
-  showb (Play audio) = jsAudio audio <> ".play()"
-  showb (Pause audio)= jsAudio audio <> ".pause()"
+instance T.Show MethodAudio where
+  showb (PlayAudio audio) = jsAudio audio <> ".play()"
+  showb (PauseAudio audio)= jsAudio audio <> ".pause()"
   
 instance T.Show Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
@@ -155,11 +155,11 @@ miterLimit = Method . MiterLimit
 moveTo :: (Double, Double) -> Canvas ()
 moveTo = Method . MoveTo
 
-play :: Audio audio => audio -> Canvas ()
-play = AudMethod . Play
+playAudio :: Audio audio => audio -> Canvas ()
+playAudio = MethodAudio . PlayAudio
 
-pauseAud :: Audio audio => audio -> Canvas ()
-pauseAud = AudMethod . Pause
+pauseAudio :: Audio audio => audio -> Canvas ()
+pauseAudio = MethodAudio . PauseAudio
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()

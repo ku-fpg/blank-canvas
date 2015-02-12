@@ -11,7 +11,7 @@
         <script type="text/javascript">
             var session = 0; // global session number
             var images = [];
-            var sounds = [];
+            var audios = [];
             var patterns = [];
             var canvasbuffers = [];
             var c = null;
@@ -142,7 +142,7 @@
             function NewAudio(src) {
                 return function (u,c) {
                     var audio = new Audio();
-                    var count = sounds.push(audio);
+                    var count  = audios.push(audio);
                     // var dur   = audio.duration;
                     //
                     // I commented this out because there's a chance that the browser won't

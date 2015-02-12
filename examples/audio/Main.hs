@@ -15,5 +15,5 @@ main = do
       florence <- newAudio "http://upload.wikimedia.org/wikipedia/en/d/df/Florence_Foster_Jenkins_H%C3%B6lle_Rache.ogg"
       _ <- newAudio "music/sonata.ogg"
       fillText("test",800,200)
-      play florence
+      playAudio florence
       drawImage(img,[70,50])

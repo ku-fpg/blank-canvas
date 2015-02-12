@@ -34,15 +34,15 @@ $(deriveShow ''TextMetrics)
 -----------------------------------------------------------------------------
 
 data Canvas :: * -> * where
-        Method    :: Method                      -> Canvas ()     -- <context>.<method>
-        Command   :: Command                     -> Canvas ()     -- <command>
-        Function  :: T.Show a => Function a      -> Canvas a
-        Query     :: T.Show a => Query a         -> Canvas a
-        With      :: CanvasContext -> Canvas a   -> Canvas a
-        MyContext ::                                Canvas CanvasContext
-        Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
-        AudMethod :: AudMethod                   -> Canvas ()     -- <audiofile>.<method>
-        Return    :: a                           -> Canvas a
+        Method      :: Method                      -> Canvas ()     -- <context>.<method>
+        Command     :: Command                     -> Canvas ()     -- <command>
+        Function    :: T.Show a => Function a      -> Canvas a
+        Query       :: T.Show a => Query a         -> Canvas a
+        With        :: CanvasContext -> Canvas a   -> Canvas a
+        MyContext   ::                                Canvas CanvasContext
+        Bind        :: Canvas a -> (a -> Canvas b) -> Canvas b
+        MethodAudio :: MethodAudio                 -> Canvas ()     -- <audiofile>.<method>
+        Return      :: a                           -> Canvas a
 
 instance Monad Canvas where
         return = Return
@@ -104,9 +104,9 @@ data Method
         | Transform (Double, Double, Double, Double, Double, Double)
         | Translate (Double, Double)
 
-data AudMethod
-        = forall audio . Audio audio => Play audio
-        | forall audio . Audio audio => Pause audio
+data MethodAudio
+        = forall audio . Audio audio => PlayAudio  audio
+        | forall audio . Audio audio => PauseAudio audio
 
 data Command
   = Trigger Event
@@ -183,7 +183,7 @@ data Query :: * -> * where
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
-        NewAudio             :: Text                                    -> Query AudioInfo
+        NewAudio             :: Text                                    -> Query InfoAudio
 
 instance S.Show (Query a) where
   showsPrec p = (++) . toString . showbPrec p
@@ -219,7 +219,7 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
-parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o                                           
+parseQueryResult (NewAudio {}) o              = uncurry InfoAudio <$> parseJSON o                                           
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
@@ -248,7 +248,7 @@ isPointInPath = Query . IsPointInPath
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
-newAudio :: Text -> Canvas AudioInfo
+newAudio :: Text -> Canvas InfoAudio
 newAudio = Query . NewAudio
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
