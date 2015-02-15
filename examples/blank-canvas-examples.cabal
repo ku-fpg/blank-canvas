@@ -166,6 +166,7 @@ executable blank-canvas-example-cursor
   other-modules:       Paths_blank_canvas_examples
   build-depends:       base         >= 4.6 && < 4.9,
                        blank-canvas == 0.5.*,
+                       keys         >= 3.10,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      cursor
   default-language:    Haskell2010
