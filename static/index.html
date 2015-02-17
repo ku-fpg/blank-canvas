@@ -101,7 +101,7 @@
 
             function Cursor(cur) {
                 return function(u, c) {
-                    $("#canvas").css("cursor", cur);
+                    c.canvas.style.cursor = cur;
                     $.kc.reply(u, []);
                 };
             }

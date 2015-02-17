@@ -1,11 +1,8 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-#if !(MIN_VERSION_base(4,8,0))
-import Control.Applicative (Applicative(..))
-#endif
-
 import Data.Functor (void)
+import Data.Key (forWithKey_)
 import Data.List (genericLength)
 import Data.Monoid ((<>))
 import Data.Text (Text)
@@ -26,9 +23,9 @@ main = do
         send context $ do
             void $ newImage(cursorImage);
             font("12pt Calibri");
-            forIndex_ cursorValues $ \i text -> do
+            forWithKey_ cursorValues $ \i text -> do
                 let isEven :: Bool
-                    isEven = (i :: Int) `mod` 2 == 0
+                    isEven = i `mod` 2 == 0
                     
                     i' :: Double
                     i' = fromIntegral i
@@ -56,13 +53,6 @@ main = do
                          loop
         
         loop
-
-forIndex_ :: (Applicative f, Num n) => [a] -> (n -> a -> f b) -> f ()
-forIndex_ = forIndex_' 0
-  where
-    forIndex_' :: (Applicative f, Num n) => n -> [a] -> (n -> a -> f b) -> f ()
-    forIndex_' n (x:xs) f = f n x *> forIndex_' (n+1) xs f
-    forIndex_' _ []     _ = pure ()
 
 cursorImage :: Text
 cursorImage = "/images/cursor.png"

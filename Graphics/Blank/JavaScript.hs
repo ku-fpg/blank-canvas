@@ -136,7 +136,7 @@ data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
                      | RepeatY  -- ^ The pattern repeats only vertically.
                      | NoRepeat -- ^ The pattern displays only once and
                                 --   does not repeat.
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'Repeat', with a quote to distinguish it from 'repeat'.
 repeat' :: RepeatDirection
@@ -184,7 +184,7 @@ instance T.Show RepeatDirection where
 data LineEndCap = ButtCap   -- ^ Flat edges (default).
                 | RoundCap  -- ^ Semicircular end caps
                 | SquareCap -- ^ Square end caps
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'ButtCap'.
 butt :: LineEndCap
@@ -227,7 +227,7 @@ data LineJoinCorner = BevelCorner -- ^ A filled triangle with a beveled edge
                     | RoundCorner -- ^ A filled arc connects two lines.
                     | MiterCorner -- ^ A filled triangle with a sharp edge
                                   --   connects two lines (default).
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'BevelCorner'.
 bevel :: LineJoinCorner
@@ -274,7 +274,7 @@ data TextAnchorAlignment = StartAnchor  -- ^ The text is anchored at either its 
                          | CenterAnchor -- ^ The text is anchored in its center.
                          | LeftAnchor   -- ^ The text is anchored at its left edge.
                          | RightAnchor  -- ^ the text is anchored at its right edge.
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'StartAnchor'.
 start :: TextAnchorAlignment

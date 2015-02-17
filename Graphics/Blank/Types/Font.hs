@@ -6,6 +6,7 @@ import           Control.Monad
 
 import           Data.Char
 import           Data.Default.Class
+import           Data.Ix (Ix)
 import           Data.List
 import           Data.Maybe
 import           Data.Monoid
@@ -214,7 +215,7 @@ data FontStyle = NormalStyle  -- ^ Selects a font classified as normal (default)
                | ItalicStyle  -- ^ Selects a font that is labeled italic, or if one is not available,
                               --   one labeled oblique.
                | ObliqueStyle -- ^ Selects a font that is labeled oblique.
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'ItalicStyle'.
 italic :: FontStyle
@@ -255,7 +256,7 @@ instance T.Show FontStyle where
 -- | Specifies the face of a 'Font'.
 data FontVariant = NormalVariant    -- ^ A normal font face (default).
                  | SmallCapsVariant -- ^ A font face with small capital letters for lowercase characters.
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'SmallCapsVariant'.
 smallCaps :: FontVariant
@@ -307,7 +308,7 @@ data FontWeight = NormalWeight -- ^ Default.
                 | Weight700
                 | Weight800
                 | Weight900
-  deriving (Bounded, Enum, Eq, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'BoldWeight'.
 bold :: FontWeight
