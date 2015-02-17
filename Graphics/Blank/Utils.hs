@@ -30,10 +30,10 @@ saveRestore m = do
 infixr 0 #
 
 -- | The @#@-operator is the Haskell analog to the @.@-operator
---   in Javascript. Example:
---
+--   in JavaScript. Example:
+-- 
 -- > grd # addColorStop(0, "#8ED6FF");
---
+-- 
 --   This can be seen as equivalent of @grd.addColorStop(0, "#8ED6FF")@.
 (#) :: a -> (a -> b) -> b
 (#) obj act = act obj

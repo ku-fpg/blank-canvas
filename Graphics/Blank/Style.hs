@@ -7,8 +7,6 @@ module Graphics.Blank.Style
         , Style(..)
         , CanvasColor
           -- * 'CanvasColor' creation
-        , Alpha
-        , Percentage
         , rgb
         , rgbPercent
         , rgba
@@ -181,29 +179,22 @@ import           Data.Word
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types
 import           Graphics.Blank.Types.CSS
 
 import           Prelude hiding (tan)
 
--- |
--- A value ranging from 0.0 to 1.0. A color with an alpha value of 0.0 is 'transparent',
--- and a color with an alpha value of 1.0 is opaque.
-type Alpha = Double
-
--- |
--- Specifies a 'Colour' by its red, green, and blue components, where each component
+-- | Specifies a 'Colour' by its red, green, and blue components, where each component
 -- is an integer between 0 and 255.
 rgb :: Word8 -> Word8 -> Word8 -> Colour Double
 rgb = sRGB24
 
--- |
--- Specifies a 'Colour' by its red, green, and blue components, where each component
--- is given by a percentage of 255.
+-- | Specifies a 'Colour' by its red, green, and blue components, where each component
+-- is given by a percentage (which should be between 0% to 100%) of 255.
 rgbPercent :: Percentage -> Percentage -> Percentage -> Colour Double
 rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 
--- |
--- Specifies an 'AlphaColour' by its RGB components and an alpha value.
+-- | Specifies an 'AlphaColour' by its RGB components and an alpha value.
 -- 
 -- @
 -- 'rgba' r g b 0.0 = 'transparent'
@@ -211,8 +202,8 @@ rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 rgba :: Word8 -> Word8 -> Word8 -> Alpha -> AlphaColour Double
 rgba r g b = withOpacity $ rgb r g b
 
--- |
--- Specifies an 'AlphaColour' by its RGB component percentages and an alpha value.
+-- | Specifies an 'AlphaColour' by its RGB component percentages (which should be
+-- between 0% and 100%) and an alpha value.
 -- 
 -- @
 -- 'rgbaPercent' r g b 0.0 = 'transparent'
@@ -220,19 +211,18 @@ rgba r g b = withOpacity $ rgb r g b
 rgbaPercent :: Percentage -> Percentage -> Percentage -> Alpha -> AlphaColour Double
 rgbaPercent r g b = withOpacity $ rgbPercent r g b
 
--- |
--- Specifies a 'Colour' by its hue (which ranges from 0° to 360°), saturation, and
--- value.
-hsl :: Int -> Percentage -> Percentage -> Colour Double
+-- | Specifies a 'Colour' by its hue, saturation, and lightness value, where
+-- saturation and lightness are percentages between 0% and 100%.
+hsl :: Degrees -> Percentage -> Percentage -> Colour Double
 hsl h s l = uncurryRGB sRGB $ HSL.hsl (realToFrac h) (s/100) (l/100)
 
 -- |
--- Specifies an 'AlphaColour' by its HSV values and an alpha value.
+-- Specifies an 'AlphaColour' by its HSL values and an alpha value.
 -- 
 -- @
 -- 'hsla' h s v 0.0 = 'transparent'
 -- @
-hsla :: Int -> Percentage -> Percentage -> Alpha -> AlphaColour Double
+hsla :: Degrees -> Percentage -> Percentage -> Alpha -> AlphaColour Double
 hsla h s l = withOpacity $ hsl h s l
 
 -- |

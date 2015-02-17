@@ -121,6 +121,8 @@ print G "import           Data.Text (Text)\n";
 print G "\n";
 print G "import           Graphics.Blank.Canvas\n";
 print G "import           Graphics.Blank.JavaScript\n";
+print G "import           Graphics.Blank.Types\n";
+print G "import           Graphics.Blank.Types.CSS\n";
 print G "import           Graphics.Blank.Types.Font\n";
 print G "\n";
 print G "import           Prelude hiding (Show)\n";

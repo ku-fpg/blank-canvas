@@ -36,6 +36,7 @@ data Length = Em   { runLength :: Double } -- ^ The height of the current font.
 
 -- | Designates CSS properties that can consist of a 'Length'.
 class LengthProperty a where
+    -- Create a CSS property value from a 'Length'.
     fromLength :: Length -> a
 
 instance LengthProperty Length where
@@ -143,11 +144,13 @@ instance T.Show Length where
         showbUnits (Pt   _) = "pt"
         showbUnits (Pc   _) = "pc"
 
--- | A value ranging from 0.0 to 100.0.
+-- | A value representing a percentage (e.g., @0.0@ represents 0%,
+-- @100.0@ represents 100%, etc.).
 type Percentage = Double
 
 -- | Designates CSS properties that can consist of a 'Percentage'.
 class PercentageProperty a where
+    -- | Create a CSS property value from a 'Percentage'.
     percent :: Percentage -> a
 
 instance PercentageProperty Percentage where

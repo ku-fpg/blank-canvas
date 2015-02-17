@@ -31,7 +31,9 @@ import           Text.Show.Text hiding (Show)
 
 -------------------------------------------------------------------------------
 
+-- | A data type that can represent a browser font.
 class CanvasFont a where
+    -- | Convert a value into a JavaScript string representing a font value.
     jsCanvasFont :: a -> Builder
 
 instance CanvasFont Text where
@@ -122,7 +124,7 @@ instance Read Font where
             ]
     readListPrec = readListPrecDefault
 
--- | Like Either, but with three possibilities instead of two.
+-- | Like 'Either', but with three possibilities instead of two.
 data OneOfThree a b c = One a | Two b | Three c
 
 -- |
@@ -661,8 +663,14 @@ instance T.Show FontFamily where
 
 -------------------------------------------------------------------------------
 
--- | A convenient way to use the 'Default' normal value for several Font longhand
---   properties.
+-- | A convenient way to use the 'Default' normal value for several 'Font'
+-- longhand properties.
 class Default a => NormalProperty a where
+    -- | The default value for a CSS property. For example, it can be used
+    -- like this:
+    -- 
+    -- @
+    -- ('defFont' ['sansSerif']) { 'lineHeight' = 'normal' }
+    -- @
     normal :: a
     normal = def

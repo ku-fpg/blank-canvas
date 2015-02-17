@@ -63,7 +63,6 @@ module Graphics.Blank.Font
     , pt
     , pc
     -- * Percentages
-    , Percentage
     , PercentageProperty(..)
     ) where
 

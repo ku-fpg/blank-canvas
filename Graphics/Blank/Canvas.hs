@@ -15,6 +15,7 @@ import           Data.Text.Lazy.Encoding (decodeUtf8)
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
@@ -134,12 +135,20 @@ myCanvasContext = MyContext
 
 -----------------------------------------------------------------------------
 
--- | trigger a specific named event, please.
+-- | Triggers a specific named event.
 trigger :: Event -> Canvas ()
 trigger = Command . Trigger
 
--- | add a Color stop to a Canvas Gradient.
-addColorStop :: CanvasColor color => (Double, color) -> CanvasGradient -> Canvas ()
+-- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
+-- number between 0.0 and 1.0 that represents the position between start and stop
+-- in a gradient.
+-- Example:
+-- 
+-- @
+-- grd <- 'createLinearGradient'(0, 0, 10, 10)
+-- grd # 'addColorStop'(0, 'red')
+-- @
+addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
 addColorStop (off,rep) = Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser console.log.
@@ -191,8 +200,8 @@ instance T.Show (Query a) where
   showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
   showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
                                                         <> jsDouble y <> singleton ')'
-  showb (NewImage url)               = "NewImage(" <> jsText url <> singleton ')'
-  showb (NewAudio txt)               = "NewAudio(" <> jsText txt <> singleton ')'
+  showb (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
+  showb (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
   showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
                                                         <> jsRepeatDirection dir <> singleton ')'
   showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
@@ -269,8 +278,10 @@ getImageData = Query . GetImageData
 
 -- | Change the canvas cursor to the specified URL or keyword. Examples:
 -- 
--- > cursor "url(image.png)"
--- > cursor "crosshair"
+-- @
+-- cursor $ 'url' \"image.png\" 'default_'
+-- cursor 'crosshair'
+-- @
 cursor :: CanvasCursor cursor => cursor -> Canvas ()
 cursor = Query . Cursor
 

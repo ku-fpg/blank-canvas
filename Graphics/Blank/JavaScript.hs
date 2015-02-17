@@ -105,8 +105,10 @@ instance Audio AudioInfo where
 
 -----------------------------------------------------------------------------
 
--- TODO: close off
+-- | A data type that can represent a style. That is, something with one or more
+-- colors.
 class Style a where
+    -- | Convert a value into a JavaScript string representing a style value.
     jsStyle :: a -> Builder
 
 instance Style Text                 where { jsStyle = jsText }
@@ -115,6 +117,7 @@ instance Style CanvasPattern        where { jsStyle = jsCanvasPattern }
 instance Style (Colour Double)      where { jsStyle = jsColour }
 instance Style (AlphaColour Double) where { jsStyle = jsAlphaColour }
 
+-- | A 'Style' containing exactly one color.
 class Style a => CanvasColor a
 
 jsCanvasColor :: CanvasColor color => color -> Builder

@@ -7,6 +7,8 @@ import           Data.Text (Text)
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types
+import           Graphics.Blank.Types.CSS
 import           Graphics.Blank.Types.Font
 
 import           Prelude hiding (Show)
@@ -87,7 +89,21 @@ instance T.Show Method where
 
 -- DSL
 
-arc :: (Double, Double, Double, Double, Double, Bool) -> Canvas ()
+-- | @arc(x, y, r, sAngle, eAngle, cc)@ creates a circular arc, where
+-- 
+-- * @x@ is the x-coordinate of the center of the circle
+-- 
+-- * @y@ is the y-coordinate of the center of the circle
+-- 
+-- * @r@ is the radius of the circle on which the arc is drawn
+-- 
+-- * @sAngle@ is the starting angle (where @0@ at the 3 o'clock position of the circle)
+-- 
+-- * @eAngle@ is the ending angle
+-- 
+-- * @cc@ is the arc direction, where @True@ indicates counterclockwise and
+--   @False@ indicates clockwise.
+arc :: (Double, Double, Double, Radians, Radians, Bool) -> Canvas ()
 arc = Method . Arc
 
 arcTo :: (Double, Double, Double, Double, Double) -> Canvas ()
@@ -118,16 +134,41 @@ fill () = Method Fill
 fillRect :: (Double, Double, Double, Double) -> Canvas ()
 fillRect = Method . FillRect
 
+-- | Sets the color, gradient, or pattern used to fill a drawing.
+-- Examples:
+-- 
+-- @
+-- 'fillStyle' 'red'
+-- 
+-- grd <- 'createLinearGradient'(0, 0, 10, 10)
+-- 'fillStyle' grd
+-- 
+-- img <- 'newImage' \"/myImage.jpg\"
+-- pat <- 'createPattern'(img, 'Repeat')
+-- 'fillStyle' pat
+-- @
 fillStyle :: Style style => style -> Canvas ()
 fillStyle = Method . FillStyle
 
 fillText :: (Text, Double, Double) -> Canvas ()
 fillText = Method . FillText
 
+-- | Sets the text context's font properties.
+-- Examples:
+-- 
+-- @
+-- 'font' $ ('defFont' "Gill Sans Extrabold") { 'fontSize' = 40 # 'pt' }
+-- 'font' $ ('defFont' 'sansSerif') { 'fontSize' = 80 # 'percent' }
+-- 'font' $ ('defFont' 'serif') {
+--     'fontWeight' = 'bold'
+--   , 'fontStyle'  = 'italic'
+--   , 'fontSize'   = 'large'
+-- }
+-- @
 font :: CanvasFont canvasFont => canvasFont -> Canvas ()
 font = Method . Font
 
-globalAlpha :: Double -> Canvas ()
+globalAlpha :: Alpha -> Canvas ()
 globalAlpha = Method . GlobalAlpha
 
 globalCompositeOperation :: Text -> Canvas ()
@@ -164,13 +205,28 @@ rect = Method . Rect
 restore :: () -> Canvas ()
 restore () = Method Restore
 
-rotate :: Double -> Canvas ()
+-- | Rotates the current drawing.
+-- Example:
+-- 
+-- @
+-- 'rotate' 'pi'     -- Flip the drawing vertically
+-- 'rotate' (2*'pi') -- Rotate the drawing 360°
+-- @
+rotate :: Radians -> Canvas ()
 rotate = Method . Rotate
 
 save :: () -> Canvas ()
 save () = Method Save
 
-scale :: (Double, Double) -> Canvas ()
+-- | Scales the current drawing's size, where the first argument is the percent to
+-- scale horizontally, and the second argument is the percent to scale vertically.
+-- Examples:
+-- 
+-- @
+-- 'scale'(50, 50)   -- Halve the drawing's size
+-- 'scale'(200, 200) -- Double the drawing's size
+-- @
+scale :: (Percentage, Percentage) -> Canvas ()
 scale = Method . Scale
 
 setTransform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
@@ -179,6 +235,13 @@ setTransform = Method . SetTransform
 shadowBlur :: Double -> Canvas ()
 shadowBlur = Method . ShadowBlur
 
+-- | Sets the color used for shadows.
+-- Examples:
+-- 
+-- @
+-- 'shadowColor' 'red'
+-- 'shadowColor' $ 'rgb' 0 255 0
+-- @
 shadowColor :: CanvasColor canvasColor => canvasColor -> Canvas ()
 shadowColor = Method . ShadowColor
 
@@ -194,6 +257,19 @@ stroke () = Method Stroke
 strokeRect :: (Double, Double, Double, Double) -> Canvas ()
 strokeRect = Method . StrokeRect
 
+-- | Sets the color, gradient, or pattern used for strokes.
+-- Examples:
+-- 
+-- @
+-- 'strokeStyle' 'red'
+-- 
+-- grd <- 'createLinearGradient'(0, 0, 10, 10)
+-- 'strokeStyle' grd
+-- 
+-- img <- 'newImage' \"/myImage.jpg\"
+-- pat <- 'createPattern'(img, 'Repeat')
+-- 'strokeStyle' pat
+-- @
 strokeStyle :: Style style => style -> Canvas ()
 strokeStyle = Method . StrokeStyle
 

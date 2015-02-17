@@ -1,6 +1,7 @@
 ### 0.5.0.1
 API changes
  * The `(#)` function had its type generalized from `a -> (a -> Canvas b) -> Canvas b` to `a -> (a -> b) -> b`. This allows it to be used with font length units.
+ * Added more type synonyms (`Interval`, `Degrees`, `Radians`, etc.) to more clearly indicate what functions expect constrained values.
  * `showbJS` (formerly `showJS`) and `jsStyle` now return a text `Builder` instead of a `String`. This change was introduced as part of a larger `blank-canvas` refactoring to increase performance. See the `Data.Text.Lazy.Builder` module from the `text` package for more details on how to use `Builder`s.
 
 API additions

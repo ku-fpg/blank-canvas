@@ -40,6 +40,8 @@ module Graphics.Blank.Cursor (
     , zoomOut
     , grab
     , grabbing
+    , url
+    , urlXY
     ) where
 
 import Graphics.Blank.Canvas (cursor)

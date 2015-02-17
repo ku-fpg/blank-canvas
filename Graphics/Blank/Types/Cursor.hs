@@ -22,7 +22,9 @@ import qualified Text.Show      as S (Show)
 import qualified Text.Show.Text as T (Show)
 import           Text.Show.Text hiding (Show)
 
+-- | A data type that can represent a browser cursor.
 class CanvasCursor a where
+    -- | Convert a value into a JavaScript string representing a cursor value.
     jsCanvasCursor :: a -> Builder
 
 instance CanvasCursor TS.Text where
@@ -128,7 +130,7 @@ instance Read Cursor where
           , Grabbing     <$ stringCI "grabbing"
           , do _ <- stringCI "url("
                let quoted quote = between (char quote) (char quote)
-               url <- quoted '"' (readURL $ Just '"')
+               url' <- quoted '"' (readURL $ Just '"')
                  <++ quoted '\'' (readURL $ Just '\'')
                  <++ readURL Nothing
                _ <- char ')'
@@ -140,19 +142,17 @@ instance Read Cursor where
                              return (x, y)
                skipSpaces
                _ <- char ','
-               URL url coords <$> unlift readPrec
+               URL url' coords <$> unlift readPrec
           ]
     
     readListPrec = readListPrecDefault
 
--- TODO: Use a stack to properly read URLs with escaped
--- quotes (e.g., "https://example.com/wacky_\"quotes\"")
 readURL :: Maybe Char -> ReadP TS.Text
 readURL mQuote = do
-    url <- case mQuote of
+    url' <- case mQuote of
         Just quote -> munch (/= quote)
         Nothing    -> munch (/= ')')
-    return $ pack url
+    return $ pack url'
 
 instance S.Show Cursor where
     showsPrec p = showsPrec p . FromTextShow
@@ -194,8 +194,8 @@ instance T.Show Cursor where
     showb ZoomOut      = "zoom-out"
     showb Grab         = "grab"
     showb Grabbing     = "grabbing"
-    showb (URL url coords cur) =
-        "url(" <> jsLiteralBuilder (fromText url) <> singleton ')'
+    showb (URL url' coords cur) =
+        "url(" <> jsLiteralBuilder (fromText url') <> singleton ')'
                <> mCoords <> ", " <> showb cur
       where
         mCoords :: Builder
@@ -347,3 +347,11 @@ grab = Grab
 -- | Shorthand for 'Grabbing'.
 grabbing :: Cursor
 grabbing = Grabbing
+
+-- | Shorthand for 'URL' without hotspot coordinates.
+url :: TS.Text -> Cursor -> Cursor
+url = flip URL Nothing
+
+-- | Shorthand for 'URL' with hotspot coordinates.
+urlXY :: TS.Text -> Double -> Double -> Cursor -> Cursor
+urlXY url' x y = URL url' $ Just (x, y)

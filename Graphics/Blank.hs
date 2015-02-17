@@ -90,6 +90,12 @@ module Graphics.Blank
         , getImageData
         , putImageData
         , ImageData(..)
+          -- * Type information
+        , Alpha
+        , Degrees
+        , Interval
+        , Percentage
+        , Radians
         -- * blank-canvas Extensions
         -- ** Reading from 'Canvas'
         , newImage
@@ -154,6 +160,8 @@ import qualified Graphics.Blank.Generated as Generated
 import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, shadowColor)
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
+import           Graphics.Blank.Types
+import           Graphics.Blank.Types.CSS
 import           Graphics.Blank.Utils
 
 import qualified Network.HTTP.Types as H
@@ -382,26 +390,66 @@ instance Num Options where
 -------------------------------------------------
 -- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
+-- | Sets the color used to fill a drawing.
+-- Examples:
+-- 
+-- @
+-- 'fillStyle' \"red\"
+-- 'fillStyle' \"#00FF00\"
+-- @
 fillStyle :: Text -> Canvas ()
 fillStyle = Generated.fillStyle
 
-font :: Text -> Canvas()
+-- | Sets the text context's font properties.
+-- Examples:
+-- 
+-- @
+-- 'font' \"40pt \'Gill Sans Extrabold\'\"
+-- 'font' \"80% sans-serif\"
+-- 'font' \"bold italic large serif\"
+-- @
+font :: Text -> Canvas ()
 font = Generated.font
 
+-- | Sets the color used for strokes.
+-- Examples:
+-- 
+-- @
+-- 'strokeStyle' \"red\"
+-- 'strokeStyle' \"#00FF00\"
+-- @
 strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle
 
+-- | Sets the color used for shadows.
+-- Examples:
+-- 
+-- @
+-- 'shadowColor' \"red\"
+-- 'shadowColor' \"#00FF00\"
+-- @
 shadowColor :: Text -> Canvas ()
 shadowColor = Generated.shadowColor
 
--- | add a Color stop to a Canvas Gradient.
-addColorStop :: (Double, Text) -> CanvasGradient -> Canvas ()
+-- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
+-- number between 0.0 and 1.0 that represents the position between start and stop
+-- in a gradient.
+-- Example:
+-- 
+-- @
+-- grd <- 'createLinearGradient'(0, 0, 10, 10)
+-- grd # 'addColorStop'(0, \"red\")
+-- @
+addColorStop :: (Interval, Text) -> CanvasGradient -> Canvas ()
 addColorStop = Canvas.addColorStop
 
--- | Change the canvas cursor to the specified URL or keyword. Examples:
+-- | Change the canvas cursor to the specified URL or keyword.
+-- Examples:
 -- 
--- > cursor "url(image.png)"
--- > cursor "crosshair"
+-- @
+-- cursor \"url(image.png), default\"
+-- cursor \"crosshair\"
+-- @
 cursor :: Text -> Canvas ()
 cursor = Canvas.cursor
 
