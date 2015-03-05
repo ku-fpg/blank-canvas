@@ -1,3 +1,14 @@
+{-|
+Module:      Graphics.Blank.GHCi
+Copyright:   (C) 2014-2015, The University of Kansas
+License:     BSD-style (see the file LICENSE)
+Maintainer:  Andy Gill
+Stability:   Beta
+Portability: GHC
+
+The GHCi entry point for @blank-canvas@. Useful for sending multiple
+commands to the same port.
+-}
 module Graphics.Blank.GHCi (splatCanvas) where
         
 import Control.Concurrent
@@ -8,15 +19,15 @@ import Graphics.Blank (Options(..),port,send, Canvas, blankCanvas)
 
 import System.IO.Unsafe (unsafePerformIO)
 
--- | splitCanvas is the GHCi entry point into blank-canvas.
+-- | splitCanvas is the GHCi entry point into @blank-canvas@.
 -- A typical invocation would be
---
+-- 
 -- >GHCi> import Graphics.Blank
 -- >GHCi> import Graphics.Blank.GHCi
 -- >
 -- >-- Adding commands to the canvas buffer
 -- >GHCi> splatCanvas 3000 $ ( .. canvas commands .. )
---
+-- 
 -- The system remembers if it has been called on a specific port before,
 -- and if so, uses the previous session.
 

@@ -1,3 +1,18 @@
+{-|
+Module:      Graphics.Blank.Font
+Copyright:   (C) 2014-2015, The University of Kansas
+License:     BSD-style (see the file LICENSE)
+Maintainer:  Andy Gill
+Stability:   Beta
+Portability: GHC
+
+This module exposes an overloaded version of the 'font' function that can accept
+a 'Font' ADT argument. This may be of interest if you desire stronger type safety
+than @Text@-based fonts provide.
+
+Note that this module's 'font' function conflicts with @font@ from "Graphics.Blank".
+Make sure to hide @font@ from "Graphics.Blank" if you use 'font' from this module.
+-}
 module Graphics.Blank.Font
     ( -- * Overloaded @font@
       font

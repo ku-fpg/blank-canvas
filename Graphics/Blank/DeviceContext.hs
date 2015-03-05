@@ -14,11 +14,12 @@ import           Text.Show.Text (Builder, toText)
 
 import qualified Web.Scotty.Comet as KC
 
--- | 'Context' is our abstact handle into a specific 2d-context inside a browser.
--- Note that the JavaScript API concepts of 2D-Context and Canvas
--- are conflated in blank-canvas. Therefore, there is no 'getContext' method,
--- rather 'getContext' is implied (when using 'send').
-
+-- | 'DeviceContext' is the abstract handle into a specific 2D context inside a browser.
+-- Note that the JavaScript API concepts of
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D CanvasRenderingContext2D>@ and
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement HTMLCanvasElement>@
+-- are conflated in @blank-canvas@. Therefore, there is no @getContext@ method,
+-- rather, @getContext@ is implied (when using 'send').
 data DeviceContext = DeviceContext
         { theComet             :: KC.Document     -- ^ The mechanisms for sending commands
         , eventQueue           :: EventQueue      -- ^ A single (typed) event queue
@@ -36,11 +37,12 @@ instance Image DeviceContext where
 deviceCanvasContext :: DeviceContext -> CanvasContext
 deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 
--- ** 'devicePixelRatio' returns the Device Pixel Ratio as used. Typically, the browser ignore devicePixelRatio in the canvas,
---   which can make fine details and text look fuzzy. Using the query "?hd" on the URL, blank-canvas attempts
---   to use the native devicePixelRatio, and if successful, 'devicePixelRatio' will return a number other than 1.
---   You can think of devicePixelRatio as the line width to use to make lines look one pixel wide.
-
+-- | 'devicePixelRatio' returns the device's pixel ratio as used. Typically, the
+-- browser ignores @devicePixelRatio@ in the canvas, which can make fine details
+-- and text look fuzzy. Using the query @?hd@ on the URL, @blank-canvas@ attempts
+-- to use the native @devicePixelRatio@, and if successful, 'devicePixelRatio' will
+-- return a number other than 1. You can think of 'devicePixelRatio' as the line
+-- width to use to make lines look one pixel wide.
 devicePixelRatio ::  DeviceContext -> Double
 devicePixelRatio = ctx_devicePixelRatio
 
@@ -49,7 +51,7 @@ sendToCanvas :: DeviceContext -> Builder -> IO ()
 sendToCanvas cxt cmds = do
         KC.send (theComet cxt) . toText $ "try{" <> cmds <> "}catch(e){alert('JavaScript Failure: '+e.message);}"
 
--- | wait for any event. blocks.
+-- | Wait for any event. Blocks.
 wait :: DeviceContext -> IO Event
 wait c = atomically $ readTChan (eventQueue c)
 

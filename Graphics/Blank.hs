@@ -1,14 +1,22 @@
 {-# LANGUAGE CPP, GADTs, OverloadedStrings, ScopedTypeVariables #-}
 
--- | blank-canvas is a Haskell binding to the complete HTML5 Canvas
---   API. blank-canvas allows Haskell users to write, in Haskell,
---   interactive images onto their web browsers. blank-canvas gives
---   the users a single full-window canvas, and provides many
---   well-documented functions for rendering images.
+{-|
+Module:      Graphics.Blank
+Copyright:   (C) 2014-2015, The University of Kansas
+License:     BSD-style (see the file LICENSE)
+Maintainer:  Andy Gill
+Stability:   Beta
+Portability: GHC
 
+@blank-canvas@ is a Haskell binding to the complete HTML5 Canvas
+API. @blank-canvas@ allows Haskell users to write, in Haskell,
+interactive images onto their web browsers. @blank-canvas@ gives
+the users a single full-window canvas, and provides many
+well-documented functions for rendering images.
+-}
 module Graphics.Blank
         (
-         -- * Starting blank-canvas
+         -- * Starting @blank-canvas@
           blankCanvas
         , Options(..)
           -- ** 'send'ing to the Graphics 'DeviceContext'
@@ -17,7 +25,7 @@ module Graphics.Blank
           -- * HTML5 Canvas API
           -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript
           --   version of this API.
-        , Canvas        -- abstact
+        , Canvas        -- abstract
           -- ** Canvas element
         , height
         , width
@@ -96,7 +104,7 @@ module Graphics.Blank
         , Interval
         , Percentage
         , Radians
-        -- * blank-canvas Extensions
+        -- * @blank-canvas@ Extensions
         -- ** Reading from 'Canvas'
         , newImage
         , CanvasImage -- abstract
@@ -187,7 +195,7 @@ import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
 import qualified Web.Scotty.Comet as KC
 
--- | blankCanvas is the main entry point into blank-canvas.
+-- | 'blankCanvas' is the main entry point into @blank-canvas@.
 -- A typical invocation would be
 --
 -- >{-# LANGUAGE OverloadedStrings #-}
