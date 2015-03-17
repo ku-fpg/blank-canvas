@@ -1,10 +1,7 @@
-{-# LANGUAGE CPP, OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
 module Graphics.Blank.Events where
 
-#if !(MIN_VERSION_base(4,8,0))
-import Control.Applicative ((<*>))
-#endif
-import Control.Applicative ((<|>), (<$>))
+import Control.Applicative
 import Control.Concurrent.STM
 
 import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
