@@ -1,7 +1,9 @@
-{-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE CPP, OverloadedStrings, TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
+#if !(MIN_VERSION_base(4,8,0))
 import           Data.Functor ((<$))
+#endif
 import           Data.Monoid ((<>))
 import           Data.String
 

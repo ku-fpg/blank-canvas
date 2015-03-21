@@ -2,11 +2,10 @@
 module Graphics.Blank.Types.Cursor where
 
 import           Data.Char (isSpace)
-import           Data.Functor ((<$), (<$>))
-import           Data.Monoid ((<>))
 #if !(MIN_VERSION_base(4,8,0))
-import           Data.Monoid (mempty)
+import           Data.Functor ((<$), (<$>))
 #endif
+import           Data.Monoid
 import           Data.String (IsString(..))
 import qualified Data.Text as TS (Text)
 import           Data.Text (pack)
