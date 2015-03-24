@@ -52,7 +52,11 @@ module Graphics.Blank
         , lineJoin
         , miterLimit
         , LineEndCap(..)
+        , butt
+        , square
         , LineJoinCorner(..)
+        , bevel
+        , miter
           -- ** Colors, styles and shadows
         , strokeStyle
         , fillStyle
@@ -65,6 +69,10 @@ module Graphics.Blank
         , createPattern
         , addColorStop
         , RepeatDirection(..)
+        , repeat_
+        , repeatX
+        , repeatY
+        , noRepeat
         , CanvasGradient
         , CanvasPattern
           -- ** Paths
@@ -89,7 +97,18 @@ module Graphics.Blank
         , strokeText
         , measureText
         , TextAnchorAlignment(..)
+        , start
+        , end
+        , center
+        , left
+        , right
         , TextBaselineAlignment(..)
+        , top
+        , hanging
+        , middle
+        , alphabetic
+        , ideographic
+        , bottom
         , TextMetrics(..)
           -- ** Rectangles
         , clearRect
@@ -105,6 +124,7 @@ module Graphics.Blank
         , Interval
         , Percentage
         , Radians
+        , RoundProperty(..)
         -- * @blank-canvas@ Extensions
         -- ** Reading from 'Canvas'
         , newImage

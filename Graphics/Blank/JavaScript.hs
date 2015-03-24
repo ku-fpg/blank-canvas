@@ -138,9 +138,9 @@ data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
                                 --   does not repeat.
   deriving (Bounded, Enum, Eq, Ix, Ord)
 
--- | Shorthand for 'Repeat', with a quote to distinguish it from 'repeat'.
-repeat' :: RepeatDirection
-repeat' = Repeat
+-- | Shorthand for 'Repeat', with an underscore to distinguish it from 'repeat'.
+repeat_ :: RepeatDirection
+repeat_ = Repeat
 
 -- | Shorthand for 'RepeatX'.
 repeatX :: RepeatDirection
@@ -388,6 +388,7 @@ instance T.Show TextBaselineAlignment where
     showb IdeographicBaseline = "ideographic"
     showb BottomBaseline      = "bottom"
 
+-- | Class for @round@ CSS property values.
 class RoundProperty a where
     -- | Shorthand for 'RoundCap' or 'RoundCorner'.
     round :: a

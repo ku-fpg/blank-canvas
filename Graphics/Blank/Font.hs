@@ -66,7 +66,7 @@ module Graphics.Blank.Font
     , em
     , ex
     , ch
-    , rem
+    , rem_
     , vh
     , vw
     , vmin
@@ -84,5 +84,3 @@ module Graphics.Blank.Font
 import Graphics.Blank.Generated (font)
 import Graphics.Blank.Types.CSS
 import Graphics.Blank.Types.Font
-
-import Prelude hiding (rem)
