@@ -15,7 +15,7 @@ Note that this module's 'cursor' function conflicts with @cursor@ from
 'cursor' from this module.
 -}
 module Graphics.Blank.Cursor (
-      -- * Overloaded @cursor@
+      -- * Overloaded 'cursor'
       cursor
     , CanvasCursor(..)
       -- Cursors

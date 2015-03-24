@@ -46,7 +46,7 @@ deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 devicePixelRatio ::  DeviceContext -> Double
 devicePixelRatio = ctx_devicePixelRatio
 
--- | internal command to send a message to the canvas.
+-- | Internal command to send a message to the canvas.
 sendToCanvas :: DeviceContext -> Builder -> IO ()
 sendToCanvas cxt cmds = do
         KC.send (theComet cxt) . toText $ "try{" <> cmds <> "}catch(e){alert('JavaScript Failure: '+e.message);}"

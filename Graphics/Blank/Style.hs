@@ -30,19 +30,38 @@ module Graphics.Blank.Style
     , hsl
     , hsla
       -- * @colour@ reexports
+      -- ** 'Colour' and 'AlphaColour'
     , Colour
     , AlphaColour
+    , transparent
     , readColourName
+      -- ** CSS Level 1 colors
+    , aqua
+    , black
+    , blue
+    , fuchsia
+    , gray
+    , green
+    , lime
+    , maroon
+    , navy
+    , olive
+    , purple
+    , red
+    , silver
+    , teal
+    , white
+    , yellow
+      -- ** CSS Level 2 color
+    , orange
+      -- ** CSS Color Module Level 3 colors
     , aliceblue
     , antiquewhite
-    , aqua
     , aquamarine
     , azure
     , beige
     , bisque
-    , black
     , blanchedalmond
-    , blue
     , blueviolet
     , brown
     , burlywood
@@ -81,13 +100,10 @@ module Graphics.Blank.Style
     , firebrick
     , floralwhite
     , forestgreen
-    , fuchsia
     , gainsboro
     , ghostwhite
     , gold
     , goldenrod
-    , gray
-    , green
     , grey
     , greenyellow
     , honeydew
@@ -115,11 +131,9 @@ module Graphics.Blank.Style
     , lightslategrey
     , lightsteelblue
     , lightyellow
-    , lime
     , limegreen
     , linen
     , magenta
-    , maroon
     , mediumaquamarine
     , mediumblue
     , mediumorchid
@@ -134,11 +148,8 @@ module Graphics.Blank.Style
     , mistyrose
     , moccasin
     , navajowhite
-    , navy
     , oldlace
-    , olive
     , olivedrab
-    , orange
     , orangered
     , orchid
     , palegoldenrod
@@ -151,8 +162,6 @@ module Graphics.Blank.Style
     , pink
     , plum
     , powderblue
-    , purple
-    , red
     , rosybrown
     , royalblue
     , saddlebrown
@@ -161,7 +170,6 @@ module Graphics.Blank.Style
     , seagreen
     , seashell
     , sienna
-    , silver
     , skyblue
     , slateblue
     , slategray
@@ -170,18 +178,15 @@ module Graphics.Blank.Style
     , springgreen
     , steelblue
     , tan
-    , teal
     , thistle
     , tomato
     , turquoise
     , violet
     , wheat
-    , white
     , whitesmoke
-    , yellow
     , yellowgreen
+      -- ** CSS Color Module Level 4 color
     , rebeccapurple
-    , transparent
     ) where
 
 import qualified Data.Colour as Colour

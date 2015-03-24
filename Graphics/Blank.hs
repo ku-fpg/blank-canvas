@@ -8,8 +8,9 @@ Maintainer:  Andy Gill
 Stability:   Beta
 Portability: GHC
 
-@blank-canvas@ is a Haskell binding to the complete HTML5 Canvas
-API. @blank-canvas@ allows Haskell users to write, in Haskell,
+@blank-canvas@ is a Haskell binding to the complete
+<https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API HTML5 Canvas API>.
+@blank-canvas@ allows Haskell users to write, in Haskell,
 interactive images onto their web browsers. @blank-canvas@ gives
 the users a single full-window canvas, and provides many
 well-documented functions for rendering images.
@@ -290,9 +291,8 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
--- | Sends a set of Canvas commands to the canvas. Attempts
+-- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
-
 send :: DeviceContext -> Canvas a -> IO a
 send cxt commands =
       send' (deviceCanvasContext cxt) commands mempty
@@ -374,12 +374,15 @@ mimeType filePath = go $ fileNameExtensions filePath
 
 -------------------------------------------------
 
+-- | Additional @blank-canvas@ settings. The defaults can be used by creating
+-- 'Options' as a 'Num'. For example, @'blankCanvas' 3000@ uses the default 'Options'
+-- on port 3000.
 data Options = Options
-        { port   :: Int              -- ^ which port do we issue the blank canvas using
-        , events :: [EventName]      -- ^ which events does the canvas listen to
-        , debug  :: Bool             -- ^ turn on debugging (default False)
-        , root   :: String           -- ^ location of the static files (default .)
-        , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
+        { port   :: Int              -- ^ On which port do we issue @blank-canvas@?
+        , events :: [EventName]      -- ^ To which events does the canvas listen? Default: @[]@
+        , debug  :: Bool             -- ^ Turn on debugging. Default: @False@
+        , root   :: String           -- ^ Location of the static files. Default: @\".\"@
+        , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
         }
 
 instance Num Options where
@@ -461,8 +464,10 @@ addColorStop = Canvas.addColorStop
 cursor :: Text -> Canvas ()
 cursor = Canvas.cursor
 
+-- | The height of an 'Image' in pixels.
 height :: (Image image, Num a) => image -> a
 height = JavaScript.height
 
+-- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width

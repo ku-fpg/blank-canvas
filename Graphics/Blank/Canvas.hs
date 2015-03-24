@@ -231,13 +231,13 @@ parseQueryResult (Cursor {}) _                = return ()
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
-uncurry3 :: (t0 -> t1 -> t2 -> t3) -> (t0, t1, t2) -> t3
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
 device = Query Device
 
--- | Turn the canvas into a png data stream / data URL.
+-- | Turn the canvas into a PNG data stream / data URL.
 --
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
