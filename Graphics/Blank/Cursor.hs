@@ -33,7 +33,6 @@ module Graphics.Blank.Cursor (
     , text
     , verticalText
     , alias
-    , copy
     , move
     , noDrop
     , notAllowed
@@ -57,7 +56,9 @@ module Graphics.Blank.Cursor (
     , grab
     , grabbing
     , url
+    , CopyProperty(..)
     ) where
 
 import Graphics.Blank.Canvas (cursor)
+import Graphics.Blank.JavaScript
 import Graphics.Blank.Types.Cursor

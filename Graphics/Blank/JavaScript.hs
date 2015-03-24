@@ -388,10 +388,119 @@ instance T.Show TextBaselineAlignment where
     showb IdeographicBaseline = "ideographic"
     showb BottomBaseline      = "bottom"
 
+-- | The type of compositing operation to apply when drawing new shapes. See
+-- <https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation here>
+-- for an illustrated guide to the compositing modes.
+data CompositeMode = SourceOverMode      -- ^ Draws new shapes on top of existing shapes.
+                   | SourceAtopMode      -- ^ Draws new shapes only on top of where the new shapes and the existing shapes overlap.
+                   | SourceInMode        -- ^ Draws new shapes only on top of where the new shapes and the existing shapes overlap.
+                                         --   Everything else is made transparent.
+                   | SourceOutMode       -- ^ Draws new shapes only where the new shapes and the existing shapes don't overlap.
+                                         --   Everything else is made transparent.
+                   | DestinationOverMode -- ^ Draws new shapes behind existing shapes.
+                   | DestinationAtopMode -- ^ Draws new shapes, and draws existing shapes only on top of where the new shapes
+                                         --   and the existing shapes overlap.
+                   | DestinationInMode   -- ^ Draws existing shapes only on top of where the new shapes and the existing shapes overlap.
+                                        --    Everything else is made transparent.
+                   | DestinationOutMode  -- ^ Draws existing shapes only where the new shapes and the existing shapes don't overlap.
+                                         --   Everything else is made transparent.
+                   | LighterMode         -- ^ Where the new shapes and the existing shapes overlap is determined by adding color values.
+                   | CopyMode            -- ^ Draws only the new images, ignoring the existing images.
+                   | XorMode             -- ^ Where the new shapes and the existing shapes overlap is made transparent.
+  deriving (Bounded, Enum, Eq, Ix, Ord)
+
+-- | Shorthand for 'SourceOverMode'.
+sourceOver :: CompositeMode
+sourceOver = SourceOverMode
+
+-- | Shorthand for 'SourceAtopMode'.
+sourceAtop :: CompositeMode
+sourceAtop = SourceAtopMode
+
+-- | Shorthand for 'SourceIntMode'.
+sourceIn :: CompositeMode
+sourceIn = SourceInMode
+
+-- | Shorthand for 'SourceOutMode'.
+sourceOut :: CompositeMode
+sourceOut = SourceOutMode
+
+-- | Shorthand for 'DestinationOverMode'.
+destinationOver :: CompositeMode
+destinationOver = DestinationOverMode
+
+-- | Shorthand for 'DestinationAtopMode'.
+destinationAtop :: CompositeMode
+destinationAtop = DestinationAtopMode
+
+-- | Shorthand for 'DestinationInMode'.
+destinationIn :: CompositeMode
+destinationIn = DestinationInMode
+
+-- | Shorthand for 'DestinationOutMode'.
+destinationOut :: CompositeMode
+destinationOut = DestinationOutMode
+
+-- | Shorthand for 'LighterMode'.
+lighter :: CompositeMode
+lighter = LighterMode
+
+-- | Shorthand for 'XorMode'.
+xor :: CompositeMode
+xor = XorMode
+
+instance CopyProperty CompositeMode where
+    copy = CopyMode
+
+instance Default CompositeMode where
+    def = SourceOverMode
+
+instance IsString CompositeMode where
+    fromString = read
+
+instance Read CompositeMode where
+    readPrec = parens . lift $ do
+        skipSpaces
+        choice
+            [ SourceOverMode      <$ stringCI "source-over"
+            , SourceAtopMode      <$ stringCI "source-atop"
+            , SourceInMode        <$ stringCI "source-in"
+            , SourceOutMode       <$ stringCI "source-out"
+            , DestinationOverMode <$ stringCI "destination-over"
+            , DestinationAtopMode <$ stringCI "destination-atop"
+            , DestinationInMode   <$ stringCI "destination-in"
+            , DestinationOutMode  <$ stringCI "destination-out"
+            , LighterMode         <$ stringCI "lighter"
+            , CopyMode            <$ stringCI "copy"
+            , XorMode             <$ stringCI "xor"
+            ]
+    readListPrec = readListPrecDefault
+
+instance S.Show CompositeMode where
+    showsPrec p = showsPrec p . FromTextShow
+
+instance T.Show CompositeMode where
+    showb SourceOverMode      = "source-over"
+    showb SourceAtopMode      = "source-atop"
+    showb SourceInMode        = "source-in"
+    showb SourceOutMode       = "source-out"
+    showb DestinationOverMode = "destination-over"
+    showb DestinationAtopMode = "destination-atop"
+    showb DestinationInMode   = "destination-in"
+    showb DestinationOutMode  = "destination-out"
+    showb LighterMode         = "lighter"
+    showb CopyMode            = "copy"
+    showb XorMode             = "xor"
+
 -- | Class for @round@ CSS property values.
 class RoundProperty a where
     -- | Shorthand for 'RoundCap' or 'RoundCorner'.
     round :: a
+
+-- | Class for @copy@ CSS property values.
+class CopyProperty a where
+    -- | Shorthand for 'CopyMode' or 'CopyCursor'.
+    copy :: a
 
 -------------------------------------------------------------
 
@@ -466,6 +575,12 @@ sRGB24showb c =
     RGB r' g' b' = toSRGB24 c
     showbHex2 x | x <= 0xf = B.singleton '0' <> showbHex x
                 | otherwise = showbHex x
+
+instance JSArg CompositeMode where
+    showbJS = jsCompositeMode
+
+jsCompositeMode :: CompositeMode -> Builder
+jsCompositeMode = jsLiteralBuilder . showb
 
 instance JSArg Double where
     showbJS = jsDouble

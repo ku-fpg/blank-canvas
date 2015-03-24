@@ -46,6 +46,17 @@ module Graphics.Blank
           -- ** Compositing
         , globalAlpha
         , globalCompositeOperation
+        , CompositeMode(..)
+        , sourceOver
+        , sourceAtop
+        , sourceIn
+        , sourceOut
+        , destinationOver
+        , destinationAtop
+        , destinationIn
+        , destinationOut
+        , lighter
+        , xor
           -- ** Line styles
         , lineWidth
         , lineCap
@@ -124,6 +135,7 @@ module Graphics.Blank
         , Interval
         , Percentage
         , Radians
+        , CopyProperty(..)
         , RoundProperty(..)
         -- * @blank-canvas@ Extensions
         -- ** Reading from 'Canvas'

@@ -49,7 +49,7 @@ data Cursor = Auto         -- ^ The browser determines the cursor to display bas
             | Text         -- ^ <<https://developer.mozilla.org/files/3809/text.gif>>
             | VerticalText -- ^ <<https://developer.mozilla.org/@api/deki/files/3456/=vertical-text.gif>>
             | Alias        -- ^ <<https://developer.mozilla.org/@api/deki/files/3432/=alias.gif>>
-            | Copy         -- ^ <<https://developer.mozilla.org/@api/deki/files/3436/=copy.gif>>
+            | CopyCursor   -- ^ <<https://developer.mozilla.org/@api/deki/files/3436/=copy.gif>>
             | Move         -- ^ <<https://developer.mozilla.org/@api/deki/files/3443/=move.gif>>
             | NoDrop       -- ^ <<https://developer.mozilla.org/@api/deki/files/3445/=no-drop.gif>>
             | NotAllowed   -- ^ <<https://developer.mozilla.org/@api/deki/files/3446/=not-allowed.gif>>
@@ -75,6 +75,9 @@ data Cursor = Auto         -- ^ The browser determines the cursor to display bas
             | URL TS.Text Cursor
               -- ^ An image from a URL. Must be followed by another 'Cursor'.
     deriving (Eq, Ord)
+
+instance CopyProperty Cursor where
+    copy = CopyCursor
 
 instance IsString Cursor where
     fromString = read
@@ -102,7 +105,7 @@ instance Read Cursor where
           , Text         <$ stringCI "text"
           , VerticalText <$ stringCI "vertical-text"
           , Alias        <$ stringCI "alias"
-          , Copy         <$ stringCI "copy"
+          , CopyCursor   <$ stringCI "copy"
           , Move         <$ stringCI "move"
           , NoDrop       <$ stringCI "no-drop"
           , NotAllowed   <$ stringCI "not-allowed"
@@ -162,7 +165,7 @@ instance T.Show Cursor where
     showb Text         = "text"
     showb VerticalText = "vertical-text"
     showb Alias        = "alias"
-    showb Copy         = "copy"
+    showb CopyCursor   = "copy"
     showb Move         = "move"
     showb NoDrop       = "no-drop"
     showb NotAllowed   = "not-allowed"
@@ -240,10 +243,6 @@ verticalText = VerticalText
 -- | Shorthand for 'Alias'.
 alias :: Cursor
 alias = Alias
-
--- | Shorthand for 'Copy'.
-copy :: Cursor
-copy = Copy
 
 -- | Shorthand for 'Move'.
 move :: Cursor
