@@ -167,6 +167,7 @@ fillText = Method . FillText
 font :: CanvasFont canvasFont => canvasFont -> Canvas ()
 font = Method . Font
 
+-- | Set the alpha value that is applied to shapes before they are drawn onto the canvas.
 globalAlpha :: Alpha -> Canvas ()
 globalAlpha = Method . GlobalAlpha
 

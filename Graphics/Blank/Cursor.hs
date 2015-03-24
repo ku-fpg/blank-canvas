@@ -57,7 +57,6 @@ module Graphics.Blank.Cursor (
     , grab
     , grabbing
     , url
-    , urlXY
     ) where
 
 import Graphics.Blank.Canvas (cursor)
