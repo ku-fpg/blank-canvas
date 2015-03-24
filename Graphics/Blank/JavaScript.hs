@@ -75,7 +75,7 @@ instance (T.Show a, Unbox a) => T.Show (Vector a) where
 
 -------------------------------------------------------------
 
--- TODO: close off
+-- | Class for JavaScript objects that represent images (including the canvas itself).
 class Image a where
     jsImage :: a -> Builder
     width  :: Num b => a -> b

@@ -9,6 +9,7 @@ import           Data.String
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
+import           Graphics.Blank.Types
 
 import           Prelude hiding (Show, rem)
 
@@ -145,10 +146,6 @@ instance T.Show Length where
         showbUnits (In   _) = "in"
         showbUnits (Pt   _) = "pt"
         showbUnits (Pc   _) = "pc"
-
--- | A value representing a percentage (e.g., @0.0@ represents 0%,
--- @100.0@ represents 100%, etc.).
-type Percentage = Double
 
 -- | Designates CSS properties that can consist of a 'Percentage'.
 class PercentageProperty a where

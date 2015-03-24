@@ -18,8 +18,9 @@ import qualified Web.Scotty.Comet as KC
 -- Note that the JavaScript API concepts of
 -- @<https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D CanvasRenderingContext2D>@ and
 -- @<https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement HTMLCanvasElement>@
--- are conflated in @blank-canvas@. Therefore, there is no @getContext@ method,
--- rather, @getContext@ is implied (when using 'send').
+-- are conflated in @blank-canvas@. Therefore, there is no
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext getContext()>@ method;
+-- rather, @getContext()@ is implied (when using 'send').
 data DeviceContext = DeviceContext
         { theComet             :: KC.Document     -- ^ The mechanisms for sending commands
         , eventQueue           :: EventQueue      -- ^ A single (typed) event queue

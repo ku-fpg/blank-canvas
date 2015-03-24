@@ -8,7 +8,6 @@ import           Data.Text (Text)
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
-import           Graphics.Blank.Types.CSS
 import           Graphics.Blank.Types.Font
 
 import           Prelude hiding (Show)
@@ -202,33 +201,42 @@ quadraticCurveTo = Method . QuadraticCurveTo
 rect :: (Double, Double, Double, Double) -> Canvas ()
 rect = Method . Rect
 
+-- | Restores the most recently saved canvas by popping the top entry off of the
+-- drawing state stack. If there is no state, do nothing.
 restore :: () -> Canvas ()
 restore () = Method Restore
 
--- | Rotates the current drawing.
+-- | Applies a rotation transformation to the canvas. When you call functions
+-- such as 'fillRect' after 'rotate', the drawings will be rotated clockwise by
+-- the angle given to 'rotate' (in radians).
 -- Example:
 -- 
 -- @
--- 'rotate' 'pi'     -- Flip the drawing vertically
--- 'rotate' (2*'pi') -- Rotate the drawing 360°
+-- 'rotate' ('pi/2')        -- Rotate the canvas 90°
+-- 'fillRect'(0, 0, 20, 10) -- Draw a 10x20 rectangle
 -- @
 rotate :: Radians -> Canvas ()
 rotate = Method . Rotate
 
+-- | Saves the entire canvas by pushing the current state onto a stack.
 save :: () -> Canvas ()
 save () = Method Save
 
--- | Scales the current drawing's size, where the first argument is the percent to
--- scale horizontally, and the second argument is the percent to scale vertically.
+-- | Applies a scaling transformation to the canvas units, where the first argument
+-- is the percent to scale horizontally, and the second argument is the percent to
+-- scale vertically. By default, one canvas unit is one pixel.
 -- Examples:
 -- 
 -- @
--- 'scale'(50, 50)   -- Halve the drawing's size
--- 'scale'(200, 200) -- Double the drawing's size
+-- 'scale'(0.5, 0.5)        -- Halve the canvas units
+-- 'fillRect'(0, 0, 20, 20) -- Draw a 10x10 square
+-- 'scale'(-1, 1)           -- Flip the context horizontally
 -- @
-scale :: (Percentage, Percentage) -> Canvas ()
+scale :: (Interval, Interval) -> Canvas ()
 scale = Method . Scale
 
+-- | Resets the canvas's transformation matrix to the identity matrix,
+-- then calls 'transform' with the given arguments.
 setTransform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
 setTransform = Method . SetTransform
 
@@ -282,8 +290,39 @@ textAlign = Method . TextAlign
 textBaseline :: TextBaselineAlignment -> Canvas ()
 textBaseline = Method . TextBaseline
 
+-- | Applies a transformation by multiplying a matrix to the canvas's
+-- current transformation. If @'transform'(a, b, c, d, e, f)@ is called, the matrix
+-- 
+-- @
+-- ( a c e )
+-- ( b d f )
+-- ( 0 0 1 )
+-- @
+-- 
+-- is multiplied by the current transformation. Hence the parameters are:
+-- 
+-- * @a@ is the horizontal scaling
+-- 
+-- * @b@ is the horizontal skewing
+-- 
+-- * @c@ is the vertical skewing
+-- 
+-- * @d@ is the vertical scaling
+-- 
+-- * @e@ is the horizontal movement
+-- 
+-- * @f@ is the vertical movement
 transform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
 transform = Method . Transform
 
+-- | Applies a translation transformation by remapping the origin (i.e., the (0,0)
+-- position) on the canvas. When you call functions such as 'fillRect' after
+-- 'translate', the values passed to 'translate' are added to the x- and
+-- y-coordinate values. Example:
+-- 
+-- @
+-- 'translate'(20, 20)
+-- 'fillRect'(0, 0, 40, 40) -- Draw a 40x40 square, starting in position (20, 20)
+-- @
 translate :: (Double, Double) -> Canvas ()
 translate = Method . Translate

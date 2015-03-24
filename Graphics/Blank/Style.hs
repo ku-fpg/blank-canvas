@@ -201,7 +201,6 @@ import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
-import           Graphics.Blank.Types.CSS
 
 import           Prelude hiding (tan)
 

@@ -17,6 +17,7 @@ import qualified Data.Text.Lazy.Builder as B (singleton)
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
+import           Graphics.Blank.Types
 import           Graphics.Blank.Types.CSS
 
 import           Prelude hiding (Show)

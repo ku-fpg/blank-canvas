@@ -63,7 +63,7 @@ instance Monoid a => Monoid (Canvas a) where
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
         -- regular HTML5 canvas commands
-        = Arc (Double, Double, Double, Double, Double, Bool)
+        = Arc (Double, Double, Double, Radians, Radians, Bool)
         | ArcTo (Double, Double, Double, Double, Double)
         | BeginPath
         | BezierCurveTo (Double, Double, Double, Double, Double, Double)
@@ -76,7 +76,7 @@ data Method
         | forall style . Style style => FillStyle style
         | FillText (Text, Double, Double)
         | forall canvasFont . CanvasFont canvasFont => Font canvasFont
-        | GlobalAlpha Double
+        | GlobalAlpha Alpha
         | GlobalCompositeOperation Text
         | LineCap LineEndCap
         | LineJoin LineJoinCorner
@@ -88,9 +88,9 @@ data Method
         | QuadraticCurveTo (Double, Double, Double, Double)
         | Rect (Double, Double, Double, Double)
         | Restore
-        | Rotate Double
+        | Rotate Radians
         | Save
-        | Scale (Double, Double)
+        | Scale (Interval, Interval)
         | SetTransform (Double, Double, Double, Double, Double, Double)
         | ShadowBlur Double
         | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
@@ -107,7 +107,7 @@ data Method
 
 data Command
   = Trigger Event
-  | forall color . CanvasColor color => AddColorStop (Double, color) CanvasGradient
+  | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
 

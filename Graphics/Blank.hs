@@ -24,7 +24,7 @@ module Graphics.Blank
         , DeviceContext       -- abstact
         , send
           -- * HTML5 Canvas API
-          -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript
+          -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
         , Canvas        -- abstract
           -- ** Canvas element
@@ -170,7 +170,6 @@ import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, 
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
 import           Graphics.Blank.Types
-import           Graphics.Blank.Types.CSS
 import           Graphics.Blank.Utils
 
 import qualified Network.HTTP.Types as H
