@@ -46,7 +46,7 @@ instance T.Show Method where
   showb (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
   showb (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
   showb (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
-  showb (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
+  showb (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsCompositeMode a1 <> singleton ')'
   showb (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
   showb (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
   showb (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
@@ -171,7 +171,7 @@ font = Method . Font
 globalAlpha :: Alpha -> Canvas ()
 globalAlpha = Method . GlobalAlpha
 
-globalCompositeOperation :: Text -> Canvas ()
+globalCompositeOperation :: CompositeMode -> Canvas ()
 globalCompositeOperation = Method . GlobalCompositeOperation
 
 lineCap :: LineEndCap -> Canvas ()

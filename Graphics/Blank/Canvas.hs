@@ -77,7 +77,7 @@ data Method
         | FillText (Text, Double, Double)
         | forall canvasFont . CanvasFont canvasFont => Font canvasFont
         | GlobalAlpha Alpha
-        | GlobalCompositeOperation Text
+        | GlobalCompositeOperation CompositeMode
         | LineCap LineEndCap
         | LineJoin LineJoinCorner
         | LineTo (Double, Double)
