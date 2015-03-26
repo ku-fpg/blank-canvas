@@ -38,30 +38,31 @@ import           Text.Show.Text.TH (deriveShow)
 
 -------------------------------------------------------------
 
--- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
+-- | A handle to an offscreen canvas. 'CanvasContext' can not be destroyed.
 data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasContext)
 
--- | A handle to the Image. CanvasImages can not be destroyed.
+-- | A handle to a canvas image. 'CanvasImage's cannot be destroyed.
 data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasImage)
 
--- | A handle to the CanvasGradient. CanvasGradients can not be destroyed.
+-- | A handle to the a canvas gradient. 'CanvasGradient's can not be destroyed.
 newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasGradient)
 
--- | A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
+-- | A handle to a canvas pattern. 'CanvasPattern's can not be destroyed.
 newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasPattern)
 
 -------------------------------------------------------------
 
--- | 'ImageData' is a transliteration of the JavaScript ImageData,
---   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
---  width, height, data can be projected from 'ImageData',
---  'Vector.length' can be used to find the length.
---
---   Note: 'ImageData' lives on the server, not the client.
+-- | 'ImageData' is a transliteration of JavaScript's
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/ImageData ImageData>@.
+-- 'ImageData' consists of two 'Int's and one (unboxed) 'Vector' of 'Word8's.
+-- @width@, @height@, and @data@ can be projected from 'ImageData',
+-- 'Vector.length' can be used to find the @data@ length.
+-- 
+-- Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
@@ -395,7 +396,9 @@ class RoundProperty a where
 
 -------------------------------------------------------------
 
+-- | Class for Haskell data types which represent JavaScript data.
 class JSArg a where
+    -- | Display a value as JavaScript data.
     showbJS :: a -> Builder
 
 instance JSArg (AlphaColour Double) where

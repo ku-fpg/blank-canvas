@@ -420,7 +420,7 @@ instance Num Options where
 -------------------------------------------------
 -- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
--- | Sets the color used to fill a drawing.
+-- | Sets the color used to fill a drawing (@\"black\"@ by default).
 -- Examples:
 -- 
 -- @
@@ -441,7 +441,7 @@ fillStyle = Generated.fillStyle
 font :: Text -> Canvas ()
 font = Generated.font
 
--- | Sets the color used for strokes.
+-- | Sets the color used for strokes (@\"black\"@ by default).
 -- Examples:
 -- 
 -- @

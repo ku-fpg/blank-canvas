@@ -10,19 +10,18 @@ import Data.Text (Text)
 
 import Text.Show.Text.TH (deriveShow)
 
--- | 'EventName' mirrors event names from jquery, and use lower case.
---   Possible named events
---
---     * keypress, keydown, keyup
---     * mouseDown, mouseenter, mousemove, mouseout, mouseover, mouseup
+-- | 'EventName' mirrors event names from jQuery, and uses lowercase.
+-- Possible named events
 -- 
+-- * @keypress@, @keydown@, @keyup@
+-- * @mouseDown@, @mouseenter@, @mousemove@, @mouseout@, @mouseover@, @mouseup@
 type EventName = Text
 
--- | EventQueue is a STM channel ('TChan') of 'Event's.
+-- | 'EventQueue' is an STM channel ('TChan') of 'Event's.
 -- Intentionally, 'EventQueue' is not abstract.
 type EventQueue = TChan Event
 
--- | Basic Event from Browser; see <http://api.jquery.com/category/events/> for details.
+-- | Basic event from browser. See <http://api.jquery.com/category/events/> for details.
 data Event = Event
         { eMetaKey :: Bool
         , ePageXY  :: Maybe (Double, Double)
