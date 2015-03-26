@@ -184,7 +184,7 @@ data Query :: * -> * where
         MeasureText          :: Text                                    -> Query TextMetrics
         IsPointInPath        :: (Double, Double)                        -> Query Bool
         NewImage             :: Text                                    -> Query CanvasImage
-        NewAudio             :: Text                                    -> Query AudioInfo
+        NewAudio             :: Text                                    -> Query CanvasAudio
         CreatePattern        :: Image image => (image, RepeatDirection) -> Query CanvasPattern
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
@@ -220,7 +220,7 @@ parseQueryResult (ToDataURL {}) o             = parseJSON o
 parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o         = parseJSON o
 parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o
+parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
 parseQueryResult (CreatePattern {}) o         = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
@@ -264,13 +264,16 @@ measureText = Query . MeasureText
 isPointInPath :: (Double, Double) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle,
+-- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
--- The assumption is you are using local images, so loading should be near instant.
+-- If you are using local images, loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
-newAudio :: Text -> Canvas AudioInfo
+-- | 'newAudio' takes an URL to an audio file and returs the 'CanvasAudio' handle
+-- /after/ loading.
+-- If you are using local audio files, loading should be near instant.
+newAudio :: Text -> Canvas CanvasAudio
 newAudio = Query . NewAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,

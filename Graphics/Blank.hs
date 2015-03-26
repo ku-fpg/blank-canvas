@@ -129,13 +129,13 @@ module Graphics.Blank
         -- ** Reading from 'Canvas'
         , newImage
         , CanvasImage -- abstract
+        , newAudio
+        , CanvasAudio
          -- ** 'DeviceContext' attributes
         , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
-        , newAudio --NickS addition
-        , AudioInfo -- NickS addition
         , with
         , myCanvasContext
         , deviceCanvasContext

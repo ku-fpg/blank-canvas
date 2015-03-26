@@ -24,7 +24,7 @@ import           Data.Word (Word8)
 
 import           Graphics.Blank.Parser
 
-import           Prelude hiding (Show, round)
+import           Prelude hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
@@ -38,7 +38,7 @@ import           Text.Show.Text.TH (deriveShow)
 
 -------------------------------------------------------------
 
--- | A handle to an offscreen canvas. 'CanvasContext' can not be destroyed.
+-- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
 data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasContext)
 
@@ -46,13 +46,17 @@ $(deriveShow ''CanvasContext)
 data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasImage)
 
--- | A handle to the a canvas gradient. 'CanvasGradient's can not be destroyed.
+-- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
 newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasGradient)
 
--- | A handle to a canvas pattern. 'CanvasPattern's can not be destroyed.
+-- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
 newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasPattern)
+
+-- | A handle to a canvas audio. 'CanvasAudio's cannot be destroyed.
+data CanvasAudio = CanvasAudio !Int !Double deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasAudio)
 
 -------------------------------------------------------------
 
@@ -66,9 +70,6 @@ $(deriveShow ''CanvasPattern)
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
-
-data AudioInfo = AudioInfo !Int !Double deriving (Eq, Ord, S.Show)
-$(deriveShow ''AudioInfo)
 
 -- Borrowed from @text-show-instances@
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
@@ -95,12 +96,12 @@ instance Image CanvasContext where
     height (CanvasContext _ _ h) = fromIntegral h
 
 class Audio a where
-    jsAudio    :: a -> Builder
-    duration   :: Fractional b => a -> b
+    jsAudio  :: a -> Builder
+    duration :: Fractional b => a -> b
 
-instance Audio AudioInfo where         
-  jsAudio                     = jsAudioInfo
-  duration  (AudioInfo _ d)   = realToFrac d
+instance Audio CanvasAudio where         
+  jsAudio                    = jsCanvasAudio
+  duration (CanvasAudio _ d) = realToFrac d
 
 -- instance Element Video  -- Not supported
 
@@ -212,7 +213,7 @@ instance Read LineEndCap where
     readListPrec = readListPrecDefault
 
 instance RoundProperty LineEndCap where
-    round = RoundCap
+    round_ = RoundCap
 
 instance S.Show LineEndCap where
     showsPrec p = showsPrec p . FromTextShow
@@ -255,7 +256,7 @@ instance Read LineJoinCorner where
     readListPrec = readListPrecDefault
 
 instance RoundProperty LineJoinCorner where
-    round = RoundCorner
+    round_ = RoundCorner
 
 instance S.Show LineJoinCorner where
     showsPrec p = showsPrec p . FromTextShow
@@ -391,8 +392,9 @@ instance T.Show TextBaselineAlignment where
 
 -- | Class for @round@ CSS property values.
 class RoundProperty a where
-    -- | Shorthand for 'RoundCap' or 'RoundCorner'.
-    round :: a
+    -- | Shorthand for 'RoundCap' or 'RoundCorner', with an underscore to
+    -- distinguish it from 'round'.
+    round_ :: a
 
 -------------------------------------------------------------
 
@@ -418,18 +420,18 @@ jsAlphaColour aCol
     rgbCol    = darken (recip a) $ aCol `over` black
     RGB r g b = toSRGB24 rgbCol
 
-instance JSArg AudioInfo where
-  showbJS = jsAudioInfo
-
-jsAudioInfo :: AudioInfo -> Builder
-jsAudioInfo (AudioInfo n _ ) = "sounds[" <> showb n <> B.singleton ']'
-
 instance JSArg Bool where
     showbJS = jsBool
 
 jsBool :: Bool -> Builder
 jsBool True  = "true"
 jsBool False = "false"
+
+instance JSArg CanvasAudio where
+  showbJS = jsCanvasAudio
+
+jsCanvasAudio :: CanvasAudio -> Builder
+jsCanvasAudio (CanvasAudio n _ ) = "sounds[" <> showb n <> B.singleton ']'
 
 instance JSArg CanvasContext where
     showbJS = jsCanvasContext
