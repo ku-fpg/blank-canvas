@@ -27,6 +27,7 @@ data DeviceContext = DeviceContext
         , ctx_height           :: !Int
         , ctx_devicePixelRatio :: !Double
         , localFiles           :: TVar (Set Text) -- ^ approved local files
+        , weakRemoteMonad      :: Bool            -- ^ use a weak remote monad for debugging
         }
 
 instance Image DeviceContext where

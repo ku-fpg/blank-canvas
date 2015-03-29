@@ -249,7 +249,7 @@ blankCanvas opts actions = do
                            _ -> return ()
 
 
-                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals
+                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
 
                 -- A bit of bootstrapping
                 DeviceAttributes w h dpr <- send cxt0 device
@@ -259,6 +259,7 @@ blankCanvas opts actions = do
                          { ctx_width = w
                          , ctx_height = h
                          , ctx_devicePixelRatio = dpr
+                         , weakRemoteMonad = weak opts
                          }
 
                 (actions $ cxt1) `catch` \ (e :: SomeException) -> do
@@ -294,8 +295,11 @@ blankCanvas opts actions = do
 -- to common up as many commands as possible. Should not crash.
 
 send :: DeviceContext -> Canvas a -> IO a
-send cxt commands =
-      send' (deviceCanvasContext cxt) commands mempty
+send cxt (Return a) = return a
+send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
+send cxt (With c (Bind m k)) | weakRemoteMonad cxt = send cxt (With c m) >>= send cxt . With c . k
+send cxt (With _ (With c m)) | weakRemoteMonad cxt = send cxt (With c m)
+send cxt commands = send' (deviceCanvasContext cxt) commands mempty
   where
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
       sendBind c (Return a)      k cmds = send' c (k a) cmds
@@ -380,6 +384,7 @@ data Options = Options
         , debug  :: Bool             -- ^ turn on debugging (default False)
         , root   :: String           -- ^ location of the static files (default .)
         , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
+        , weak       :: Bool         -- ^ use a weak monad, which may help debugging (default False)
         }
 
 instance Num Options where
@@ -393,6 +398,7 @@ instance Num Options where
                             , debug = False
                             , root = "."
                             , middleware = [local_only]
+                            , weak = False
                             }
 
 -------------------------------------------------
