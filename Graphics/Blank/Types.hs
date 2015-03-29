@@ -1,6 +1,11 @@
 module Graphics.Blank.Types where
 
--- | A value ranging from 0.0 to 1.0.
+-- | A value representing a percentage (e.g., @0.0@ represents 0%,
+-- @100.0@ represents 100%, etc.).
+type Percentage = Double
+
+-- | A normalized percentage value (e.g., @0.0@ represent 0%, @1.0@
+-- represents 100%, etc.).
 type Interval = Double
 
 -- | An interval representing a color's translucency. A color with an alpha value

@@ -18,8 +18,9 @@ import qualified Web.Scotty.Comet as KC
 -- Note that the JavaScript API concepts of
 -- @<https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D CanvasRenderingContext2D>@ and
 -- @<https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement HTMLCanvasElement>@
--- are conflated in @blank-canvas@. Therefore, there is no @getContext@ method,
--- rather, @getContext@ is implied (when using 'send').
+-- are conflated in @blank-canvas@. Therefore, there is no
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext getContext()>@ method;
+-- rather, @getContext()@ is implied (when using 'send').
 data DeviceContext = DeviceContext
         { theComet             :: KC.Document     -- ^ The mechanisms for sending commands
         , eventQueue           :: EventQueue      -- ^ A single (typed) event queue
@@ -47,7 +48,7 @@ deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
 devicePixelRatio ::  DeviceContext -> Double
 devicePixelRatio = ctx_devicePixelRatio
 
--- | internal command to send a message to the canvas.
+-- | Internal command to send a message to the canvas.
 sendToCanvas :: DeviceContext -> Builder -> IO ()
 sendToCanvas cxt cmds = do
         KC.send (theComet cxt) . toText $ "try{" <> cmds <> "}catch(e){alert('JavaScript Failure: '+e.message);}"

@@ -8,8 +8,9 @@ Maintainer:  Andy Gill
 Stability:   Beta
 Portability: GHC
 
-@blank-canvas@ is a Haskell binding to the complete HTML5 Canvas
-API. @blank-canvas@ allows Haskell users to write, in Haskell,
+@blank-canvas@ is a Haskell binding to the complete
+<https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API HTML5 Canvas API>.
+@blank-canvas@ allows Haskell users to write, in Haskell,
 interactive images onto their web browsers. @blank-canvas@ gives
 the users a single full-window canvas, and provides many
 well-documented functions for rendering images.
@@ -23,7 +24,7 @@ module Graphics.Blank
         , DeviceContext       -- abstact
         , send
           -- * HTML5 Canvas API
-          -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript
+          -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
         , Canvas        -- abstract
           -- ** Canvas element
@@ -51,7 +52,11 @@ module Graphics.Blank
         , lineJoin
         , miterLimit
         , LineEndCap(..)
+        , butt
+        , square
         , LineJoinCorner(..)
+        , bevel
+        , miter
           -- ** Colors, styles and shadows
         , strokeStyle
         , fillStyle
@@ -64,6 +69,10 @@ module Graphics.Blank
         , createPattern
         , addColorStop
         , RepeatDirection(..)
+        , repeat_
+        , repeatX
+        , repeatY
+        , noRepeat
         , CanvasGradient
         , CanvasPattern
           -- ** Paths
@@ -88,7 +97,18 @@ module Graphics.Blank
         , strokeText
         , measureText
         , TextAnchorAlignment(..)
+        , start
+        , end
+        , center
+        , left
+        , right
         , TextBaselineAlignment(..)
+        , top
+        , hanging
+        , middle
+        , alphabetic
+        , ideographic
+        , bottom
         , TextMetrics(..)
           -- ** Rectangles
         , clearRect
@@ -104,17 +124,18 @@ module Graphics.Blank
         , Interval
         , Percentage
         , Radians
+        , RoundProperty(..)
         -- * @blank-canvas@ Extensions
         -- ** Reading from 'Canvas'
         , newImage
         , CanvasImage -- abstract
+        , newAudio
+        , CanvasAudio
          -- ** 'DeviceContext' attributes
         , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
-        , newAudio --NickS addition
-        , AudioInfo -- NickS addition
         , with
         , myCanvasContext
         , deviceCanvasContext
@@ -169,7 +190,6 @@ import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, 
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
 import           Graphics.Blank.Types
-import           Graphics.Blank.Types.CSS
 import           Graphics.Blank.Utils
 
 import qualified Network.HTTP.Types as H
@@ -291,9 +311,8 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
--- | Sends a set of Canvas commands to the canvas. Attempts
+-- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
-
 send :: DeviceContext -> Canvas a -> IO a
 send cxt (Return a) = return a
 send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
@@ -378,12 +397,15 @@ mimeType filePath = go $ fileNameExtensions filePath
 
 -------------------------------------------------
 
+-- | Additional @blank-canvas@ settings. The defaults can be used by creating
+-- 'Options' as a 'Num'. For example, @'blankCanvas' 3000@ uses the default 'Options'
+-- on port 3000.
 data Options = Options
-        { port   :: Int              -- ^ which port do we issue the blank canvas using
-        , events :: [EventName]      -- ^ which events does the canvas listen to
-        , debug  :: Bool             -- ^ turn on debugging (default False)
-        , root   :: String           -- ^ location of the static files (default .)
-        , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
+        { port   :: Int              -- ^ On which port do we issue @blank-canvas@?
+        , events :: [EventName]      -- ^ To which events does the canvas listen? Default: @[]@
+        , debug  :: Bool             -- ^ Turn on debugging. Default: @False@
+        , root   :: String           -- ^ Location of the static files. Default: @\".\"@
+        , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
         , weak       :: Bool         -- ^ use a weak monad, which may help debugging (default False)
         }
 
@@ -404,7 +426,7 @@ instance Num Options where
 -------------------------------------------------
 -- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
--- | Sets the color used to fill a drawing.
+-- | Sets the color used to fill a drawing (@\"black\"@ by default).
 -- Examples:
 -- 
 -- @
@@ -425,7 +447,7 @@ fillStyle = Generated.fillStyle
 font :: Text -> Canvas ()
 font = Generated.font
 
--- | Sets the color used for strokes.
+-- | Sets the color used for strokes (@\"black\"@ by default).
 -- Examples:
 -- 
 -- @
@@ -467,8 +489,10 @@ addColorStop = Canvas.addColorStop
 cursor :: Text -> Canvas ()
 cursor = Canvas.cursor
 
+-- | The height of an 'Image' in pixels.
 height :: (Image image, Num a) => image -> a
 height = JavaScript.height
 
+-- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width

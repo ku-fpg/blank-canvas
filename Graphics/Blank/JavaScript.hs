@@ -24,7 +24,7 @@ import           Data.Word (Word8)
 
 import           Graphics.Blank.Parser
 
-import           Prelude hiding (Show, round)
+import           Prelude hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
@@ -38,36 +38,38 @@ import           Text.Show.Text.TH (deriveShow)
 
 -------------------------------------------------------------
 
--- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
+-- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
 data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasContext)
 
--- | A handle to the Image. CanvasImages can not be destroyed.
+-- | A handle to a canvas image. 'CanvasImage's cannot be destroyed.
 data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasImage)
 
--- | A handle to the CanvasGradient. CanvasGradients can not be destroyed.
+-- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
 newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasGradient)
 
--- | A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
+-- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
 newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasPattern)
 
+-- | A handle to a canvas audio. 'CanvasAudio's cannot be destroyed.
+data CanvasAudio = CanvasAudio !Int !Double deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasAudio)
+
 -------------------------------------------------------------
 
--- | 'ImageData' is a transliteration of the JavaScript ImageData,
---   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
---  width, height, data can be projected from 'ImageData',
---  'Vector.length' can be used to find the length.
---
---   Note: 'ImageData' lives on the server, not the client.
+-- | 'ImageData' is a transliteration of JavaScript's
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/ImageData ImageData>@.
+-- 'ImageData' consists of two 'Int's and one (unboxed) 'Vector' of 'Word8's.
+-- @width@, @height@, and @data@ can be projected from 'ImageData',
+-- 'Vector.length' can be used to find the @data@ length.
+-- 
+-- Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
-
-data AudioInfo = AudioInfo !Int !Double deriving (Eq, Ord, S.Show)
-$(deriveShow ''AudioInfo)
 
 -- Borrowed from @text-show-instances@
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
@@ -75,7 +77,7 @@ instance (T.Show a, Unbox a) => T.Show (Vector a) where
 
 -------------------------------------------------------------
 
--- TODO: close off
+-- | Class for JavaScript objects that represent images (including the canvas itself).
 class Image a where
     jsImage :: a -> Builder
     width  :: Num b => a -> b
@@ -94,12 +96,12 @@ instance Image CanvasContext where
     height (CanvasContext _ _ h) = fromIntegral h
 
 class Audio a where
-    jsAudio    :: a -> Builder
-    duration   :: Fractional b => a -> b
+    jsAudio  :: a -> Builder
+    duration :: Fractional b => a -> b
 
-instance Audio AudioInfo where         
-  jsAudio                     = jsAudioInfo
-  duration  (AudioInfo _ d)   = realToFrac d
+instance Audio CanvasAudio where         
+  jsAudio                    = jsCanvasAudio
+  duration (CanvasAudio _ d) = realToFrac d
 
 -- instance Element Video  -- Not supported
 
@@ -138,9 +140,9 @@ data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
                                 --   does not repeat.
   deriving (Bounded, Enum, Eq, Ix, Ord)
 
--- | Shorthand for 'Repeat', with a quote to distinguish it from 'repeat'.
-repeat' :: RepeatDirection
-repeat' = Repeat
+-- | Shorthand for 'Repeat', with an underscore to distinguish it from 'repeat'.
+repeat_ :: RepeatDirection
+repeat_ = Repeat
 
 -- | Shorthand for 'RepeatX'.
 repeatX :: RepeatDirection
@@ -211,7 +213,7 @@ instance Read LineEndCap where
     readListPrec = readListPrecDefault
 
 instance RoundProperty LineEndCap where
-    round = RoundCap
+    round_ = RoundCap
 
 instance S.Show LineEndCap where
     showsPrec p = showsPrec p . FromTextShow
@@ -254,7 +256,7 @@ instance Read LineJoinCorner where
     readListPrec = readListPrecDefault
 
 instance RoundProperty LineJoinCorner where
-    round = RoundCorner
+    round_ = RoundCorner
 
 instance S.Show LineJoinCorner where
     showsPrec p = showsPrec p . FromTextShow
@@ -388,13 +390,17 @@ instance T.Show TextBaselineAlignment where
     showb IdeographicBaseline = "ideographic"
     showb BottomBaseline      = "bottom"
 
+-- | Class for @round@ CSS property values.
 class RoundProperty a where
-    -- | Shorthand for 'RoundCap' or 'RoundCorner'.
-    round :: a
+    -- | Shorthand for 'RoundCap' or 'RoundCorner', with an underscore to
+    -- distinguish it from 'round'.
+    round_ :: a
 
 -------------------------------------------------------------
 
+-- | Class for Haskell data types which represent JavaScript data.
 class JSArg a where
+    -- | Display a value as JavaScript data.
     showbJS :: a -> Builder
 
 instance JSArg (AlphaColour Double) where
@@ -414,18 +420,18 @@ jsAlphaColour aCol
     rgbCol    = darken (recip a) $ aCol `over` black
     RGB r g b = toSRGB24 rgbCol
 
-instance JSArg AudioInfo where
-  showbJS = jsAudioInfo
-
-jsAudioInfo :: AudioInfo -> Builder
-jsAudioInfo (AudioInfo n _ ) = "sounds[" <> showb n <> B.singleton ']'
-
 instance JSArg Bool where
     showbJS = jsBool
 
 jsBool :: Bool -> Builder
 jsBool True  = "true"
 jsBool False = "false"
+
+instance JSArg CanvasAudio where
+  showbJS = jsCanvasAudio
+
+jsCanvasAudio :: CanvasAudio -> Builder
+jsCanvasAudio (CanvasAudio n _ ) = "sounds[" <> showb n <> B.singleton ']'
 
 instance JSArg CanvasContext where
     showbJS = jsCanvasContext

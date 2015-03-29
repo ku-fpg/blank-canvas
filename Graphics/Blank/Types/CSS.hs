@@ -9,8 +9,9 @@ import           Data.String
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
+import           Graphics.Blank.Types
 
-import           Prelude hiding (Show, rem)
+import           Prelude hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice)
 import           Text.ParserCombinators.ReadPrec (lift)
@@ -56,9 +57,10 @@ ex = fromLength . Ex
 ch :: LengthProperty a => Double -> a
 ch = fromLength . Ch
 
--- | Constructs a 'LengthProperty' value with 'Rem' units.
-rem :: LengthProperty a => Double -> a
-rem = fromLength . Rem
+-- | Constructs a 'LengthProperty' value with 'Rem' units. 'rem_' has an underscore
+-- to distinguish it from 'rem'.
+rem_ :: LengthProperty a => Double -> a
+rem_ = fromLength . Rem
 
 -- | Constructs a 'LengthProperty' value with 'Vh' units.
 vh :: LengthProperty a => Double -> a
@@ -145,10 +147,6 @@ instance T.Show Length where
         showbUnits (In   _) = "in"
         showbUnits (Pt   _) = "pt"
         showbUnits (Pc   _) = "pc"
-
--- | A value representing a percentage (e.g., @0.0@ represents 0%,
--- @100.0@ represents 100%, etc.).
-type Percentage = Double
 
 -- | Designates CSS properties that can consist of a 'Percentage'.
 class PercentageProperty a where

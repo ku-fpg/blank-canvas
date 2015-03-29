@@ -47,11 +47,10 @@ readDataURL mime_type filePath = do
     dat <- B.readFile filePath
     return $ "data:" <> mime_type <> ";base64," <> decodeUtf8 (encode dat)
 
--- | Find the mime type for a data URL.
---
+-- | Find the MIME type for a data URL.
+-- 
 -- > > dataURLMimeType "data:image/png;base64,iVBORw..."
 -- > "image/png"
---
 dataURLMimeType :: Text -> Text
 dataURLMimeType txt
     | dat /= "data" = error "dataURLMimeType: no 'data:'"
@@ -63,7 +62,6 @@ dataURLMimeType txt
    (mime_type,rest2) = Text.span (/= ';') rest1
 
 -- | Write a data URL to a given file.
-
 writeDataURL :: FilePath -> Text -> IO ()
 writeDataURL fileName
              = B.writeFile fileName

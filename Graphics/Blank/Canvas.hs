@@ -63,7 +63,7 @@ instance Monoid a => Monoid (Canvas a) where
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
         -- regular HTML5 canvas commands
-        = Arc (Double, Double, Double, Double, Double, Bool)
+        = Arc (Double, Double, Double, Radians, Radians, Bool)
         | ArcTo (Double, Double, Double, Double, Double)
         | BeginPath
         | BezierCurveTo (Double, Double, Double, Double, Double, Double)
@@ -76,7 +76,7 @@ data Method
         | forall style . Style style => FillStyle style
         | FillText (Text, Double, Double)
         | forall canvasFont . CanvasFont canvasFont => Font canvasFont
-        | GlobalAlpha Double
+        | GlobalAlpha Alpha
         | GlobalCompositeOperation Text
         | LineCap LineEndCap
         | LineJoin LineJoinCorner
@@ -88,9 +88,9 @@ data Method
         | QuadraticCurveTo (Double, Double, Double, Double)
         | Rect (Double, Double, Double, Double)
         | Restore
-        | Rotate Double
+        | Rotate Radians
         | Save
-        | Scale (Double, Double)
+        | Scale (Interval, Interval)
         | SetTransform (Double, Double, Double, Double, Double, Double)
         | ShadowBlur Double
         | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
@@ -107,7 +107,7 @@ data Method
 
 data Command
   = Trigger Event
-  | forall color . CanvasColor color => AddColorStop (Double, color) CanvasGradient
+  | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
 
@@ -129,7 +129,7 @@ instance T.Show Command where
 with :: CanvasContext -> Canvas a -> Canvas a
 with = With
 
--- | 'myCanvasContext' returns the current 'CanvasContent'.
+-- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
 myCanvasContext = MyContext
 
@@ -151,7 +151,7 @@ trigger = Command . Trigger
 addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
 addColorStop (off,rep) = Command . AddColorStop (off,rep)
 
--- | 'console_log' aids debugging by sending the argument to the browser console.log.
+-- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
 console_log = Command . Log
 
@@ -184,7 +184,7 @@ data Query :: * -> * where
         MeasureText          :: Text                                    -> Query TextMetrics
         IsPointInPath        :: (Double, Double)                        -> Query Bool
         NewImage             :: Text                                    -> Query CanvasImage
-        NewAudio             :: Text                                    -> Query AudioInfo
+        NewAudio             :: Text                                    -> Query CanvasAudio
         CreatePattern        :: Image image => (image, RepeatDirection) -> Query CanvasPattern
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
@@ -220,7 +220,7 @@ parseQueryResult (ToDataURL {}) o             = parseJSON o
 parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o         = parseJSON o
 parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (NewAudio {}) o              = uncurry AudioInfo <$> parseJSON o
+parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
 parseQueryResult (CreatePattern {}) o         = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
@@ -231,48 +231,116 @@ parseQueryResult (Cursor {}) _                = return ()
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
-uncurry3 :: (t0 -> t1 -> t2 -> t3) -> (t0, t1, t2) -> t3
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
 device = Query Device
 
--- | Turn the canvas into a png data stream / data URL.
+-- | Turn the canvas into a PNG data stream / data URL.
 --
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
 toDataURL :: () -> Canvas Text
 toDataURL () = Query ToDataURL
 
+-- | Queries the measured width of the text argument.
+-- Example:
+-- 
+-- @
+-- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
+-- @
 measureText :: Text -> Canvas TextMetrics
 measureText = Query . MeasureText
 
+-- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
+-- Example:
+-- 
+-- @
+-- 'rect'(10, 10, 100, 100)
+-- 'stroke'()
+-- b <- 'isPointInPath'(10, 10) -- b == True
+-- @
 isPointInPath :: (Double, Double) -> Canvas Bool
 isPointInPath = Query . IsPointInPath
 
--- | 'image' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle,
--- _after_ loading.
--- The assumption is you are using local images, so loading should be near instant.
+-- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
+-- /after/ loading.
+-- If you are using local images, loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
-newAudio :: Text -> Canvas AudioInfo
+-- | 'newAudio' takes an URL to an audio file and returs the 'CanvasAudio' handle
+-- /after/ loading.
+-- If you are using local audio files, loading should be near instant.
+newAudio :: Text -> Canvas CanvasAudio
 newAudio = Query . NewAudio
 
+-- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
+-- which can be used to fill other shapes.
+-- 
+-- * @x0@ is the starting x-coordinate of the gradient
+-- 
+-- * @y0@ is the starting y-coordinate of the gradient
+-- 
+-- * @x1@ is the ending y-coordinate of the gradient
+-- 
+-- * @y1@ is the ending y-coordinate of the gradient
+-- 
+-- Example:
+-- 
+-- @
+-- grd <- 'createLinearGradient'(0, 0, 10, 10)
+-- grd # 'addColorStop'(0, \"blue\")
+-- grd # 'addColorStop'(1, \"red\")
+-- 'fillStyle' grd
+-- @
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient
 
+-- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
+-- by the coordinates of two circles, which can be used to fill other shapes.
+-- 
+-- * @x0@ is the x-axis of the coordinate of the start circle
+-- 
+-- * @y0@ is the y-axis of the coordinate of the start circle
+-- 
+-- * @r0@ is the radius of the start circle
+-- 
+-- * @x1@ is the x-axis of the coordinate of the end circle
+-- 
+-- * @y1@ is the y-axis of the coordinate of the end circle
+-- 
+-- * @r1@ is the radius of the end circle
+-- 
+-- Example:
+-- 
+-- @
+-- grd <- 'createRadialGradient'(100,100,100,100,100,0)
+-- grd # 'addColorStop'(0, \"blue\")
+-- grd # 'addColorStop'(1, \"red\")
+-- 'fillStyle' grd
+-- @
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
 createRadialGradient = Function . CreateRadialGradient
 
+-- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
+-- Example:
+-- 
+-- @
+-- img <- newImage \"cat.jpg\"
+-- pat <- 'createPattern'(img, 'repeatX')
+-- 'fillStyle' pat
+-- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
 createPattern = Query . CreatePattern
 
--- | Create a new, off-screen canvas buffer. Takes width and height.
+-- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
 newCanvas = Query . NewCanvas
 
--- | Capture ImageDate from the Canvas.
+-- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
+-- upper-left corner @(x, y)@, width @w@, and height @h@.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
 getImageData = Query . GetImageData
 
@@ -285,6 +353,6 @@ getImageData = Query . GetImageData
 cursor :: CanvasCursor cursor => cursor -> Canvas ()
 cursor = Query . Cursor
 
--- | Send all commands to the browser, wait for the browser to ack, then continue.
+-- | Send all commands to the browser, wait for the browser to act, then continue.
 sync :: Canvas ()
 sync = Query Sync

@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 module Graphics.Blank.Types.Cursor where
 
-import           Data.Char (isSpace)
 #if !(MIN_VERSION_base(4,8,0))
 import           Data.Functor ((<$), (<$>))
 #endif
@@ -11,10 +10,10 @@ import qualified Data.Text as TS (Text)
 import           Data.Text (pack)
 
 import           Graphics.Blank.JavaScript
-import           Graphics.Blank.Parser (maybeRead, stringCI, unlift)
+import           Graphics.Blank.Parser (stringCI, unlift)
 
-import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char, choice,
-                                               munch, munch1, skipSpaces,)
+import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char,
+                                               choice, munch, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
 import qualified Text.Show      as S (Show)
@@ -73,9 +72,8 @@ data Cursor = Auto         -- ^ The browser determines the cursor to display bas
             | ZoomOut      -- ^ <<https://developer.mozilla.org/@api/deki/files/3460/=zoom-out.gif>>
             | Grab         -- ^ <<https://developer.mozilla.org/@api/deki/files/3440/=grab.gif>>
             | Grabbing     -- ^ <<https://developer.mozilla.org/@api/deki/files/3441/=grabbing.gif>>
-            | URL TS.Text (Maybe (Double, Double)) Cursor
-              -- ^ An image from a URL, followed by optional coordinates designating the
-              -- cursor's hotspot. Must be followed by another 'Cursor'.
+            | URL TS.Text Cursor
+              -- ^ An image from a URL. Must be followed by another 'Cursor'.
     deriving (Eq, Ord)
 
 instance IsString Cursor where
@@ -133,15 +131,9 @@ instance Read Cursor where
                  <++ quoted '\'' (readURL $ Just '\'')
                  <++ readURL Nothing
                _ <- char ')'
-               coords <- maybeRead $ do
-                             _ <- munch1 isSpace
-                             x <- unlift readPrec
-                             _ <- munch1 isSpace
-                             y <- unlift readPrec
-                             return (x, y)
                skipSpaces
                _ <- char ','
-               URL url' coords <$> unlift readPrec
+               URL url' <$> unlift readPrec
           ]
     
     readListPrec = readListPrecDefault
@@ -193,14 +185,8 @@ instance T.Show Cursor where
     showb ZoomOut      = "zoom-out"
     showb Grab         = "grab"
     showb Grabbing     = "grabbing"
-    showb (URL url' coords cur) =
-        "url(" <> jsLiteralBuilder (fromText url') <> singleton ')'
-               <> mCoords <> ", " <> showb cur
-      where
-        mCoords :: Builder
-        mCoords = case coords of
-            Just (x, y) -> showbSpace <> jsDouble x <> showbSpace <> jsDouble y
-            Nothing     -> mempty
+    showb (URL url' cur) =
+        "url(" <> jsLiteralBuilder (fromText url') <> "), " <> showb cur
 
 -- | Shorthand for 'Auto'.
 auto :: Cursor
@@ -347,10 +333,6 @@ grab = Grab
 grabbing :: Cursor
 grabbing = Grabbing
 
--- | Shorthand for 'URL' without hotspot coordinates.
+-- | Shorthand for 'URL'.
 url :: TS.Text -> Cursor -> Cursor
-url = flip URL Nothing
-
--- | Shorthand for 'URL' with hotspot coordinates.
-urlXY :: TS.Text -> Double -> Double -> Cursor -> Cursor
-urlXY url' x y = URL url' $ Just (x, y)
+url = URL
