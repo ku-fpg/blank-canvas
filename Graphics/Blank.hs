@@ -100,10 +100,13 @@ module Graphics.Blank
         , CanvasContext
         , newCanvas
           -- ** Audio functionality
+        , currentTimeAudio
         , newAudio 
         , InfoAudio
+        , durationAudio -- subject to change
         , playAudio
         , pauseAudio
+        , setVolumeAudio
         , with
         , myCanvasContext
         , deviceCanvasContext

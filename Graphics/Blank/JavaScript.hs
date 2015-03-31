@@ -92,12 +92,12 @@ instance Image CanvasContext where
     height (CanvasContext _ _ h) = fromIntegral h
 
 class Audio a where
-    jsAudio    :: a -> Builder
-    duration   :: Fractional b => a -> b
+    jsAudio       :: a -> Builder
+    durationAudio :: Fractional b => a -> b
 
 instance Audio InfoAudio where         
-  jsAudio                     = jsInfoAudio
-  duration  (InfoAudio _ d)   = realToFrac d
+  jsAudio                        = jsInfoAudio
+  durationAudio  (InfoAudio _ d) = realToFrac d
 
 -- instance Element Video  -- Not supported
 
@@ -413,7 +413,10 @@ instance JSArg InfoAudio where
   showbJS = jsInfoAudio
 
 jsInfoAudio :: InfoAudio -> Builder
-jsInfoAudio (InfoAudio n _ ) = "sounds[" <> showb n <> B.singleton ']'
+jsInfoAudio (InfoAudio n _ ) = "audios[" <> showb n <> B.singleton ']'
+
+jsIndexAudio :: InfoAudio -> Builder
+jsIndexAudio (InfoAudio n _) = showb n
 
 instance JSArg Bool where
     showbJS = jsBool

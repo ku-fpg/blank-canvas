@@ -19,8 +19,10 @@ instance S.Show Method where
   showsPrec p = (++) . toString . showbPrec p
 
 instance T.Show MethodAudio where
-  showb (PlayAudio audio) = jsAudio audio <> ".play()"
-  showb (PauseAudio audio)= jsAudio audio <> ".pause()"
+  showb (PlayAudio audio)            = jsAudio audio <> ".play()"
+  showb (PauseAudio audio)           = jsAudio audio <> ".pause()"
+  showb (SetVolumeAudio (audio, vol)) = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+  -- showb (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
   
 instance T.Show Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
@@ -160,6 +162,12 @@ playAudio = MethodAudio . PlayAudio
 
 pauseAudio :: Audio audio => audio -> Canvas ()
 pauseAudio = MethodAudio . PauseAudio
+
+setVolumeAudio :: Audio audio => (audio, Double) -> Canvas ()
+setVolumeAudio = MethodAudio . SetVolumeAudio
+
+-- currentTimeAudio :: Audio audio => audio -> Canvas ()
+-- currentTimeAudio = MethodAudio . CurrentTimeAudio
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()

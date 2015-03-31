@@ -159,6 +159,18 @@
                 }
             }
 
+            function CurrentTimeAudio(aud) {
+                return function (u,c) {
+                    //console.log(aud);
+                    var currTime = audios[aud].currentTime;
+                    console.log(aud);
+
+                    //var currTime = audios[0].currentTime;
+                    $.kc.reply(u,currTime);
+                    //$.kc.reply(u,12);
+                }
+            }
+
             $(document).ready(function() {
                 // Make the canvas the size of the window
                 var w = $(window).width();

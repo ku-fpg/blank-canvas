@@ -105,8 +105,10 @@ data Method
         | Translate (Double, Double)
 
 data MethodAudio
-        = forall audio . Audio audio => PlayAudio  audio
-        | forall audio . Audio audio => PauseAudio audio
+        = forall audio . Audio audio => PlayAudio        audio
+        | forall audio . Audio audio => PauseAudio       audio
+        | forall audio . Audio audio => SetVolumeAudio   (audio, Double)
+        -- | forall audio . Audio audio => CurrentTimeAudio audio
 
 data Command
   = Trigger Event
@@ -184,6 +186,8 @@ data Query :: * -> * where
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Sync                 ::                                            Query ()
         NewAudio             :: Text                                    -> Query InfoAudio
+        CurrentTimeAudio     :: InfoAudio                               -> Query Double
+        GetVolumeAudio       :: InfoAudio                               -> Query Double
 
 instance S.Show (Query a) where
   showsPrec p = (++) . toString . showbPrec p
@@ -205,6 +209,8 @@ instance T.Show (Query a) where
                                                        <> jsDouble sh <> singleton ')'
   showb Sync                         = "Sync"
   showb (NewAudio txt)               = "NewAudio(" <> jsText txt <> singleton ')'
+  showb (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  showb (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -219,7 +225,9 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
-parseQueryResult (NewAudio {}) o              = uncurry InfoAudio <$> parseJSON o                                           
+parseQueryResult (NewAudio {}) o              = uncurry InfoAudio <$> parseJSON o
+parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
+-- parseQueryResult (GetVolumeAudio   {}) 
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
@@ -250,6 +258,9 @@ newImage = Query . NewImage
 
 newAudio :: Text -> Canvas InfoAudio
 newAudio = Query . NewAudio
+
+currentTimeAudio :: InfoAudio -> Canvas Double
+currentTimeAudio = Query . CurrentTimeAudio
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient
