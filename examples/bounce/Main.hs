@@ -19,23 +19,17 @@ type State = ([Ball Color])
 
 showBall :: (Double, Double) -> Text -> Canvas ()
 showBall (x,y) col = do
---	save()
---	translate (x,y)
-
         beginPath()
---        scale (1,0.9)
         globalAlpha 0.5
         fillStyle col
         arc(x, y, 50, 0, pi*2, False)
         closePath()
         fill()
-        
---	restore()
 
 moveBall :: Ball a -> Ball a
 moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
 
-go :: DeviceContext -> IO b
+go :: DeviceContext -> IO ()
 go context = do
 
      let (w,h) = (width context, height context) :: (Double, Double)
@@ -47,7 +41,6 @@ go context = do
             | otherwise         = ((x,y),d,a)
 
      let loop (balls,cols) = do
---             print state
 
              send context $ do
                 clearCanvas
@@ -55,10 +48,9 @@ go context = do
                      [ showBall xy col
                      | (xy,_,col) <- balls
                      ]
-             threadDelay (20 * 1000)	                   
+             threadDelay (20 * 1000) 
 
              es <- flush context
-             if (null es) then return () else print es
 
              let newBalls = [ ((x,y),0,head cols) 
                             | Just (x,y) <- map ePageXY es

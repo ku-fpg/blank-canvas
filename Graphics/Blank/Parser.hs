@@ -1,35 +1,39 @@
 module Graphics.Blank.Parser where
 
 import Control.Applicative hiding (many, optional)
-import Control.Monad (void)
 
-import Data.CaseInsensitive (mk)
 import Data.Char
 import Data.Ix
-import Data.Functor
+import Data.Functor (void)
 
 import Text.ParserCombinators.ReadP
 import Text.ParserCombinators.ReadPrec (ReadPrec, readPrec_to_P)
 
--- | maybeRead p will either parse p or return Nothing without consuming any
---   input. Compare to optional from Text.ParserCombinators.ReadP.
-maybeRead :: ReadPrec a -> ReadPrec (Maybe a)
+-- | @maybeRead p@ will either parse @p@ or return 'Nothing' without consuming any
+--   input. Compare to 'option' from "Text.ParserCombinators.ReadP".
+maybeRead :: ReadP a -> ReadP (Maybe a)
 maybeRead p = (Just <$> p) <|> return Nothing
 
--- | A case-insensitive version of string from Text.ParserCombinators.ReadP.
+-- | @maybeReadPrec p@ will either parse @p@ or return 'Nothing' without consuming any
+--   input. Compare to 'option' from "Text.ParserCombinators.ReadP".
+maybeReadPrec :: ReadPrec a -> ReadPrec (Maybe a)
+maybeReadPrec p = (Just <$> p) <|> return Nothing
+
+-- | A case-insensitive version of 'string' from "Text.ParserCombinators.ReadP".
 stringCI :: String -> ReadP String
 stringCI this = look >>= scan this
   where
     scan :: String -> String -> ReadP String
-    scan []     _                     = return this
-    scan (x:xs) (y:ys) | mk x == mk y = get *> scan xs ys
-    scan _      _                     = pfail
+    scan []     _                = return this
+    scan (x:xs) (y:ys)
+        | toLower x == toLower y = get *> scan xs ys
+    scan _      _                = pfail
 
--- | Convert a ReadPrec to a ReadP (the converse of lift).
+-- | Convert a 'ReadPrec' to a 'ReadP' (the converse of 'lift').
 unlift :: ReadPrec a -> ReadP a
 unlift = flip readPrec_to_P 0
 
--- | Equivalent to the function from parsec, but using ReadP.
+-- | Equivalent to the function from @parsec@, but using 'ReadP'.
 noneOf :: [Char] -> ReadP Char
 noneOf cs = satisfy $ \c -> not $ elem c cs
 

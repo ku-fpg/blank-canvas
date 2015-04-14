@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.JavaScript where
 
@@ -9,7 +9,10 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.Monoid ((<>), mconcat)
+#if !(MIN_VERSION_base(4,8,0))
+import           Data.Monoid (mconcat)
+#endif
+import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
 import           Data.Text (Text)
@@ -19,11 +22,9 @@ import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector, Unbox, toList)
 import           Data.Word (Word8)
 
-import           GHC.Show (appPrec)
-
 import           Graphics.Blank.Parser
 
-import           Prelude hiding (Show, round)
+import           Prelude hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
@@ -37,43 +38,46 @@ import           Text.Show.Text.TH (deriveShow)
 
 -------------------------------------------------------------
 
--- | A handle to an offscreen canvas. CanvasContext can not be destroyed.
+-- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
 data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasContext)
 
--- | A handle to the Image. CanvasImages can not be destroyed.
+-- | A handle to a canvas image. 'CanvasImage's cannot be destroyed.
 data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasImage)
 
--- | A handle to the CanvasGradient. CanvasGradients can not be destroyed.
+-- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
 newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasGradient)
 
--- | A handle to the CanvasPattern. CanvasPatterns can not be destroyed.
+-- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
 newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
 $(deriveShow ''CanvasPattern)
 
+-- | A handle to a canvas audio. 'CanvasAudio's cannot be destroyed.
+data CanvasAudio = CanvasAudio !Int !Double deriving (Eq, Ord, S.Show)
+$(deriveShow ''CanvasAudio)
+
 -------------------------------------------------------------
 
--- | 'ImageData' is a transliteration of the JavaScript ImageData,
---   There are two 'Int's, and one (unboxed) 'Vector' of 'Word8's.
---  width, height, data can be projected from 'ImageData',
---  'Vector.length' can be used to find the length.
---
---   Note: 'ImageData' lives on the server, not the client.
+-- | 'ImageData' is a transliteration of JavaScript's
+-- @<https://developer.mozilla.org/en-US/docs/Web/API/ImageData ImageData>@.
+-- 'ImageData' consists of two 'Int's and one (unboxed) 'Vector' of 'Word8's.
+-- @width@, @height@, and @data@ can be projected from 'ImageData',
+-- 'Vector.length' can be used to find the @data@ length.
+-- 
+-- Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
 $(deriveShow ''ImageData)
 
-data InfoAudio = InfoAudio !Int !Double deriving (Eq, Ord, S.Show)
-$(deriveShow ''InfoAudio)
-
+-- Borrowed from @text-show-instances@
 instance (T.Show a, Unbox a) => T.Show (Vector a) where
-    showbPrec p v = showbParen (p > appPrec) $ "fromList " <> showb (toList v)
+    showbPrec p = showbUnary "fromList" p . toList
 
 -------------------------------------------------------------
 
--- TODO: close off
+-- | Class for JavaScript objects that represent images (including the canvas itself).
 class Image a where
     jsImage :: a -> Builder
     width  :: Num b => a -> b
@@ -95,16 +99,18 @@ class Audio a where
     jsAudio       :: a -> Builder
     durationAudio :: Fractional b => a -> b
 
-instance Audio InfoAudio where         
-  jsAudio                        = jsInfoAudio
-  durationAudio  (InfoAudio _ d) = realToFrac d
+instance Audio CanvasAudio where         
+  jsAudio                         = jsCanvasAudio
+  durationAudio (CanvasAudio _ d) = realToFrac d
 
 -- instance Element Video  -- Not supported
 
 -----------------------------------------------------------------------------
 
--- TODO: close off
+-- | A data type that can represent a style. That is, something with one or more
+-- colors.
 class Style a where
+    -- | Convert a value into a JavaScript string representing a style value.
     jsStyle :: a -> Builder
 
 instance Style Text                 where { jsStyle = jsText }
@@ -113,6 +119,7 @@ instance Style CanvasPattern        where { jsStyle = jsCanvasPattern }
 instance Style (Colour Double)      where { jsStyle = jsColour }
 instance Style (AlphaColour Double) where { jsStyle = jsAlphaColour }
 
+-- | A 'Style' containing exactly one color.
 class Style a => CanvasColor a
 
 jsCanvasColor :: CanvasColor color => color -> Builder
@@ -131,11 +138,11 @@ data RepeatDirection = Repeat   -- ^ The pattern repeats both horizontally
                      | RepeatY  -- ^ The pattern repeats only vertically.
                      | NoRepeat -- ^ The pattern displays only once and
                                 --   does not repeat.
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
--- | Shorthand for 'Repeat', with a quote to distinguish it from 'repeat'.
-repeat' :: RepeatDirection
-repeat' = Repeat
+-- | Shorthand for 'Repeat', with an underscore to distinguish it from 'repeat'.
+repeat_ :: RepeatDirection
+repeat_ = Repeat
 
 -- | Shorthand for 'RepeatX'.
 repeatX :: RepeatDirection
@@ -167,7 +174,7 @@ instance Read RepeatDirection where
     readListPrec = readListPrecDefault
 
 instance S.Show RepeatDirection where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show RepeatDirection where
     showb Repeat   = "repeat"
@@ -179,7 +186,7 @@ instance T.Show RepeatDirection where
 data LineEndCap = ButtCap   -- ^ Flat edges (default).
                 | RoundCap  -- ^ Semicircular end caps
                 | SquareCap -- ^ Square end caps
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'ButtCap'.
 butt :: LineEndCap
@@ -206,10 +213,10 @@ instance Read LineEndCap where
     readListPrec = readListPrecDefault
 
 instance RoundProperty LineEndCap where
-    round = RoundCap
+    round_ = RoundCap
 
 instance S.Show LineEndCap where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show LineEndCap where
     showb ButtCap   = "butt"
@@ -222,7 +229,7 @@ data LineJoinCorner = BevelCorner -- ^ A filled triangle with a beveled edge
                     | RoundCorner -- ^ A filled arc connects two lines.
                     | MiterCorner -- ^ A filled triangle with a sharp edge
                                   --   connects two lines (default).
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'BevelCorner'.
 bevel :: LineJoinCorner
@@ -249,10 +256,10 @@ instance Read LineJoinCorner where
     readListPrec = readListPrecDefault
 
 instance RoundProperty LineJoinCorner where
-    round = RoundCorner
+    round_ = RoundCorner
 
 instance S.Show LineJoinCorner where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show LineJoinCorner where
     showb BevelCorner = "bevel"
@@ -269,7 +276,7 @@ data TextAnchorAlignment = StartAnchor  -- ^ The text is anchored at either its 
                          | CenterAnchor -- ^ The text is anchored in its center.
                          | LeftAnchor   -- ^ The text is anchored at its left edge.
                          | RightAnchor  -- ^ the text is anchored at its right edge.
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'StartAnchor'.
 start :: TextAnchorAlignment
@@ -310,7 +317,7 @@ instance Read TextAnchorAlignment where
     readListPrec = readListPrecDefault
 
 instance S.Show TextAnchorAlignment where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show TextAnchorAlignment where
     showb StartAnchor  = "start"
@@ -327,7 +334,7 @@ data TextBaselineAlignment = TopBaseline
                            | AlphabeticBaseline
                            | IdeographicBaseline
                            | BottomBaseline
-  deriving (Bounded, Eq, Ix, Ord)
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'TopBaseline'.
 top :: TextBaselineAlignment
@@ -373,7 +380,7 @@ instance Read TextBaselineAlignment where
     readListPrec = readListPrecDefault
 
 instance S.Show TextBaselineAlignment where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show TextBaselineAlignment where
     showb TopBaseline         = "top"
@@ -383,13 +390,17 @@ instance T.Show TextBaselineAlignment where
     showb IdeographicBaseline = "ideographic"
     showb BottomBaseline      = "bottom"
 
+-- | Class for @round@ CSS property values.
 class RoundProperty a where
-    -- | Shorthand for 'RoundCap' or 'RoundCorner'.
-    round :: a
+    -- | Shorthand for 'RoundCap' or 'RoundCorner', with an underscore to
+    -- distinguish it from 'round'.
+    round_ :: a
 
 -------------------------------------------------------------
 
+-- | Class for Haskell data types which represent JavaScript data.
 class JSArg a where
+    -- | Display a value as JavaScript data.
     showbJS :: a -> Builder
 
 instance JSArg (AlphaColour Double) where
@@ -409,21 +420,21 @@ jsAlphaColour aCol
     rgbCol    = darken (recip a) $ aCol `over` black
     RGB r g b = toSRGB24 rgbCol
 
-instance JSArg InfoAudio where
-  showbJS = jsInfoAudio
-
-jsInfoAudio :: InfoAudio -> Builder
-jsInfoAudio (InfoAudio n _ ) = "audios[" <> showb n <> B.singleton ']'
-
-jsIndexAudio :: InfoAudio -> Builder
-jsIndexAudio (InfoAudio n _) = showb n
-
 instance JSArg Bool where
     showbJS = jsBool
 
 jsBool :: Bool -> Builder
 jsBool True  = "true"
 jsBool False = "false"
+
+instance JSArg CanvasAudio where
+  showbJS = jsCanvasAudio
+
+jsCanvasAudio :: CanvasAudio -> Builder
+jsCanvasAudio (CanvasAudio n _ ) = "sounds[" <> showb n <> B.singleton ']'
+
+jsIndexAudio :: CanvasAudio -> Builder
+jsIndexAudio (CanvasAudio n _) = showb n
 
 instance JSArg CanvasContext where
     showbJS = jsCanvasContext
@@ -474,7 +485,9 @@ instance JSArg ImageData where
     showbJS = jsImageData
 
 jsImageData :: ImageData -> Builder
-jsImageData (ImageData w h d) = "ImageData(" <> showb w <> B.singleton ',' <> showb h <> ",[" <> vs <> "])"
+jsImageData (ImageData w h d) = "ImageData(" <> showb w
+    <> B.singleton ',' <> showb h
+    <> ",[" <> vs <> "])"
   where
     vs = jsList showb $ V.toList d
 
@@ -523,7 +536,7 @@ instance JSArg TextBaselineAlignment where
 jsTextBaselineAlignment :: TextBaselineAlignment -> Builder
 jsTextBaselineAlignment = jsLiteralBuilder . showb
 
--- The following was adapted our Sunroof compiler.
+-- The following was adapted from our Sunroof compiler.
 -- -------------------------------------------------------------
 -- Builder Conversion Utilities: Haskell -> JS
 -- -------------------------------------------------------------

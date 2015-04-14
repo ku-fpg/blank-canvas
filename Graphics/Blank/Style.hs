@@ -1,172 +1,193 @@
+{-|
+Module:      Graphics.Blank.Style
+Copyright:   (C) 2014-2015, The University of Kansas
+License:     BSD-style (see the file LICENSE)
+Maintainer:  Andy Gill
+Stability:   Beta
+Portability: GHC
+
+This module exposes overloaded versions of @blank-canvas@ functions that take a
+style or color as an argument, which may be of interest if you desire stronger
+type safety than @Text@ provides.
+
+Note that this module exports function names that conflict with "Graphics.Blank".
+Make sure to hide any functions from "Graphics.Blank" that you use from this
+module.
+-}
 module Graphics.Blank.Style 
-        ( -- * Overloaded versions of 'Canvas' functions
-          strokeStyle
-        , fillStyle
-        , shadowColor
-        , addColorStop
-        , Style(..)
-        , CanvasColor
-          -- * 'CanvasColor' creation
-        , Alpha
-        , Percentage
-        , rgb
-        , rgbPercent
-        , rgba
-        , rgbaPercent
-        , hsl
-        , hsla
-          -- * @colour@ reexports
-        , readColourName
-        , aliceblue
-        , antiquewhite
-        , aqua
-        , aquamarine
-        , azure
-        , beige
-        , bisque
-        , black
-        , blanchedalmond
-        , blue
-        , blueviolet
-        , brown
-        , burlywood
-        , cadetblue
-        , chartreuse
-        , chocolate
-        , coral
-        , cornflowerblue
-        , cornsilk
-        , crimson
-        , cyan
-        , darkblue
-        , darkcyan
-        , darkgoldenrod
-        , darkgray
-        , darkgreen
-        , darkgrey
-        , darkkhaki
-        , darkmagenta
-        , darkolivegreen
-        , darkorange
-        , darkorchid
-        , darkred
-        , darksalmon
-        , darkseagreen
-        , darkslateblue
-        , darkslategray
-        , darkslategrey
-        , darkturquoise
-        , darkviolet
-        , deeppink
-        , deepskyblue
-        , dimgray
-        , dimgrey
-        , dodgerblue
-        , firebrick
-        , floralwhite
-        , forestgreen
-        , fuchsia
-        , gainsboro
-        , ghostwhite
-        , gold
-        , goldenrod
-        , gray
-        , green
-        , grey
-        , greenyellow
-        , honeydew
-        , hotpink
-        , indianred
-        , indigo
-        , ivory
-        , khaki
-        , lavender
-        , lavenderblush
-        , lawngreen
-        , lemonchiffon
-        , lightblue
-        , lightcoral
-        , lightcyan
-        , lightgoldenrodyellow
-        , lightgray
-        , lightgreen
-        , lightgrey
-        , lightpink
-        , lightsalmon
-        , lightseagreen
-        , lightskyblue
-        , lightslategray
-        , lightslategrey
-        , lightsteelblue
-        , lightyellow
-        , lime
-        , limegreen
-        , linen
-        , magenta
-        , maroon
-        , mediumaquamarine
-        , mediumblue
-        , mediumorchid
-        , mediumpurple
-        , mediumseagreen
-        , mediumslateblue
-        , mediumspringgreen
-        , mediumturquoise
-        , mediumvioletred
-        , midnightblue
-        , mintcream
-        , mistyrose
-        , moccasin
-        , navajowhite
-        , navy
-        , oldlace
-        , olive
-        , olivedrab
-        , orange
-        , orangered
-        , orchid
-        , palegoldenrod
-        , palegreen
-        , paleturquoise
-        , palevioletred
-        , papayawhip
-        , peachpuff
-        , peru
-        , pink
-        , plum
-        , powderblue
-        , purple
-        , red
-        , rosybrown
-        , royalblue
-        , saddlebrown
-        , salmon
-        , sandybrown
-        , seagreen
-        , seashell
-        , sienna
-        , silver
-        , skyblue
-        , slateblue
-        , slategray
-        , slategrey
-        , snow
-        , springgreen
-        , steelblue
-        , tan
-        , teal
-        , thistle
-        , tomato
-        , turquoise
-        , violet
-        , wheat
-        , white
-        , whitesmoke
-        , yellow
-        , yellowgreen
-        , rebeccapurple
-        , transparent
-        ) where
+    ( -- * Overloaded versions of 'Canvas' functions
+      strokeStyle
+    , fillStyle
+    , shadowColor
+    , addColorStop
+    , Style(..)
+    , CanvasColor
+      -- * 'CanvasColor' creation
+    , rgb
+    , rgbPercent
+    , rgba
+    , rgbaPercent
+    , hsl
+    , hsla
+      -- * @colour@ reexports
+      -- ** 'Colour' and 'AlphaColour'
+    , Colour
+    , AlphaColour
+    , transparent
+    , readColourName
+      -- ** CSS Level 1 colors
+    , aqua
+    , black
+    , blue
+    , fuchsia
+    , gray
+    , green
+    , lime
+    , maroon
+    , navy
+    , olive
+    , purple
+    , red
+    , silver
+    , teal
+    , white
+    , yellow
+      -- ** CSS Level 2 color
+    , orange
+      -- ** CSS Color Module Level 3 colors
+    , aliceblue
+    , antiquewhite
+    , aquamarine
+    , azure
+    , beige
+    , bisque
+    , blanchedalmond
+    , blueviolet
+    , brown
+    , burlywood
+    , cadetblue
+    , chartreuse
+    , chocolate
+    , coral
+    , cornflowerblue
+    , cornsilk
+    , crimson
+    , cyan
+    , darkblue
+    , darkcyan
+    , darkgoldenrod
+    , darkgray
+    , darkgreen
+    , darkgrey
+    , darkkhaki
+    , darkmagenta
+    , darkolivegreen
+    , darkorange
+    , darkorchid
+    , darkred
+    , darksalmon
+    , darkseagreen
+    , darkslateblue
+    , darkslategray
+    , darkslategrey
+    , darkturquoise
+    , darkviolet
+    , deeppink
+    , deepskyblue
+    , dimgray
+    , dimgrey
+    , dodgerblue
+    , firebrick
+    , floralwhite
+    , forestgreen
+    , gainsboro
+    , ghostwhite
+    , gold
+    , goldenrod
+    , grey
+    , greenyellow
+    , honeydew
+    , hotpink
+    , indianred
+    , indigo
+    , ivory
+    , khaki
+    , lavender
+    , lavenderblush
+    , lawngreen
+    , lemonchiffon
+    , lightblue
+    , lightcoral
+    , lightcyan
+    , lightgoldenrodyellow
+    , lightgray
+    , lightgreen
+    , lightgrey
+    , lightpink
+    , lightsalmon
+    , lightseagreen
+    , lightskyblue
+    , lightslategray
+    , lightslategrey
+    , lightsteelblue
+    , lightyellow
+    , limegreen
+    , linen
+    , magenta
+    , mediumaquamarine
+    , mediumblue
+    , mediumorchid
+    , mediumpurple
+    , mediumseagreen
+    , mediumslateblue
+    , mediumspringgreen
+    , mediumturquoise
+    , mediumvioletred
+    , midnightblue
+    , mintcream
+    , mistyrose
+    , moccasin
+    , navajowhite
+    , oldlace
+    , olivedrab
+    , orangered
+    , orchid
+    , palegoldenrod
+    , palegreen
+    , paleturquoise
+    , palevioletred
+    , papayawhip
+    , peachpuff
+    , peru
+    , pink
+    , plum
+    , powderblue
+    , rosybrown
+    , royalblue
+    , saddlebrown
+    , salmon
+    , sandybrown
+    , seagreen
+    , seashell
+    , sienna
+    , skyblue
+    , slateblue
+    , slategray
+    , slategrey
+    , snow
+    , springgreen
+    , steelblue
+    , tan
+    , thistle
+    , tomato
+    , turquoise
+    , violet
+    , wheat
+    , whitesmoke
+    , yellowgreen
+      -- ** CSS Color Module Level 4 color
+    , rebeccapurple
+    ) where
 
 import qualified Data.Colour as Colour
 import           Data.Colour hiding (black, transparent)
@@ -179,29 +200,21 @@ import           Data.Word
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
-import           Graphics.Blank.Types.CSS
+import           Graphics.Blank.Types
 
 import           Prelude hiding (tan)
 
--- |
--- A value ranging from 0.0 to 1.0. A color with an alpha value of 0.0 is 'transparent',
--- and a color with an alpha value of 1.0 is opaque.
-type Alpha = Double
-
--- |
--- Specifies a 'Colour' by its red, green, and blue components, where each component
+-- | Specifies a 'Colour' by its red, green, and blue components, where each component
 -- is an integer between 0 and 255.
 rgb :: Word8 -> Word8 -> Word8 -> Colour Double
 rgb = sRGB24
 
--- |
--- Specifies a 'Colour' by its red, green, and blue components, where each component
--- is given by a percentage of 255.
+-- | Specifies a 'Colour' by its red, green, and blue components, where each component
+-- is given by a percentage (which should be between 0% to 100%) of 255.
 rgbPercent :: Percentage -> Percentage -> Percentage -> Colour Double
 rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 
--- |
--- Specifies an 'AlphaColour' by its RGB components and an alpha value.
+-- | Specifies an 'AlphaColour' by its RGB components and an alpha value.
 -- 
 -- @
 -- 'rgba' r g b 0.0 = 'transparent'
@@ -209,8 +222,8 @@ rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 rgba :: Word8 -> Word8 -> Word8 -> Alpha -> AlphaColour Double
 rgba r g b = withOpacity $ rgb r g b
 
--- |
--- Specifies an 'AlphaColour' by its RGB component percentages and an alpha value.
+-- | Specifies an 'AlphaColour' by its RGB component percentages (which should be
+-- between 0% and 100%) and an alpha value.
 -- 
 -- @
 -- 'rgbaPercent' r g b 0.0 = 'transparent'
@@ -218,19 +231,18 @@ rgba r g b = withOpacity $ rgb r g b
 rgbaPercent :: Percentage -> Percentage -> Percentage -> Alpha -> AlphaColour Double
 rgbaPercent r g b = withOpacity $ rgbPercent r g b
 
--- |
--- Specifies a 'Colour' by its hue (which ranges from 0° to 360°), saturation, and
--- value.
-hsl :: Int -> Percentage -> Percentage -> Colour Double
+-- | Specifies a 'Colour' by its hue, saturation, and lightness value, where
+-- saturation and lightness are percentages between 0% and 100%.
+hsl :: Degrees -> Percentage -> Percentage -> Colour Double
 hsl h s l = uncurryRGB sRGB $ HSL.hsl (realToFrac h) (s/100) (l/100)
 
 -- |
--- Specifies an 'AlphaColour' by its HSV values and an alpha value.
+-- Specifies an 'AlphaColour' by its HSL values and an alpha value.
 -- 
 -- @
 -- 'hsla' h s v 0.0 = 'transparent'
 -- @
-hsla :: Int -> Percentage -> Percentage -> Alpha -> AlphaColour Double
+hsla :: Degrees -> Percentage -> Percentage -> Alpha -> AlphaColour Double
 hsla h s l = withOpacity $ hsl h s l
 
 -- |
@@ -532,7 +544,7 @@ lightgray = Names.lightgray
 lightgreen :: Colour Double
 lightgreen = Names.lightgreen
 
--- | @#D3D3D3@, @rgb(211, 211, 211)@, @hsl(0, 0%, 83%)@. Same as 'lightgrey'.
+-- | @#D3D3D3@, @rgb(211, 211, 211)@, @hsl(0, 0%, 83%)@. Same as 'lightgray'.
 lightgrey :: Colour Double
 lightgrey = Names.lightgrey
 

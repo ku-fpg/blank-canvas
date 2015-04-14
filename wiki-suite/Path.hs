@@ -9,7 +9,7 @@ main = blankCanvas 3000 $ \ context -> do
     send context $ do
         beginPath()
         moveTo(100, 20)
-	-- line 1
+        -- line 1
         lineTo(200, 160)
         -- quadratic curve
         quadraticCurveTo(230, 200, 250, 120)

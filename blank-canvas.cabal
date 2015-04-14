@@ -2,16 +2,16 @@ Name:                blank-canvas
 Version:             0.5.0.1
 Synopsis:            HTML5 Canvas Graphics Library
 
-Description:      blank-canvas is a Haskell binding to the complete
-                  HTML5 Canvas API. blank-canvas allows Haskell
-                  users to write, in Haskell, interactive images
-                  onto their web browsers. blank-canvas gives the
-                  user a single full-window canvas, and provides
+Description:      @blank-canvas@ is a Haskell binding to the complete
+                  <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API HTML5 Canvas API>.
+                  @blank-canvas@ allows Haskell users to write, in Haskell,
+                  interactive images onto their web browsers. @blank-canvas@
+                  gives the user a single full-window canvas, and provides
                   many well-documented functions for rendering
                   images.
                   .
                   @
-		     &#123;-&#35; LANGUAGE OverloadedStrings &#35;-&#125;
+                     &#123;-&#35; LANGUAGE OverloadedStrings &#35;-&#125;
                      module Main where
                      import Graphics.Blank                     -- import the blank canvas
                      .
@@ -23,11 +23,11 @@ Description:      blank-canvas is a Haskell binding to the complete
                      &#32;&#32;&#32;&#32;strokeStyle \"red\"
                      &#32;&#32;&#32;&#32;stroke()                              -- this draws the ink into the canvas
                   @
-		  .
+                  .
                   <<https://github.com/ku-fpg/blank-canvas/wiki/images/Red_Line.png>>
-		  .
-		  For more details, read the <https://github.com/ku-fpg/blank-canvas/wiki blank-canvas wiki>.
-		  .
+                  .
+                  For more details, read the <https://github.com/ku-fpg/blank-canvas/wiki blank-canvas wiki>.
+                  .
 License:             BSD3
 License-file:        LICENSE
 Author:              Andy Gill and Ryan Scott
@@ -37,9 +37,9 @@ Homepage:            https://github.com/ku-fpg/blank-canvas/wiki
 Bug-reports:         https://github.com/ku-fpg/blank-canvas/issues
 Category:            Graphics
 Build-type:          Simple
-Stability:           beta
+Stability:           Beta
 Extra-source-files:  README.md
-            	     Changelog.md
+                     Changelog.md
 Cabal-version:       >= 1.10
 data-files:
     static/index.html
@@ -48,36 +48,39 @@ data-files:
 
 
 Library
-  Exposed-modules:     Graphics.Blank,
-                       Graphics.Blank.Font,
-                       Graphics.Blank.GHCi,
+  Exposed-modules:     Graphics.Blank
+                       Graphics.Blank.Cursor
+                       Graphics.Blank.Font
+                       Graphics.Blank.GHCi
                        Graphics.Blank.Style
-  other-modules:       Graphics.Blank.Canvas,
-                       Graphics.Blank.DeviceContext,
-                       Graphics.Blank.Events,
-                       Graphics.Blank.Generated,
-                       Graphics.Blank.JavaScript,
-                       Graphics.Blank.Parser,
-                       Graphics.Blank.Types.CSS,
-                       Graphics.Blank.Types.Font,
-                       Graphics.Blank.Utils,
+  other-modules:       Graphics.Blank.Canvas
+                       Graphics.Blank.DeviceContext
+                       Graphics.Blank.Events
+                       Graphics.Blank.Generated
+                       Graphics.Blank.JavaScript
+                       Graphics.Blank.Parser
+                       Graphics.Blank.Types
+                       Graphics.Blank.Types.CSS
+                       Graphics.Blank.Types.Cursor
+                       Graphics.Blank.Types.Font
+                       Graphics.Blank.Utils
                        Paths_blank_canvas
 
   default-language:    Haskell2010
   build-depends:       aeson              >= 0.7     && < 0.9,
                        base64-bytestring  == 1.0.*,
-                       base               >= 4.3.1   && < 4.8,
+                       base               >= 4.3.1   && < 4.9,
                        bytestring         == 0.10.*,
-                       case-insensitive   >= 1.0.0.1 && < 1.3,
                        colour             >= 2.2     && < 3.0,
                        containers         == 0.5.*,
                        data-default-class == 0.0.*,
                        http-types         == 0.8.*,
-                       kansas-comet       == 0.3.*,
+                       mime-types         >= 0.1.0.3 && < 0.2,
+                       kansas-comet       >= 0.3.2   && < 0.4,
                        scotty             >= 0.8     && < 0.10,
                        stm                >= 2.2     && < 2.5,
                        text               >= 1.1     && < 1.3,
-                       text-show          >= 0.4.1   && < 0.5,
+                       text-show          >= 0.6     && < 0.8,
                        transformers       >= 0.3     && < 0.5,
                        wai                == 3.*,
                        wai-extra          >= 3.0.1   && < 3.1,

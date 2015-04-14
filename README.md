@@ -35,7 +35,7 @@ For more details about this example, see [Red Line](https://github.com/ku-fpg/bl
 |-------|-------|
 | [Examples](https://github.com/ku-fpg/blank-canvas/wiki/Examples) | Various complete examples of using blank-canvas |
 | [Installation](https://github.com/ku-fpg/blank-canvas/wiki/Installation) | How to install blank-canvas |
-| [Hackage](https://hackage.haskell.org/package/blank-canvas) | Current release is 0.4.0 |
+| [Hackage](https://hackage.haskell.org/package/blank-canvas) | Current release is 0.5 |
 | [API](https://github.com/ku-fpg/blank-canvas/wiki/API) | Discussion of API, compared with the original JavaScript API |
 | [Canvas Examples](https://github.com/ku-fpg/blank-canvas/wiki/Canvas%20Examples) | Transliterated from <http://www.html5canvastutorials.com/> into Haskell and blank-canvas, with kind permission of Eric Rowell, author of the JavaScript HTML5 Canvas Tutorial. |
 | [FAQ](https://github.com/ku-fpg/blank-canvas/wiki/FAQ) | F.A.Q. |

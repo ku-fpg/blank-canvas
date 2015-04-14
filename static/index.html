@@ -11,7 +11,7 @@
         <script type="text/javascript">
             var session = 0; // global session number
             var images = [];
-            var audios = [];
+            var sounds = [];
             var patterns = [];
             var canvasbuffers = [];
             var c = null;
@@ -89,7 +89,7 @@
                 return function (u,c) {
                     var img = c.getImageData(sx,sy,sw,sh);
                     var arr = [];
-                    for(var i = 0;i < img.data.length;i++) {
+                    for (var i = 0;i < img.data.length;i++) {
                         arr[i] = img.data[i];
                     }
                     $.kc.reply(u,{ width: img.width
@@ -99,28 +99,37 @@
                 }
             }
 
+            function Cursor(cur) {
+                return function(u, c) {
+                    c.canvas.style.cursor = cur;
+                    $.kc.reply(u, []);
+                };
+            }
+            
             function Sync(u,c) {
                 $.kc.reply(u,[]);
             }
 
             function Trigger(e) {
-		var o = {};
-		o.metaKey = e.metaKey;
+                var o = {};
+                o.metaKey = e.metaKey;
                 o.type    = e.type;
-		if (e.pageXY != undefined) { 
-	            o.pageXY = e.pageXY; 
-  	        }
-		if (e.pageX != undefined && e.pageY != undefined) {
-		    o.pageXY = [e.pageX,e.pageY];
+                if (e.pageXY != undefined) { 
+                    o.pageXY = e.pageXY; 
+                }
+                if (e.pageX != undefined && e.pageY != undefined) {
+                    o.pageXY = [e.pageX,e.pageY];
                 }
                 if (e.which != undefined) { 
                     o.which = e.which; 
                 }
                 $.kc.event(o);
             }
+            
             function register(name) {
                 $(document).bind(name,Trigger);
             }
+            
             function redraw() {
                 $.ajax({ url: "/canvas/" + session,
                          type: "GET",
@@ -142,7 +151,7 @@
             function NewAudio(src) {
                 return function (u,c) {
                     var audio = new Audio();
-                    var count  = audios.push(audio);
+                    var count  = sounds.push(audio);
                     // var dur   = audio.duration;
                     //
                     // I commented this out because there's a chance that the browser won't
@@ -152,7 +161,7 @@
                     // dur itself isn't used beyond sending the duration back through $.kc.reply, 
                     // the current setup will probably be sufficient
                     audio.oncanplaythrough = function () {
-                                 $.kc.reply(u,[count - 1,audio.duration]);
+                        $.kc.reply(u,[count - 1,audio.duration]);
                     };
                     audio.onerror = function() { alert("Audio " + src + " not found."); };
                     audio.src = src;
@@ -162,10 +171,10 @@
             function CurrentTimeAudio(aud) {
                 return function (u,c) {
                     //console.log(aud);
-                    var currTime = audios[aud].currentTime;
+                    var currTime = sounds[aud].currentTime;
                     console.log(aud);
 
-                    //var currTime = audios[0].currentTime;
+                    //var currTime = sounds[0].currentTime;
                     $.kc.reply(u,currTime);
                     //$.kc.reply(u,12);
                 }

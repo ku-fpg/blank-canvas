@@ -1,7 +1,9 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 module Main (main) where
 
+#if !(MIN_VERSION_base(4,8,0))
 import           Control.Applicative
+#endif
 
 import           Data.Monoid((<>))
 import           Data.Text (Text)
@@ -50,35 +52,35 @@ main = do
 
 examples :: [(DeviceContext -> Canvas (), Text)]
 examples =
-	 -- Lines
+        -- Lines
         [ (example_1_2_1,"1.2.1 Line")
         , (example_1_2_2,"1.2.2 Line Width")
         , (example_1_2_3,"1.2.3 Line Color")
         , (example_1_2_4,"1.2.4 Line Cap")
-	-- Curves
+        -- Curves
         , (example_1_3_1,"1.3.1 Arc")
         , (example_1_3_2,"1.3.2 Quadratic Curve")
         , (example_1_3_3,"1.3.3 Bezier Curve")
-	-- Paths
+        -- Paths
         , (example_1_4_1,"1.4.1 Path")
         , (example_1_4_2,"1.4.2 Line Join")
         , (example_1_4_3,"1.4.3 Rounded Corners")
-	-- Shapes
+        -- Shapes
         , (example_1_5_1,"1.5.1 Custom Shape")
         , (example_1_5_2,"1.5.2 Rectangle")
         , (example_1_5_3,"1.5.3 Circle")
         , (example_1_5_4,"1.5.4 Semicircle")
-	-- Fill Styles
+        -- Fill Styles
         , (example_1_6_1,"1.6.1 Shape Fill")
         , (example_1_6_2,"1.6.2 Linear Gradient")
         , (example_1_6_3,"1.6.3 Radial Gradient")
         , (example_1_6_4,"1.6.4 Pattern")
-	-- Images
+        -- Images
         , (example_1_7_1,"1.7.1 Image")
         , (example_1_7_2,"1.7.2 Image Size")
         , (example_1_7_3,"1.7.3 Image Crop")
         , (example_1_7_4,"1.7.4 Image Loader")
-	-- Text
+        -- Text
         , (example_1_8_1,"1.8.1 Text Font & Size")
         , (example_1_8_2,"1.8.2 Text Color")
         , (example_1_8_3,"1.8.3 Text Stroke")
@@ -98,7 +100,7 @@ examples =
 --        , (example_2_3_2,"2.3.2 Invert Image Colors")
 --        , (example_2_3_3,"2.3.3 Grayscale Image Colors")
         -- Animation 2.4
-	-- Mouse Detection 2.5
+        -- Mouse Detection 2.5
         ]
 
 io_examples :: [(DeviceContext -> IO (), Text)]
@@ -171,8 +173,8 @@ example_1_3_1 canvas = do
         stroke()
 
 example_1_3_2 _ = do
-	beginPath()
-	moveTo(188, 150)
+        beginPath()
+        moveTo(188, 150)
         quadraticCurveTo(288, 0, 388, 150)
         lineWidth 10
         -- line color
@@ -180,9 +182,9 @@ example_1_3_2 _ = do
         stroke()
 
 example_1_3_3 _ = do
-	beginPath()
-	moveTo(188, 150)
-	bezierCurveTo(140, 10, 388, 10, 388, 170)
+        beginPath()
+        moveTo(188, 150)
+        bezierCurveTo(140, 10, 388, 10, 388, 170)
         lineWidth 10
         -- line color
         strokeStyle "black"
@@ -192,7 +194,7 @@ example_1_4_1 _ = do
 
         beginPath()
         moveTo(100, 20)
-	-- line 1
+        -- line 1
         lineTo(200, 160)
         -- quadratic curve
         quadraticCurveTo(230, 200, 250, 120)

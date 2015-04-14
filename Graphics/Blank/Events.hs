@@ -1,22 +1,35 @@
-{-# LANGUAGE ScopedTypeVariables, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
 module Graphics.Blank.Events where
 
-import Control.Applicative ((<|>), (<$>), (<*>))
+import Control.Applicative
 import Control.Concurrent.STM
 
 import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
 import Data.Aeson.Types ((.:), (.=), object)
 import Data.Text (Text)
 
--- | Basic Event from Browser; see <http://api.jquery.com/category/events/> for details.
+import Text.Show.Text.TH (deriveShow)
+
+-- | 'EventName' mirrors event names from jQuery, and uses lowercase.
+-- Possible named events
+-- 
+-- * @keypress@, @keydown@, @keyup@
+-- * @mouseDown@, @mouseenter@, @mousemove@, @mouseout@, @mouseover@, @mouseup@
+type EventName = Text
+
+-- | 'EventQueue' is an STM channel ('TChan') of 'Event's.
+-- Intentionally, 'EventQueue' is not abstract.
+type EventQueue = TChan Event
+
+-- | Basic event from browser. See <http://api.jquery.com/category/events/> for details.
 data Event = Event
         { eMetaKey :: Bool
         , ePageXY  :: Maybe (Double, Double)
         , eType    :: EventName          -- "Describes the nature of the event." jquery
         , eWhich   :: Maybe Int          -- magic code for key presses
         }
-        deriving (Show)
-
+        deriving (Eq, Ord, Show)
+$(deriveShow ''Event)
 
 instance FromJSON Event where
    parseJSON (Object v) = Event <$> ((v .: "metaKey")              <|> return False)
@@ -36,16 +49,3 @@ instance ToJSON Event where
                  Nothing -> id
                  Just w -> (:) ("which" .= w))
             $ []
-
--- | 'EventName' mirrors event names from jquery, and use lower case.
---   Possible named events
---
---     * keypress, keydown, keyup
---     * mouseDown, mouseenter, mousemove, mouseout, mouseover, mouseup
--- 
-type EventName = Text
-
--- | EventQueue is a STM channel ('TChan') of 'Event's.
--- Intentionally, 'EventQueue' is not abstract.
-type EventQueue = TChan Event
-

@@ -46,12 +46,12 @@ go context = do
                      [ showBall xy col
                      | (xy,_,col) <- balls
                      ]
-             threadDelay (20 * 1000)	                   
+             threadDelay (20 * 1000) 
 
              wiki $ counter (\ _ -> True) $ \ n -> do
-	          file <- wiki $ anim_png "Bounce"
-	     	  wiki $ when (n `mod` 43 == 0) $ send context $ trigger $ Event { eMetaKey = False, ePageXY = return(fromIntegral (100 + length balls * 45),20), eType = "mousedown", eWhich = Nothing}
-		  wiki $ when (n `mod` 3 == 0) $ snapShot context $ file
+                  file <- wiki $ anim_png "Bounce"
+                  wiki $ when (n `mod` 43 == 0) $ send context $ trigger $ Event { eMetaKey = False, ePageXY = return(fromIntegral (100 + length balls * 45),20), eType = "mousedown", eWhich = Nothing}
+                  wiki $ when (n `mod` 3 == 0) $ snapShot context $ file
                   wiki $ when (n >= 400) $ do { build_anim "Bounce" 7; close context }
 
              es <- flush context

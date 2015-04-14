@@ -13,8 +13,8 @@ main = blankCanvas 3000 $ \ context -> do -- start blank canvas on port 3000
                 strokeStyle "red"
                 stroke()                  -- this draws the ink into the canvas
 
-		me <- myCanvasContext
-		drawImage(me,[50,50])
+                me <- myCanvasContext
+                drawImage(me,[50,50])
 
         wiki $ snapShot context "images/Draw_Canvas.png"
         wiki $ close context

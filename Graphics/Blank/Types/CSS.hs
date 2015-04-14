@@ -1,21 +1,24 @@
-{-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE CPP, OverloadedStrings, TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
+#if !(MIN_VERSION_base(4,8,0))
 import           Data.Functor ((<$))
+#endif
 import           Data.Monoid ((<>))
 import           Data.String
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
+import           Graphics.Blank.Types
 
-import           Prelude hiding (Show, rem)
+import           Prelude hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice)
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
 import qualified Text.Show as S (Show)
 import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text (showb, showbPrec, toString)
+import           Text.Show.Text (FromTextShow(..), showb)
 
 -- | Denotes CSS distance measurements, especially in the context of 'Font's.
 data Length = Em   { runLength :: Double } -- ^ The height of the current font.
@@ -32,10 +35,11 @@ data Length = Em   { runLength :: Double } -- ^ The height of the current font.
             | In   { runLength :: Double } -- ^ One inch (~2.54 centimeters).
             | Pt   { runLength :: Double } -- ^ One point (1/72 inches).
             | Pc   { runLength :: Double } -- ^ One pica (12 points).
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Designates CSS properties that can consist of a 'Length'.
 class LengthProperty a where
+    -- Create a CSS property value from a 'Length'.
     fromLength :: Length -> a
 
 instance LengthProperty Length where
@@ -53,9 +57,10 @@ ex = fromLength . Ex
 ch :: LengthProperty a => Double -> a
 ch = fromLength . Ch
 
--- | Constructs a 'LengthProperty' value with 'Rem' units.
-rem :: LengthProperty a => Double -> a
-rem = fromLength . Rem
+-- | Constructs a 'LengthProperty' value with 'Rem' units. 'rem_' has an underscore
+-- to distinguish it from 'rem'.
+rem_ :: LengthProperty a => Double -> a
+rem_ = fromLength . Rem
 
 -- | Constructs a 'LengthProperty' value with 'Vh' units.
 vh :: LengthProperty a => Double -> a
@@ -123,7 +128,7 @@ instance Read Length where
     readListPrec = readListPrecDefault
 
 instance S.Show Length where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show Length where
     showb l = jsDouble (runLength l) <> showbUnits l
@@ -143,11 +148,9 @@ instance T.Show Length where
         showbUnits (Pt   _) = "pt"
         showbUnits (Pc   _) = "pc"
 
--- | A value ranging from 0.0 to 100.0.
-type Percentage = Double
-
 -- | Designates CSS properties that can consist of a 'Percentage'.
 class PercentageProperty a where
+    -- | Create a CSS property value from a 'Percentage'.
     percent :: Percentage -> a
 
 instance PercentageProperty Percentage where

@@ -4,9 +4,9 @@ module Graphics.Blank.Types.Font where
 import           Control.Applicative
 import           Control.Monad
 
-import           Data.CaseInsensitive (mk)
 import           Data.Char
 import           Data.Default.Class
+import           Data.Ix (Ix)
 import           Data.List
 import           Data.Maybe
 import           Data.Monoid
@@ -17,6 +17,7 @@ import qualified Data.Text.Lazy.Builder as B (singleton)
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
+import           Graphics.Blank.Types
 import           Graphics.Blank.Types.CSS
 
 import           Prelude hiding (Show)
@@ -32,7 +33,9 @@ import           Text.Show.Text hiding (Show)
 
 -------------------------------------------------------------------------------
 
+-- | A data type that can represent a browser font.
 class CanvasFont a where
+    -- | Convert a value into a JavaScript string representing a font value.
     jsCanvasFont :: a -> Builder
 
 instance CanvasFont Text where
@@ -58,7 +61,7 @@ data Font = FontProperties
   | MessageBoxFont   -- ^ The font used in dialog boxes.
   | SmallCaptionFont -- ^ The font used for labeling small controls.
   | StatusBarFont    -- ^ The font used in window status bars.
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- |
 -- Creates a new font from the 'FontFamily' list, using the 'Default' instances
@@ -123,7 +126,7 @@ instance Read Font where
             ]
     readListPrec = readListPrecDefault
 
--- | Like Either, but with three possibilities instead of two.
+-- | Like 'Either', but with three possibilities instead of two.
 data OneOfThree a b c = One a | Two b | Three c
 
 -- |
@@ -157,7 +160,7 @@ readFontProperties style variant weight =
            
            -- First attempt to parse font-style, then font-variant, then font-weight (unless one
            -- of them has already been parsed, in which case skip to the next property parser.
-           prop <- maybeRead $ readStyle <++ readVariant <++ readWeight
+           prop <- maybeReadPrec $ readStyle <++ readVariant <++ readWeight
            -- Check to see which property, if any, was parsed.
            case prop of
                Just (One style') -> do
@@ -184,23 +187,21 @@ readFontProperties' mbStyle mbVariant mbWeight =
   <*> (lift (munch1 isSpace) *> readPrec)
 
 instance S.Show Font where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show Font where
     showb (FontProperties style variant weight size height' family)
         = showb style
-       <> space
+       <> showbSpace
        <> showb variant
-       <> space
+       <> showbSpace
        <> showb weight
-       <> space
+       <> showbSpace
        <> showb size
        <> B.singleton '/'
        <> showb height'
-       <> space
+       <> showbSpace
        <> showb family
-      where
-        space = B.singleton ' '
     showb CaptionFont      = "caption"
     showb IconFont         = "icon"
     showb MenuFont         = "menu"
@@ -215,7 +216,7 @@ data FontStyle = NormalStyle  -- ^ Selects a font classified as normal (default)
                | ItalicStyle  -- ^ Selects a font that is labeled italic, or if one is not available,
                               --   one labeled oblique.
                | ObliqueStyle -- ^ Selects a font that is labeled oblique.
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'ItalicStyle'.
 italic :: FontStyle
@@ -244,7 +245,7 @@ instance Read FontStyle where
     readListPrec = readListPrecDefault
 
 instance S.Show FontStyle where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontStyle where
     showb NormalStyle  = "normal"
@@ -256,7 +257,7 @@ instance T.Show FontStyle where
 -- | Specifies the face of a 'Font'.
 data FontVariant = NormalVariant    -- ^ A normal font face (default).
                  | SmallCapsVariant -- ^ A font face with small capital letters for lowercase characters.
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'SmallCapsVariant'.
 smallCaps :: FontVariant
@@ -277,7 +278,7 @@ instance Read FontVariant where
     readListPrec = readListPrecDefault
 
 instance S.Show FontVariant where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontVariant where
     showb NormalVariant    = "normal"
@@ -308,7 +309,7 @@ data FontWeight = NormalWeight -- ^ Default.
                 | Weight700
                 | Weight800
                 | Weight900
-  deriving Eq
+  deriving (Bounded, Enum, Eq, Ix, Ord)
 
 -- | Shorthand for 'BoldWeight'.
 bold :: FontWeight
@@ -371,7 +372,7 @@ instance Read FontWeight where
     readListPrec = readListPrecDefault
 
 instance S.Show FontWeight where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontWeight where
     showb NormalWeight  = "normal"
@@ -408,7 +409,7 @@ data FontSize = XXSmallSize
               | SmallerSize
               | FontSizeLength Length
               | FontSizePercentage Percentage
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'XXSmallSize'.
 xxSmall :: FontSize
@@ -477,7 +478,7 @@ instance Read FontSize where
     readListPrec = readListPrecDefault
 
 instance S.Show FontSize where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show FontSize where
     showb XXSmallSize            = "xx-small"
@@ -506,7 +507,7 @@ data LineHeight = NormalLineHeight -- ^ Default.
                 | LineHeightNumber Double
                 | LineHeightLength Length
                 | LineHeightPercentage Percentage
-  deriving Eq
+  deriving (Eq, Ord)
 
 lineHeightError :: a
 lineHeightError = error "no arithmetic for line-height"
@@ -550,7 +551,7 @@ instance Read LineHeight where
     readListPrec = readListPrecDefault
 
 instance S.Show LineHeight where
-    showsPrec p = (++) . toString . showbPrec p
+    showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show LineHeight where
     showb NormalLineHeight         = "normal"
@@ -589,7 +590,7 @@ data FontFamily = FontFamilyName Text -- ^ The name of a custom font family.
                 | CursiveFamily       -- ^ A generic font family with cursive glyphs.
                 | FantasyFamily       -- ^ A generic font family where glyphs have
                                       --   decorative, playful representations.
-  deriving Eq
+  deriving (Eq, Ord)
 
 -- | Shorthand for 'SerifFamily'.
 serif :: FontFamily
@@ -623,34 +624,32 @@ instance IsString [FontFamily] where
 instance Read FontFamily where
     readPrec = lift $ do
         skipSpaces
-        let quoted = between (char '"') (char '"')
-        quoted (readFontFamily True) <|> readFontFamily False
+        ReadP.choice
+          [ SerifFamily     <$ stringCI "serif"
+          , SansSerifFamily <$ stringCI "sans-serif"
+          , MonospaceFamily <$ stringCI "monospace"
+          , CursiveFamily   <$ stringCI "cursive"
+          , FantasyFamily   <$ stringCI "fantasy"
+          , let quoted quote = between (char quote) (char quote)
+             in quoted '"' (readFontFamily $ Just '"')
+                  <|> quoted '\'' (readFontFamily $ Just '\'')
+                  <|> readFontFamily Nothing
+          ]
     
     -- readListPrec is overloaded so that it will read in a comma-separated list of
     -- family names not delimited by square brackets, as per the CSS syntax.
     readListPrec = lift . sepBy1 (unlift readPrec) $ skipSpaces *> char ','
 
--- |
--- FontFamilyNames can either be a series of whitespace-separated CSS identifiers
--- (parsed with cssIdent) or a series of characters delimited by quotation marks.
--- Use the Bool argument to distinguish between the two.
-readFontFamily :: Bool -> ReadP FontFamily
-readFontFamily quoted = do
-    name <- if quoted
-               then munch (/= '\"')
-               else unwords <$> sepBy1 cssIdent (munch1 isSpace)
-    let ciName = mk name
-    return $ case () of
-         _ | ciName == mk "serif"      -> SerifFamily
-         _ | ciName == mk "sans-serif" -> SansSerifFamily
-         _ | ciName == mk "monospace"  -> MonospaceFamily
-         _ | ciName == mk "cursive"    -> CursiveFamily
-         _ | ciName == mk "fantasy"    -> FantasyFamily
-         _otherwise                    -> FontFamilyName $ TS.pack name
+readFontFamily :: Maybe Char -> ReadP FontFamily
+readFontFamily mQuote = do
+    name <- case mQuote of
+        Just quote -> munch (/= quote)
+        Nothing    -> unwords <$> sepBy1 cssIdent (munch1 isSpace)
+    return . FontFamilyName $ TS.pack name
 
 instance S.Show FontFamily where
-    showsPrec p = (++) . toString . showbPrec p
-    showList    = (++) . toString . showbList
+    showsPrec p = showsPrec p . FromTextShow
+    showList    = showsPrec 0 . FromTextShow
 
 instance T.Show FontFamily where
     showb (FontFamilyName name) = showb name
@@ -666,8 +665,14 @@ instance T.Show FontFamily where
 
 -------------------------------------------------------------------------------
 
--- | A convenient way to use the 'Default' normal value for several Font longhand
---   properties.
+-- | A convenient way to use the 'Default' normal value for several 'Font'
+-- longhand properties.
 class Default a => NormalProperty a where
+    -- | The default value for a CSS property. For example, it can be used
+    -- like this:
+    -- 
+    -- @
+    -- ('defFont' ['sansSerif']) { 'lineHeight' = 'normal' }
+    -- @
     normal :: a
     normal = def

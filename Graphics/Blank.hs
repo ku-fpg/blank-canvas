@@ -1,23 +1,32 @@
-{-# LANGUAGE GADTs, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE CPP, GADTs, OverloadedStrings, ScopedTypeVariables #-}
 
--- | blank-canvas is a Haskell binding to the complete HTML5 Canvas
---   API. blank-canvas allows Haskell users to write, in Haskell,
---   interactive images onto their web browsers. blank-canvas gives
---   the users a single full-window canvas, and provides many
---   well-documented functions for rendering images.
+{-|
+Module:      Graphics.Blank
+Copyright:   (C) 2014-2015, The University of Kansas
+License:     BSD-style (see the file LICENSE)
+Maintainer:  Andy Gill
+Stability:   Beta
+Portability: GHC
 
+@blank-canvas@ is a Haskell binding to the complete
+<https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API HTML5 Canvas API>.
+@blank-canvas@ allows Haskell users to write, in Haskell,
+interactive images onto their web browsers. @blank-canvas@ gives
+the users a single full-window canvas, and provides many
+well-documented functions for rendering images.
+-}
 module Graphics.Blank
         (
-         -- * Starting blank-canvas
+         -- * Starting @blank-canvas@
           blankCanvas
         , Options(..)
           -- ** 'send'ing to the Graphics 'DeviceContext'
         , DeviceContext       -- abstact
         , send
           -- * HTML5 Canvas API
-          -- | See <http://www.nihilogic.dk/labs/canvas_sheet/HTML5_Canvas_Cheat_Sheet.pdf> for the JavaScript
+          -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
-        , Canvas        -- abstact
+        , Canvas        -- abstract
           -- ** Canvas element
         , height
         , width
@@ -43,7 +52,11 @@ module Graphics.Blank
         , lineJoin
         , miterLimit
         , LineEndCap(..)
+        , butt
+        , square
         , LineJoinCorner(..)
+        , bevel
+        , miter
           -- ** Colors, styles and shadows
         , strokeStyle
         , fillStyle
@@ -56,6 +69,10 @@ module Graphics.Blank
         , createPattern
         , addColorStop
         , RepeatDirection(..)
+        , repeat_
+        , repeatX
+        , repeatY
+        , noRepeat
         , CanvasGradient
         , CanvasPattern
           -- ** Paths
@@ -80,7 +97,18 @@ module Graphics.Blank
         , strokeText
         , measureText
         , TextAnchorAlignment(..)
+        , start
+        , end
+        , center
+        , left
+        , right
         , TextBaselineAlignment(..)
+        , top
+        , hanging
+        , middle
+        , alphabetic
+        , ideographic
+        , bottom
         , TextMetrics(..)
           -- ** Rectangles
         , clearRect
@@ -90,23 +118,30 @@ module Graphics.Blank
         , getImageData
         , putImageData
         , ImageData(..)
-        -- * blank-canvas Extensions
+          -- * Type information
+        , Alpha
+        , Degrees
+        , Interval
+        , Percentage
+        , Radians
+        , RoundProperty(..)
+        -- * @blank-canvas@ Extensions
         -- ** Reading from 'Canvas'
         , newImage
         , CanvasImage -- abstract
+          -- ** Audio functionality          
+        , currentTimeAudio
+        , durationAudio -- subject to change
+        , playAudio
+        , pauseAudio
+        , setVolumeAudio          
+        , newAudio
+        , CanvasAudio
          -- ** 'DeviceContext' attributes
         , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
         , CanvasContext
         , newCanvas
-          -- ** Audio functionality
-        , currentTimeAudio
-        , newAudio 
-        , InfoAudio
-        , durationAudio -- subject to change
-        , playAudio
-        , pauseAudio
-        , setVolumeAudio
         , with
         , myCanvasContext
         , deviceCanvasContext
@@ -126,6 +161,8 @@ module Graphics.Blank
         , Event(..)
         , EventName
         , EventQueue
+        -- ** Cursor manipulation
+        , cursor
         -- ** Middleware
         , local_only
         ) where
@@ -139,23 +176,30 @@ import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
-import           Data.Monoid ((<>), mempty)
+import qualified Data.Map as M (lookup)
+#if !(MIN_VERSION_base(4,8,0))
+import           Data.Monoid (mempty)
+#endif
+import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Text (Text)
+import           Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as LT
 
 import qualified Graphics.Blank.Canvas as Canvas
-import           Graphics.Blank.Canvas hiding (addColorStop)
+import           Graphics.Blank.Canvas hiding (addColorStop, cursor)
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
 import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, shadowColor)
 import qualified Graphics.Blank.JavaScript as JavaScript
 import           Graphics.Blank.JavaScript hiding (width, height)
+import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
 import qualified Network.HTTP.Types as H
+import           Network.Mime (defaultMimeMap, fileNameExtensions)
 import           Network.Wai (Middleware, responseLBS)
 import           Network.Wai.Middleware.Local
 import           Network.Wai.Handler.Warp
@@ -177,7 +221,7 @@ import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
 import qualified Web.Scotty.Comet as KC
 
--- | blankCanvas is the main entry point into blank-canvas.
+-- | 'blankCanvas' is the main entry point into @blank-canvas@.
 -- A typical invocation would be
 --
 -- >{-# LANGUAGE OverloadedStrings #-}
@@ -231,7 +275,7 @@ blankCanvas opts actions = do
                            _ -> return ()
 
 
-                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals
+                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
 
                 -- A bit of bootstrapping
                 DeviceAttributes w h dpr <- send cxt0 device
@@ -241,6 +285,7 @@ blankCanvas opts actions = do
                          { ctx_width = w
                          , ctx_height = h
                          , ctx_devicePixelRatio = dpr
+                         , weakRemoteMonad = weak opts
                          }
 
                 (actions $ cxt1) `catch` \ (e :: SomeException) -> do
@@ -259,7 +304,7 @@ blankCanvas opts actions = do
           db <- liftIO $ atomically $ readTVar $ locals
           if fileName `S.member` db
           then do
-            mime <- mimeTypes (T.unpack fileName)
+            let mime = mimeType fileName
             Scotty.setHeader "Content-Type" $ LT.fromStrict $ mime
             file $ (root opts ++ "/" ++ T.unpack fileName)
           else do
@@ -272,12 +317,14 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
--- | Sends a set of Canvas commands to the canvas. Attempts
+-- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
-
 send :: DeviceContext -> Canvas a -> IO a
-send cxt commands =
-      send' (deviceCanvasContext cxt) commands mempty
+send cxt (Return a) = return a
+send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
+send cxt (With c (Bind m k)) | weakRemoteMonad cxt = send cxt (With c m) >>= send cxt . With c . k
+send cxt (With _ (With c m)) | weakRemoteMonad cxt = send cxt (With c m)
+send cxt commands = send' (deviceCanvasContext cxt) commands mempty
   where
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
       sendBind c (Return a)        k cmds = send' c (k a) cmds
@@ -301,19 +348,18 @@ send cxt commands =
             <> showb gId     <> " = "   <> jsCanvasContext c
             <> singleton '.' <> showb q <> singleton ';'
 
+      fileQuery :: Text -> IO ()
+      fileQuery url = do
+          let url' = if "/" `T.isPrefixOf` url then T.tail url else url
+          atomically $ do
+              db <- readTVar (localFiles cxt)
+              writeTVar (localFiles cxt) $ S.insert url' $ db
+
       sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> Builder -> IO b
       sendQuery c query k cmds = do
           case query of
-            NewImage url -> do
-              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-              atomically $ do
-                  db <- readTVar (localFiles cxt)
-                  writeTVar (localFiles cxt) $ S.insert url' $ db
-            NewAudio url -> do
-              let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-              atomically $ do
-                  db <- readTVar (localFiles cxt)
-                  writeTVar (localFiles cxt) $ S.insert url' $ db
+            NewImage url -> fileQuery url
+            NewAudio url -> fileQuery url
             _ -> return ()
 
           -- send the com
@@ -348,28 +394,26 @@ getUniq = do
     writeTVar uniqVar (u + 1)
     return u
 
-mimeTypes :: Monad m => FilePath -> m Text
-mimeTypes filePath
-  | ".jpg" `L.isSuffixOf` filePath = return "image/jpeg"
-  | ".png" `L.isSuffixOf` filePath = return "image/png"
-  | ".gif" `L.isSuffixOf` filePath = return "image/gif"
-  | ".mp3" `L.isSuffixOf` filePath = return "audio/mpeg"
-  | ".ogg" `L.isSuffixOf` filePath = return "audio/ogg"
-  | ".ogx" `L.isSuffixOf` filePath = return "audio/ogg"
-  | ".wav" `L.isSuffixOf` filePath = return "audio/wav"
-  | otherwise = fail $ "do not understand mime type for : " ++ S.show filePath
+mimeType :: Text -> Text
+mimeType filePath = go $ fileNameExtensions filePath
+  where
+    go [] = error $ "do not understand mime type for : " ++ S.show filePath
+    go (e:es) = case M.lookup e defaultMimeMap of
+                     Nothing -> go es
+                     Just mt -> decodeUtf8 mt
 
 -------------------------------------------------
 
--- TODO: add extra mime types
-
-
+-- | Additional @blank-canvas@ settings. The defaults can be used by creating
+-- 'Options' as a 'Num'. For example, @'blankCanvas' 3000@ uses the default 'Options'
+-- on port 3000.
 data Options = Options
-        { port   :: Int              -- ^ which port do we issue the blank canvas using
-        , events :: [EventName]      -- ^ which events does the canvas listen to
-        , debug  :: Bool             -- ^ turn on debugging (default False)
-        , root   :: String           -- ^ location of the static files (default .)
-        , middleware :: [Middleware] -- ^ extra middleware(s) to be executed. (default [local_only])
+        { port   :: Int              -- ^ On which port do we issue @blank-canvas@?
+        , events :: [EventName]      -- ^ To which events does the canvas listen? Default: @[]@
+        , debug  :: Bool             -- ^ Turn on debugging. Default: @False@
+        , root   :: String           -- ^ Location of the static files. Default: @\".\"@
+        , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
+        , weak       :: Bool         -- ^ use a weak monad, which may help debugging (default False)
         }
 
 instance Num Options where
@@ -383,28 +427,79 @@ instance Num Options where
                             , debug = False
                             , root = "."
                             , middleware = [local_only]
+                            , weak = False
                             }
 
 -------------------------------------------------
--- This is the monomorphic version, to stop "ambiguous" errors.
+-- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
+-- | Sets the color used to fill a drawing (@\"black\"@ by default).
+-- Examples:
+-- 
+-- @
+-- 'fillStyle' \"red\"
+-- 'fillStyle' \"#00FF00\"
+-- @
 fillStyle :: Text -> Canvas ()
 fillStyle = Generated.fillStyle
 
-font :: Text -> Canvas()
+-- | Sets the text context's font properties.
+-- Examples:
+-- 
+-- @
+-- 'font' \"40pt \'Gill Sans Extrabold\'\"
+-- 'font' \"80% sans-serif\"
+-- 'font' \"bold italic large serif\"
+-- @
+font :: Text -> Canvas ()
 font = Generated.font
 
+-- | Sets the color used for strokes (@\"black\"@ by default).
+-- Examples:
+-- 
+-- @
+-- 'strokeStyle' \"red\"
+-- 'strokeStyle' \"#00FF00\"
+-- @
 strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle
 
+-- | Sets the color used for shadows.
+-- Examples:
+-- 
+-- @
+-- 'shadowColor' \"red\"
+-- 'shadowColor' \"#00FF00\"
+-- @
 shadowColor :: Text -> Canvas ()
 shadowColor = Generated.shadowColor
 
-addColorStop :: (Double, Text) -> CanvasGradient -> Canvas ()
+-- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
+-- number between 0.0 and 1.0 that represents the position between start and stop
+-- in a gradient.
+-- Example:
+-- 
+-- @
+-- grd <- 'createLinearGradient'(0, 0, 10, 10)
+-- grd # 'addColorStop'(0, \"red\")
+-- @
+addColorStop :: (Interval, Text) -> CanvasGradient -> Canvas ()
 addColorStop = Canvas.addColorStop
 
+-- | Change the canvas cursor to the specified URL or keyword.
+-- Examples:
+-- 
+-- @
+-- cursor \"url(image.png), default\"
+-- cursor \"crosshair\"
+-- @
+cursor :: Text -> Canvas ()
+cursor = Canvas.cursor
+
+-- | The height of an 'Image' in pixels.
 height :: (Image image, Num a) => image -> a
 height = JavaScript.height
 
+-- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width
