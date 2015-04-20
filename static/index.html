@@ -152,8 +152,6 @@
                 return function (u,c) {
                     var audio = new Audio();
                     var count  = sounds.push(audio);
-                    // var dur   = audio.duration;
-                    //
                     // I commented this out because there's a chance that the browser won't
                     // know the audio duration until it's "loaded" (i.e., it can be played
                     // through). Further testing might be wise.
@@ -170,13 +168,9 @@
 
             function CurrentTimeAudio(aud) {
                 return function (u,c) {
-                    //console.log(aud);
                     var currTime = sounds[aud].currentTime;
-                    console.log(aud);
 
-                    //var currTime = sounds[0].currentTime;
                     $.kc.reply(u,currTime);
-                    //$.kc.reply(u,12);
                 }
             }
 

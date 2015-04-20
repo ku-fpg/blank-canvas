@@ -106,11 +106,11 @@ data Method
         | Transform (Double, Double, Double, Double, Double, Double)
         | Translate (Double, Double)
 
+-- Audio object methods: play(), pause(), setVolume()
 data MethodAudio
         = forall audio . Audio audio => PlayAudio        audio
         | forall audio . Audio audio => PauseAudio       audio
-        | forall audio . Audio audio => SetVolumeAudio   (audio, Double)
-        -- | forall audio . Audio audio => CurrentTimeAudio audio
+        -- | forall audio . Audio audio => SetVolumeAudio   (audio, Double)
 
 data Command
   = Trigger Event
@@ -197,8 +197,8 @@ data Query :: * -> * where
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Cursor               :: CanvasCursor cursor => cursor           -> Query ()
         Sync                 ::                                            Query ()
-        CurrentTimeAudio     :: InfoAudio                               -> Query Double
-        GetVolumeAudio       :: InfoAudio                               -> Query Double
+        CurrentTimeAudio     :: CanvasAudio                             -> Query Double
+        -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance S.Show (Query a) where
   showsPrec p = showsPrec p . FromTextShow
@@ -222,7 +222,7 @@ instance T.Show (Query a) where
   showb (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
   showb Sync                         = "Sync"
   showb (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
-  showb (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
+  -- showb (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a

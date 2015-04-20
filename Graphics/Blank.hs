@@ -134,7 +134,7 @@ module Graphics.Blank
         , durationAudio -- subject to change
         , playAudio
         , pauseAudio
-        , setVolumeAudio          
+        -- , setVolumeAudio          
         , newAudio
         , CanvasAudio
          -- ** 'DeviceContext' attributes

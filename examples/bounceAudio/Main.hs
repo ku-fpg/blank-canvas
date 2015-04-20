@@ -24,18 +24,12 @@ type State = ([Ball Color])
 
 showBall :: (Double, Double) -> Text -> Canvas ()
 showBall (x,y) col = do
---	save()
---	translate (x,y)
-
         beginPath()
---        scale (1,0.9)
         globalAlpha 0.5
         fillStyle col
         arc(x, y, 50, 0, pi*2, False)
         closePath()
         fill()
-        
---	restore()
 
 moveBall :: Ball a -> Ball a
 moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
@@ -51,14 +45,13 @@ go context = do
             | y + 25 >= h && d > 0 = ((x,y),-(d-0.5)*0.97,a)
             | otherwise         = ((x,y),d,a)
 
+     -- Determines whether the ball has hit the bottom of the screen
      let hit :: Ball a -> Bool
          hit ((_,y),_,_)
             | y + 25 >= h          = True
             | otherwise            = False
 
      let loop (balls,cols) = do
---             print state
-
              send context $ do
                 clearCanvas
                 sequence_
@@ -68,7 +61,7 @@ go context = do
                 let x = map hit $ balls
                     y = elem True x
                 sound <- newAudio "music/ballbounce.wav"
-                when y $ playAudio sound -- When a ball is at the bottom of the Canvas, play the bounce sound
+                when y $ playAudio sound -- When at least one ball is at the bottom of the Canvas, play the bounce sound
 
              threadDelay (20 * 1000)	                   
 
