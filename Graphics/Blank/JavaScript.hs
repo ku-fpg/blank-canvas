@@ -65,7 +65,7 @@ $(deriveShow ''CanvasAudio)
 -- 'ImageData' consists of two 'Int's and one (unboxed) 'Vector' of 'Word8's.
 -- @width@, @height@, and @data@ can be projected from 'ImageData',
 -- 'Vector.length' can be used to find the @data@ length.
--- 
+--
 -- Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
@@ -99,7 +99,7 @@ class Audio a where
     jsAudio  :: a -> Builder
     duration :: Fractional b => a -> b
 
-instance Audio CanvasAudio where         
+instance Audio CanvasAudio where
   jsAudio                    = jsCanvasAudio
   duration (CanvasAudio _ d) = realToFrac d
 
@@ -455,7 +455,7 @@ instance JSArg CanvasPattern where
     showbJS = jsCanvasPattern
 
 jsCanvasPattern :: CanvasPattern -> Builder
-jsCanvasPattern (CanvasPattern n) = "patterns[" <> showb n <> B.singleton ']'
+jsCanvasPattern (CanvasPattern n) = "pattern_" <> showb n
 
 instance JSArg (Colour Double) where
     showbJS = jsColour
