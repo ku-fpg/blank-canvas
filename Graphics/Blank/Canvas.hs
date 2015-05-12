@@ -177,7 +177,7 @@ instance T.Show (Function a) where
   showb (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ',' <> jsDouble r1 <> singleton ')'
-  showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ','
+  showb (CreatePattern (img,dir))    = "createPattern(" <> jsImage img <> singleton ','
                                                         <> jsRepeatDirection dir <> singleton ')'
 
 -----------------------------------------------------------------------------
