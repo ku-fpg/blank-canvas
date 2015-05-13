@@ -143,7 +143,7 @@ trigger = Command . Trigger
 -- number between 0.0 and 1.0 that represents the position between start and stop
 -- in a gradient.
 -- Example:
--- 
+--
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- grd # 'addColorStop'(0, 'red')
@@ -164,17 +164,21 @@ eval = Command . Eval
 data Function :: * -> * where
   CreateLinearGradient :: (Double,Double,Double,Double)               -> Function CanvasGradient
   CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> Function CanvasGradient
+  CreatePattern        :: Image image => (image, RepeatDirection)     -> Function CanvasPattern
+
 
 instance S.Show (Function a) where
   showsPrec p = showsPrec p . FromTextShow
 
 instance T.Show (Function a) where
-  showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient(" 
+  showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ')'
-  showb (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient(" 
-        <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ',' 
+  showb (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
+        <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ',' <> jsDouble r1 <> singleton ')'
+  showb (CreatePattern (img,dir)) = "createPattern("
+        <> jsImage img <> singleton ',' <> jsRepeatDirection dir <> singleton ')'
 
 -----------------------------------------------------------------------------
 
@@ -185,7 +189,6 @@ data Query :: * -> * where
         IsPointInPath        :: (Double, Double)                        -> Query Bool
         NewImage             :: Text                                    -> Query CanvasImage
         NewAudio             :: Text                                    -> Query CanvasAudio
-        CreatePattern        :: Image image => (image, RepeatDirection) -> Query CanvasPattern
         NewCanvas            :: (Int, Int)                              -> Query CanvasContext
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Cursor               :: CanvasCursor cursor => cursor           -> Query ()
@@ -202,8 +205,7 @@ instance T.Show (Query a) where
                                                         <> jsDouble y <> singleton ')'
   showb (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
   showb (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
-  showb (CreatePattern (img,dir))    = "CreatePattern(" <> jsImage img <> singleton ',' 
-                                                        <> jsRepeatDirection dir <> singleton ')'
+
   showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
                                                     <> jsInt y <> singleton ')'
   showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
@@ -221,7 +223,6 @@ parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o         = parseJSON o
 parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
 parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
-parseQueryResult (CreatePattern {}) o         = CanvasPattern <$> parseJSON o
 parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
@@ -246,7 +247,7 @@ toDataURL () = Query ToDataURL
 
 -- | Queries the measured width of the text argument.
 -- Example:
--- 
+--
 -- @
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
@@ -255,7 +256,7 @@ measureText = Query . MeasureText
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
 -- Example:
--- 
+--
 -- @
 -- 'rect'(10, 10, 100, 100)
 -- 'stroke'()
@@ -278,17 +279,17 @@ newAudio = Query . NewAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.
--- 
+--
 -- * @x0@ is the starting x-coordinate of the gradient
--- 
+--
 -- * @y0@ is the starting y-coordinate of the gradient
--- 
+--
 -- * @x1@ is the ending y-coordinate of the gradient
--- 
+--
 -- * @y1@ is the ending y-coordinate of the gradient
--- 
+--
 -- Example:
--- 
+--
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- grd # 'addColorStop'(0, \"blue\")
@@ -300,21 +301,21 @@ createLinearGradient = Function . CreateLinearGradient
 
 -- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
 -- by the coordinates of two circles, which can be used to fill other shapes.
--- 
+--
 -- * @x0@ is the x-axis of the coordinate of the start circle
--- 
+--
 -- * @y0@ is the y-axis of the coordinate of the start circle
--- 
+--
 -- * @r0@ is the radius of the start circle
--- 
+--
 -- * @x1@ is the x-axis of the coordinate of the end circle
--- 
+--
 -- * @y1@ is the y-axis of the coordinate of the end circle
--- 
+--
 -- * @r1@ is the radius of the end circle
--- 
+--
 -- Example:
--- 
+--
 -- @
 -- grd <- 'createRadialGradient'(100,100,100,100,100,0)
 -- grd # 'addColorStop'(0, \"blue\")
@@ -326,14 +327,14 @@ createRadialGradient = Function . CreateRadialGradient
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
 -- Example:
--- 
+--
 -- @
 -- img <- newImage \"cat.jpg\"
 -- pat <- 'createPattern'(img, 'repeatX')
 -- 'fillStyle' pat
 -- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = Query . CreatePattern
+createPattern = Function . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
@@ -345,7 +346,7 @@ getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
 getImageData = Query . GetImageData
 
 -- | Change the canvas cursor to the specified URL or keyword. Examples:
--- 
+--
 -- @
 -- cursor $ 'url' \"image.png\" 'default_'
 -- cursor 'crosshair'

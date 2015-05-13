@@ -333,12 +333,20 @@ send cxt commands = send' (deviceCanvasContext cxt) commands mempty
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
       sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
+      sendFunc c q@(CreatePattern        _) k cmds = sendPattern  c q k cmds
 
       sendGradient :: CanvasContext -> Function a -> (CanvasGradient -> Canvas b) -> Builder -> IO b
       sendGradient c q k cmds = do
         gId <- atomically getUniq
         send' c (k $ CanvasGradient gId) $ cmds <> "var gradient_"
             <> showb gId     <> " = "   <> jsCanvasContext c
+            <> singleton '.' <> showb q <> singleton ';'
+
+      sendPattern :: CanvasContext -> Function a -> (CanvasPattern -> Canvas b) -> Builder -> IO b
+      sendPattern c q k cmds = do
+        pId <- atomically getUniq
+        send' c (k $ CanvasPattern pId) $ cmds <> "var pattern_"
+            <> showb pId     <> " = "   <> jsCanvasContext c
             <> singleton '.' <> showb q <> singleton ';'
 
       fileQuery :: Text -> IO ()
@@ -428,7 +436,7 @@ instance Num Options where
 
 -- | Sets the color used to fill a drawing (@\"black\"@ by default).
 -- Examples:
--- 
+--
 -- @
 -- 'fillStyle' \"red\"
 -- 'fillStyle' \"#00FF00\"
@@ -438,7 +446,7 @@ fillStyle = Generated.fillStyle
 
 -- | Sets the text context's font properties.
 -- Examples:
--- 
+--
 -- @
 -- 'font' \"40pt \'Gill Sans Extrabold\'\"
 -- 'font' \"80% sans-serif\"
@@ -449,7 +457,7 @@ font = Generated.font
 
 -- | Sets the color used for strokes (@\"black\"@ by default).
 -- Examples:
--- 
+--
 -- @
 -- 'strokeStyle' \"red\"
 -- 'strokeStyle' \"#00FF00\"
@@ -459,7 +467,7 @@ strokeStyle = Generated.strokeStyle
 
 -- | Sets the color used for shadows.
 -- Examples:
--- 
+--
 -- @
 -- 'shadowColor' \"red\"
 -- 'shadowColor' \"#00FF00\"
@@ -471,7 +479,7 @@ shadowColor = Generated.shadowColor
 -- number between 0.0 and 1.0 that represents the position between start and stop
 -- in a gradient.
 -- Example:
--- 
+--
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- grd # 'addColorStop'(0, \"red\")
@@ -481,7 +489,7 @@ addColorStop = Canvas.addColorStop
 
 -- | Change the canvas cursor to the specified URL or keyword.
 -- Examples:
--- 
+--
 -- @
 -- cursor \"url(image.png), default\"
 -- cursor \"crosshair\"
