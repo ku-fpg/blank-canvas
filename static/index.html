@@ -59,6 +59,9 @@
 
             function MeasureText(txt) {
                 return function (u,c) {
+	            // If we try return the object directly, via json, we
+                    // get different results on different browsers.
+	            // So we build an object explicity.
                     $.kc.reply(u,{ width: c.measureText(txt).width });
                 }
             }
