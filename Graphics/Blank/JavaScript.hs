@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.JavaScript where
 
 import           Control.Applicative
@@ -19,7 +18,7 @@ import           Data.Text (Text)
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as B (singleton)
 import qualified Data.Vector.Unboxed as V
-import           Data.Vector.Unboxed (Vector, Unbox, toList)
+import           Data.Vector.Unboxed (Vector, toList)
 import           Data.Word (Word8)
 
 import           Graphics.Blank.Parser
@@ -69,11 +68,13 @@ $(deriveShow ''CanvasAudio)
 -- Note: 'ImageData' lives on the server, not the client.
 
 data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
-$(deriveShow ''ImageData)
 
--- Borrowed from @text-show-instances@
-instance (T.Show a, Unbox a) => T.Show (Vector a) where
-    showbPrec p = showbUnary "fromList" p . toList
+-- Defined manually to avoid an orphan T.Show (Vector a) instance
+instance T.Show ImageData where
+    showbPrec p (ImageData w h d) = showbParen (p > 10) $
+        "ImageData " <> showbPrec 11 w <> showbSpace
+                     <> showbPrec 11 h <> showbSpace
+                     <> showbUnary "fromList" 11 (toList d)
 
 -------------------------------------------------------------
 

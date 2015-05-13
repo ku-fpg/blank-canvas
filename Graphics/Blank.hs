@@ -314,7 +314,7 @@ blankCanvas opts actions = do
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send cxt (Return a) = return a
+send _   (Return a) = return a
 send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
 send cxt (With c (Bind m k)) | weakRemoteMonad cxt = send cxt (With c m) >>= send cxt . With c . k
 send cxt (With _ (With c m)) | weakRemoteMonad cxt = send cxt (With c m)
