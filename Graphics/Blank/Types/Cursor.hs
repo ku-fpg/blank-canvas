@@ -1,9 +1,6 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Types.Cursor where
 
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Functor ((<$), (<$>))
-#endif
 import           Data.Monoid
 import           Data.String (IsString(..))
 import qualified Data.Text as TS (Text)
@@ -11,6 +8,9 @@ import           Data.Text (pack)
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser (stringCI, unlift)
+
+import           Prelude ()
+import           Prelude.Compat
 
 import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char,
                                                choice, munch, skipSpaces)

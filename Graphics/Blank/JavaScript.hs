@@ -1,4 +1,6 @@
-{-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Graphics.Blank.JavaScript where
 
 import           Control.Applicative
@@ -8,9 +10,6 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Monoid (mconcat)
-#endif
 import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
@@ -23,7 +22,7 @@ import           Data.Word (Word8)
 
 import           Graphics.Blank.Parser
 
-import           Prelude hiding (Show)
+import           Prelude.Compat hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)

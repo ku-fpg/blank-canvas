@@ -1,4 +1,6 @@
-{-# LANGUAGE CPP, GADTs, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
 Module:      Graphics.Blank
@@ -164,16 +166,13 @@ module Graphics.Blank
 import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
-import           Control.Monad
+import           Control.Monad (forever)
 import           Control.Monad.IO.Class
 
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
 import qualified Data.Map as M (lookup)
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Monoid (mempty)
-#endif
 import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -202,7 +201,8 @@ import           Network.Wai.Handler.Warp
 
 import           Paths_blank_canvas
 
-import           Prelude hiding (show)
+import           Prelude ()
+import           Prelude.Compat hiding (show)
 
 import           System.IO.Unsafe (unsafePerformIO)
 -- import           System.Mem.StableName

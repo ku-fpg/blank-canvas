@@ -1,11 +1,7 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-#if !(MIN_VERSION_base(4,8,0))
-import           Control.Applicative
-#endif
-
-import           Data.Monoid((<>))
+import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
@@ -14,6 +10,9 @@ import           Graphics.Blank
 import qualified Graphics.Blank.Style as Style
 
 import           Paths_blank_canvas_examples
+
+import           Prelude ()
+import           Prelude.Compat
 
 main :: IO ()
 main = do

@@ -1,5 +1,9 @@
-{-# LANGUAGE FlexibleInstances, GADTs, KindSignatures,
-             OverloadedStrings, ScopedTypeVariables, TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Graphics.Blank.Canvas where
 

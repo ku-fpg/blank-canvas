@@ -1,9 +1,7 @@
-{-# LANGUAGE CPP, OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Functor ((<$))
-#endif
 import           Data.Monoid ((<>))
 import           Data.String
 
@@ -11,7 +9,7 @@ import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
 import           Graphics.Blank.Types
 
-import           Prelude hiding (Show)
+import           Prelude.Compat hiding (Show)
 
 import           Text.ParserCombinators.ReadP (choice)
 import           Text.ParserCombinators.ReadPrec (lift)

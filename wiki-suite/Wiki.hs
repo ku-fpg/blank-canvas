@@ -29,7 +29,7 @@ snapShot context fileName = do
                 tempCanvas <- newCanvas (round (width context + 20  :: Double),
                                          round (height context + 20 :: Double))
 
-                top <- myCanvasContext
+                top' <- myCanvasContext
 
                 with tempCanvas $ do
                         -- print a border, because we can (looks better in wiki)
@@ -67,7 +67,7 @@ snapShot context fileName = do
 
                         restore()
                         
-                        drawImage(top,[1,1])
+                        drawImage(top',[1,1])
                         toDataURL() -- of tempCanvas
 
         writeDataURL fileName txt

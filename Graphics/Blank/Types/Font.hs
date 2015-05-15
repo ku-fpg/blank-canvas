@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Types.Font where
 
 import           Control.Applicative
