@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
@@ -11,7 +12,6 @@ import qualified Graphics.Blank.Style as Style
 
 import           Paths_blank_canvas_examples
 
-import           Prelude ()
 import           Prelude.Compat
 
 main :: IO ()

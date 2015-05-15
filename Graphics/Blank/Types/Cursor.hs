@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Types.Cursor where
 
@@ -9,7 +10,6 @@ import           Data.Text (pack)
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser (stringCI, unlift)
 
-import           Prelude ()
 import           Prelude.Compat
 
 import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char,

@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -201,7 +202,6 @@ import           Network.Wai.Handler.Warp
 
 import           Paths_blank_canvas
 
-import           Prelude ()
 import           Prelude.Compat hiding (show)
 
 import           System.IO.Unsafe (unsafePerformIO)

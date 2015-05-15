@@ -1,9 +1,8 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Graphics.Blank.JavaScript where
-
-import           Control.Applicative
 
 import           Data.Char (isControl, isAscii, ord)
 import           Data.Colour
