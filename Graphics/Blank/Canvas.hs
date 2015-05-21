@@ -146,7 +146,8 @@ trigger = Command . Trigger
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
 -- in a gradient.
--- Example:
+--
+-- ==== __Example__
 --
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
@@ -250,7 +251,8 @@ toDataURL :: () -> Canvas Text
 toDataURL () = Query ToDataURL
 
 -- | Queries the measured width of the text argument.
--- Example:
+--
+-- ==== __Example__
 --
 -- @
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
@@ -259,7 +261,8 @@ measureText :: Text -> Canvas TextMetrics
 measureText = Query . MeasureText
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
--- Example:
+--
+-- ==== __Example__
 --
 -- @
 -- 'rect'(10, 10, 100, 100)
@@ -292,7 +295,7 @@ newAudio = Query . NewAudio
 --
 -- * @y1@ is the ending y-coordinate of the gradient
 --
--- Example:
+-- ==== __Example__
 --
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
@@ -318,7 +321,7 @@ createLinearGradient = Function . CreateLinearGradient
 --
 -- * @r1@ is the radius of the end circle
 --
--- Example:
+-- ==== __Example__
 --
 -- @
 -- grd <- 'createRadialGradient'(100,100,100,100,100,0)
@@ -330,7 +333,8 @@ createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canv
 createRadialGradient = Function . CreateRadialGradient
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
--- Example:
+--
+-- ==== __Example__
 --
 -- @
 -- img <- newImage \"cat.jpg\"
@@ -349,7 +353,9 @@ newCanvas = Query . NewCanvas
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
 getImageData = Query . GetImageData
 
--- | Change the canvas cursor to the specified URL or keyword. Examples:
+-- | Change the canvas cursor to the specified URL or keyword. 
+--
+-- ==== __Examples__
 --
 -- @
 -- cursor $ 'url' \"image.png\" 'default_'

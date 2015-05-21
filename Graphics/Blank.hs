@@ -435,7 +435,8 @@ instance Num Options where
 -- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
 -- | Sets the color used to fill a drawing (@\"black\"@ by default).
--- Examples:
+--
+-- ==== __Examples__
 --
 -- @
 -- 'fillStyle' \"red\"
@@ -445,7 +446,8 @@ fillStyle :: Text -> Canvas ()
 fillStyle = Generated.fillStyle
 
 -- | Sets the text context's font properties.
--- Examples:
+--
+-- ==== __Examples__
 --
 -- @
 -- 'font' \"40pt \'Gill Sans Extrabold\'\"
@@ -456,7 +458,8 @@ font :: Text -> Canvas ()
 font = Generated.font
 
 -- | Sets the color used for strokes (@\"black\"@ by default).
--- Examples:
+--
+-- ==== __Examples__
 --
 -- @
 -- 'strokeStyle' \"red\"
@@ -466,7 +469,8 @@ strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle
 
 -- | Sets the color used for shadows.
--- Examples:
+--
+-- ==== __Examples__
 --
 -- @
 -- 'shadowColor' \"red\"
@@ -478,7 +482,8 @@ shadowColor = Generated.shadowColor
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
 -- in a gradient.
--- Example:
+--
+-- ==== __Example__
 --
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
@@ -488,7 +493,8 @@ addColorStop :: (Interval, Text) -> CanvasGradient -> Canvas ()
 addColorStop = Canvas.addColorStop
 
 -- | Change the canvas cursor to the specified URL or keyword.
--- Examples:
+--
+-- ==== __Examples__
 --
 -- @
 -- cursor \"url(image.png), default\"

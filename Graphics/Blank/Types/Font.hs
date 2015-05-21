@@ -392,8 +392,10 @@ instance T.Show FontWeight where
 
 -------------------------------------------------------------------------------
 
--- | The desired height of 'Font' glyphs. Examples:
--- 
+-- | The desired height of 'Font' glyphs.
+--
+-- ==== __Examples__
+--
 -- @
 -- ('defFont' ['sansSerif']) { 'fontSize' = 'xxSmall' }
 -- ('defFont' ['sansSerif']) { 'fontSize' = 30 # 'pt' }
@@ -496,8 +498,10 @@ instance T.Show FontSize where
 
 -------------------------------------------------------------------------------
 
--- | The height of the line boxes in a 'Font'. Examples:
--- 
+-- | The height of the line boxes in a 'Font'.
+--
+-- ==== __Examples__
+--
 -- @
 -- ('defFont' ['sansSerif']) { 'lineHeight' = 'normal' }
 -- ('defFont' ['sansSerif']) { 'lineHeight' = 50 }
