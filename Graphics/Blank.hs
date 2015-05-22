@@ -558,7 +558,7 @@ The equivalent operator in @blank-canvas@ is (@#@). For example, it can be used
 to represent 'send'ing 'Canvas' commands to a 'DeviceContext':
 
 @
-blankCanvas 3000 $ \cxt ->
+blankCanvas 3000 $ \\cxt ->
     cxt # do
         moveTo(50,50)
         lineTo(200,100)

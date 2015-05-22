@@ -162,15 +162,6 @@ showbGradientCommand grad = go grad . runGradientCommand
     go _ (Pure _) = mempty
     go g (Free c) = jsCanvasGradient g <> showb c <> singleton ';' <> foldMap (go grad) c
 
--- instance S.Show (GradientCommand a) where
---   showsPrec p = showsPrec p . FromTextShow
--- 
--- instance T.Show (GradientCommand a) where
---   showb = go . runGradientCommand
---     where
---       go (Pure _) = mempty
---       go (Free x) = showb x <> foldMap go x
-
 instance Transformation GradientCommand Canvas CanvasGradient where
   grad # comm = Command (GC grad comm)
 
