@@ -1,14 +1,23 @@
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Graphics.Blank.Canvas where
 
 import           Control.Applicative
-import           Control.Monad (ap, liftM2)
+import           Control.Monad (ap, liftM, liftM2)
+import           Control.Monad.Free
+import           Control.Transformation
 
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
@@ -23,7 +32,7 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
-import           Prelude hiding (Show)
+import           Prelude.Compat hiding (Show)
 
 import qualified Text.Show as S (Show)
 import qualified Text.Show.Text as T (Show)
@@ -40,8 +49,8 @@ $(deriveShow ''TextMetrics)
 -----------------------------------------------------------------------------
 
 data Canvas :: * -> * where
-        Method    :: Method                      -> Canvas ()     -- <context>.<method>
-        Command   :: Command                     -> Canvas ()     -- <command>
+        Method    :: Method                      -> Canvas () -- <context>.<method>
+        Command   :: Command a                   -> Canvas a  -- <command>
         Function  :: T.Show a => Function a      -> Canvas a
         Query     :: T.Show a => Query a         -> Canvas a
         With      :: CanvasContext -> Canvas a   -> Canvas a
@@ -50,15 +59,15 @@ data Canvas :: * -> * where
         Return    :: a                           -> Canvas a
 
 instance Monad Canvas where
-        return = Return
-        (>>=) = Bind
+  return = Return
+  (>>=)  = Bind
 
 instance Applicative Canvas where
   pure  = return
   (<*>) = ap
 
 instance Functor Canvas where
-  fmap f c = c >>= return . f
+  fmap = liftM
 
 instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
@@ -109,22 +118,52 @@ data Method
         | Transform (Double, Double, Double, Double, Double, Double)
         | Translate (Double, Double)
 
-data Command
-  = Trigger Event
-  | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
-  | forall msg . JSArg msg => Log msg
-  | Eval Text
+data Command :: * -> * where
+    Trigger :: Event                                 -> Command ()
+    GC      :: CanvasGradient -> (GradientCommand a) -> Command a
+    Log     :: forall msg . JSArg msg => msg         -> Command ()
+    Eval    :: Text                                  -> Command ()
 
-instance S.Show Command where
+instance S.Show (Command a) where
   showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Command where
+instance T.Show (Command a) where
   showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
-  showb (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
-         <> jsDouble off <> singleton ',' <> jsCanvasColor rep
-         <> singleton ')'
+  showb (GC g c) = showbGradientCommand g c
   showb (Log msg) = "console.log(" <> showbJS msg <> singleton ')'
   showb (Eval cmd) = fromText cmd -- no escaping or interpretation
+
+-- The type paramter is only used for accumulating free-monadic values.
+data GradientCommand' a =
+    forall color. CanvasColor color => AddColorStop (Interval, color) a
+
+deriving instance Functor GradientCommand'
+deriving instance Foldable GradientCommand'
+
+instance S.Show (GradientCommand' a) where
+  showsPrec p = showsPrec p . FromTextShow
+
+instance T.Show (GradientCommand' a) where
+  showb (AddColorStop (off, rep) _) = ".addColorStop("
+       <> jsDouble off <> singleton ',' <> jsCanvasColor rep
+       <> singleton ')'
+
+-- | A command which must be invoked from a 'CanvasGradient' by use of the
+-- transformation operator (#). See 'addColorStop' for an example of how
+-- to do this.
+newtype GradientCommand a =
+    GradientCommand { runGradientCommand :: Free GradientCommand' a }
+  deriving (Functor, Applicative, Monad)
+
+showbGradientCommand :: CanvasGradient -> GradientCommand a -> Builder
+showbGradientCommand grad = go grad . runGradientCommand
+  where
+    go :: CanvasGradient -> Free GradientCommand' a -> Builder
+    go _ (Pure _) = mempty
+    go g (Free c) = jsCanvasGradient g <> showb c <> singleton ';' <> foldMap (go grad) c
+
+instance Transformation GradientCommand Canvas CanvasGradient where
+  grad # comm = Command (GC grad comm)
 
 -----------------------------------------------------------------------------
 
@@ -151,10 +190,11 @@ trigger = Command . Trigger
 --
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
--- grd # 'addColorStop'(0, 'red')
+-- grd # do 'addColorStop'(0, 'red')
+--          'addColorStop'(1, 'blue')
 -- @
-addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) = Command . AddColorStop (off,rep)
+addColorStop :: CanvasColor color => (Interval, color) -> GradientCommand ()
+addColorStop stop = GradientCommand . Free . fmap pure $ AddColorStop stop ()
 
 -- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
