@@ -79,7 +79,11 @@ module Graphics.Blank.Font
     , pc
     -- * Percentages
     , PercentageProperty(..)
+    -- * Suffix application
+    , (&)
     ) where
+
+import Data.Function.Compat ((&))
 
 import Graphics.Blank.Generated (font)
 import Graphics.Blank.Types.CSS

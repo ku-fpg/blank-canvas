@@ -255,8 +255,8 @@ fillText = Method . FillText
 -- ==== __Examples__
 -- 
 -- @
--- 'font' ('defFont' "Gill Sans Extrabold") { 'fontSize' = 40 # 'pt' }
--- 'font' ('defFont' 'sansSerif') { 'fontSize' = 80 # 'percent' }
+-- 'font' ('defFont' "Gill Sans Extrabold") { 'fontSize' = 40 & 'pt' }
+-- 'font' ('defFont' 'sansSerif') { 'fontSize' = 80 & 'percent' }
 -- 'font' ('defFont' 'serif') {
 --     'fontWeight' = 'bold'
 --   , 'fontStyle'  = 'italic'

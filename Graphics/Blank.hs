@@ -1,7 +1,9 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 {-|
 Module:      Graphics.Blank
@@ -24,7 +26,7 @@ module Graphics.Blank
           blankCanvas
         , Options(..)
           -- ** 'send'ing to the Graphics 'DeviceContext'
-        , DeviceContext       -- abstact
+        , DeviceContext       -- abstract
         , send
           -- * HTML5 Canvas API
           -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
@@ -71,6 +73,7 @@ module Graphics.Blank
         , createRadialGradient
         , createPattern
         , addColorStop
+        , GradientCommand
         , RepeatDirection(..)
         , repeat_
         , repeatX
@@ -128,6 +131,9 @@ module Graphics.Blank
         , Percentage
         , Radians
         , RoundProperty(..)
+         -- * Transformations
+         -- $transformations
+        , Transformation(..)
         -- * @blank-canvas@ Extensions
         -- ** Reading from 'Canvas'
         , newImage
@@ -168,7 +174,9 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
 import           Control.Monad (forever)
+import           Control.Monad.Free
 import           Control.Monad.IO.Class
+import           Control.Transformation (Transformation(..))
 
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
@@ -313,6 +321,18 @@ blankCanvas opts actions = do
 
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
+--
+-- Note that
+-- 
+-- @
+-- 'send' context canvas
+-- @
+--
+-- is equivalent to
+--
+-- @
+-- context # canvas
+-- @
 send :: DeviceContext -> Canvas a -> IO a
 send _   (Return a) = return a
 send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
@@ -324,12 +344,27 @@ send cxt commands = send' (deviceCanvasContext cxt) commands mempty
       sendBind c (Return a)      k cmds = send' c (k a) cmds
       sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
       sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
-      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
+      sendBind c (Command cmd)   k cmds = sendCommand c cmd k cmds
       sendBind c (Function func) k cmds = sendFunc c func k cmds
       sendBind c (Query query)   k cmds = sendQuery c query k cmds
       sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
       sendBind c MyContext       k cmds = send' c (k c) cmds
 
+      sendCommand :: CanvasContext -> Command a -> (a -> Canvas b) -> Builder -> IO b
+      -- The only thing that a GradientCommand can possibly return is (). However, we
+      -- may want to add other kinds of commands in the future which actually make use
+      -- of polymorphism (unlike GradientCommand, which is only polymorphic to make use
+      -- a free monad and natural transformation). This approach should be generalizable
+      -- to other sorts of commands.
+      sendCommand c cmd@(GC _ (GradientCommand gcFree)) k cmds
+          = send' c (k (iter (\(AddColorStop _ a) -> a) gcFree)) (cmds <> showb cmd)
+      sendCommand c cmd@(Trigger _) k cmds = sendCommandUnit c cmd k cmds
+      sendCommand c cmd@(Log     _) k cmds = sendCommandUnit c cmd k cmds
+      sendCommand c cmd@(Eval    _) k cmds = sendCommandUnit c cmd k cmds
+      
+      sendCommandUnit :: CanvasContext -> Command () -> (() -> Canvas b) -> Builder -> IO b
+      sendCommandUnit c cmd k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
+      
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
       sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
@@ -381,9 +416,11 @@ send cxt commands = send' (deviceCanvasContext cxt) commands mempty
               return a
       send' c cmd                   cmds = sendBind c cmd Return cmds
 
+instance Transformation Canvas IO DeviceContext where
+    (#) = send
+
 local_only :: Middleware
 local_only = local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
-
 
 {-# NOINLINE uniqVar #-}
 uniqVar :: TVar Int
@@ -487,9 +524,10 @@ shadowColor = Generated.shadowColor
 --
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
--- grd # 'addColorStop'(0, \"red\")
+-- grd # do 'addColorStop'(0, \"red\")
+--          'addColorStop'(1, \"blue\")
 -- @
-addColorStop :: (Interval, Text) -> CanvasGradient -> Canvas ()
+addColorStop :: (Interval, Text) -> GradientCommand ()
 addColorStop = Canvas.addColorStop
 
 -- | Change the canvas cursor to the specified URL or keyword.
@@ -510,3 +548,42 @@ height = JavaScript.height
 -- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width
+
+{- $transformations
+
+@blank-canvas@ has several types which represent object types in JavaScript,
+such as 'DeviceContext' and 'CanvasGradient'. In JavaScript, functions on these
+objects would be invoked by use of the dot operator, e.g., @object.function();@.
+The equivalent operator in @blank-canvas@ is (@#@). For example, it can be used
+to represent 'send'ing 'Canvas' commands to a 'DeviceContext':
+
+@
+blankCanvas 3000 $ \cxt ->
+    cxt # do
+        moveTo(50,50)
+        lineTo(200,100)
+        lineWidth 10
+        strokeStyle "red"
+        stroke()
+@
+
+It can also represent adding color stops to a 'CanvasGradient':
+
+@
+grd <- createLinearGradient(0, 0, 10, 10)
+grd # do addColorStop(0, "red")
+         addColorStop(1, "blue")
+@
+
+The 'Transformation' class instances represent the relationships between object
+types and their function types. For example,
+
+@
+instance 'Transformation' 'Canvas' 'IO' 'DeviceContext'
+@
+
+indicates that 'DeviceContext' objects can call functions (via @#@) in a 'Canvas'
+context and return something in an 'IO' context.
+
+-}
+

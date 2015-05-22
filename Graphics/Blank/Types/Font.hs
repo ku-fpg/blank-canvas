@@ -73,8 +73,8 @@ data Font = FontProperties
 -- @
 -- ('defFont' ["Gill Sans Extrabold", 'sansSerif']) {
 --     'fontStyle'  = 'italic'
---   , 'fontSize'   = 12 # 'px'
---   , 'lineHeight' = 14 # 'px'
+--   , 'fontSize'   = 12 & 'px'
+--   , 'lineHeight' = 14 & 'px'
 -- }
 -- @
 defFont :: [FontFamily] -> Font
@@ -398,8 +398,8 @@ instance T.Show FontWeight where
 --
 -- @
 -- ('defFont' ['sansSerif']) { 'fontSize' = 'xxSmall' }
--- ('defFont' ['sansSerif']) { 'fontSize' = 30 # 'pt' }
--- ('defFont' ['sansSerif']) { 'fontSize' = 50 # 'percent' }
+-- ('defFont' ['sansSerif']) { 'fontSize' = 30 & 'pt' }
+-- ('defFont' ['sansSerif']) { 'fontSize' = 50 & 'percent' }
 -- @
 data FontSize = XXSmallSize
               | XSmallSize
@@ -505,8 +505,8 @@ instance T.Show FontSize where
 -- @
 -- ('defFont' ['sansSerif']) { 'lineHeight' = 'normal' }
 -- ('defFont' ['sansSerif']) { 'lineHeight' = 50 }
--- ('defFont' ['sansSerif']) { 'lineHeight' = 30 # 'em' }
--- ('defFont' ['sansSerif']) { 'lineHeight' = 70 # 'percent' }
+-- ('defFont' ['sansSerif']) { 'lineHeight' = 30 & 'em' }
+-- ('defFont' ['sansSerif']) { 'lineHeight' = 70 & 'percent' }
 -- @
 data LineHeight = NormalLineHeight -- ^ Default.
                 | LineHeightNumber Double

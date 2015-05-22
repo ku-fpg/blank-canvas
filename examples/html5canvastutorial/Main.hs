@@ -320,10 +320,11 @@ example_1_6_2 canvas = do
         let (w,h) = size canvas
         rect(0, 0, w, h)
         grd <- createLinearGradient(0, 0, w, h)
-        -- light blue
-        grd # addColorStop(0, "#8ED6FF")
-        -- dark blue
-        grd # addColorStop(1, "#004CB3")
+        grd # do 
+            -- light blue
+            addColorStop(0, "#8ED6FF")
+            -- dark blue
+            addColorStop(1, "#004CB3")
         Style.fillStyle grd;
         fill();
 
@@ -331,10 +332,11 @@ example_1_6_3 canvas = do
         let (w,h) = size canvas
         rect(0, 0, w, h)
         grd <- createRadialGradient (238, 50, 10, 238, 50, 300)
-        -- light blue
-        grd # addColorStop(0, "#8ED6FF")
-        -- dark blue
-        grd # addColorStop(1, "#004CB3")
+        grd # do 
+            -- light blue
+            addColorStop(0, "#8ED6FF")
+            -- dark blue
+            addColorStop(1, "#004CB3")
         Style.fillStyle grd;
         fill();
 

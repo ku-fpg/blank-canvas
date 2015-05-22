@@ -27,17 +27,6 @@ saveRestore m = do
     restore ()
     return r
 
-infixr 0 #
-
--- | The @#@-operator is the Haskell analog to the @.@-operator
---   in JavaScript. Example:
--- 
--- > grd # addColorStop(0, "#8ED6FF");
--- 
---   This can be seen as equivalent of @grd.addColorStop(0, "#8ED6FF")@.
-(#) :: a -> (a -> b) -> b
-(#) obj act = act obj
-
 -- | Read a file, and generate a data URL.
 --
 -- >  url <- readDataURL "image/png" "image/foo.png"
