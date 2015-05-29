@@ -1,4 +1,4 @@
-### 0.5.0.1
+### 0.6
 API changes
  * The `(#)` function had its type generalized from `a -> (a -> Canvas b) -> Canvas b` to `a -> (a -> b) -> b`. This allows it to be used with font length units.
  * Added more type synonyms (`Interval`, `Degrees`, `Radians`, etc.) to more clearly indicate what functions expect constrained values.
@@ -13,6 +13,9 @@ API additions
 
 Additions
  * Allowed building with `base-4.8.0.0`
+
+Other
+ * Require `scotty` >= 0.10 and `kansas-comet` >= 0.4
 
 ## 0.5
 

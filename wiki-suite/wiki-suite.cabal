@@ -1,5 +1,5 @@
 Name:                wiki-suite
-Version:             0.5
+Version:             0.6
 Synopsis:            HTML5 Canvas Graphics Library wiki generator and test suite
 build-type:          Simple
 Cabal-version:       >= 1.10
@@ -8,7 +8,7 @@ data-files:          images/Haskell.jpg
 
 executable wiki-suite
     build-depends:    base              >= 4.6  && < 4.9,
-                      blank-canvas      == 0.5.*,
+                      blank-canvas      == 0.6.*,
                       containers        == 0.5.*,
                       process           == 1.2.*,
                       stm               >= 2.2  && < 2.5,
