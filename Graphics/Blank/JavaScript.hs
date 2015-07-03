@@ -72,7 +72,7 @@ instance T.Show ImageData where
     showbPrec p (ImageData w h d) = showbParen (p > 10) $
         "ImageData " <> showbPrec 11 w <> showbSpace
                      <> showbPrec 11 h <> showbSpace
-                     <> showbUnary "fromList" 11 (toList d)
+                     <> showbUnaryWith showbPrec "fromList" 11 (toList d)
 
 -------------------------------------------------------------
 
