@@ -23,27 +23,23 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
-import           Prelude hiding (Show)
+import           TextShow
+import           TextShow.TH (deriveTextShow)
 
-import qualified Text.Show as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text hiding (Show)
-import           Text.Show.Text.TH (deriveShow)
-
-data DeviceAttributes = DeviceAttributes Int Int Double deriving S.Show
-$(deriveShow ''DeviceAttributes)
+data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
+$(deriveTextShow ''DeviceAttributes)
 
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
-data TextMetrics = TextMetrics Double deriving S.Show
-$(deriveShow ''TextMetrics)
+data TextMetrics = TextMetrics Double deriving Show
+$(deriveTextShow ''TextMetrics)
 
 -----------------------------------------------------------------------------
 
 data Canvas :: * -> * where
         Method    :: Method                      -> Canvas ()     -- <context>.<method>
         Command   :: Command                     -> Canvas ()     -- <command>
-        Function  :: T.Show a => Function a      -> Canvas a
-        Query     :: T.Show a => Query a         -> Canvas a
+        Function  :: TextShow a => Function a    -> Canvas a
+        Query     :: TextShow a => Query a       -> Canvas a
         With      :: CanvasContext -> Canvas a   -> Canvas a
         MyContext ::                                Canvas CanvasContext
         Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
@@ -115,10 +111,10 @@ data Command
   | forall msg . JSArg msg => Log msg
   | Eval Text
 
-instance S.Show Command where
+instance Show Command where
   showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Command where
+instance TextShow Command where
   showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
   showb (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
          <> jsDouble off <> singleton ',' <> jsCanvasColor rep
@@ -172,10 +168,10 @@ data Function :: * -> * where
   CreatePattern        :: Image image => (image, RepeatDirection)     -> Function CanvasPattern
 
 
-instance S.Show (Function a) where
+instance Show (Function a) where
   showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show (Function a) where
+instance TextShow (Function a) where
   showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ')'
@@ -199,10 +195,10 @@ data Query :: * -> * where
         Cursor               :: CanvasCursor cursor => cursor           -> Query ()
         Sync                 ::                                            Query ()
 
-instance S.Show (Query a) where
+instance Show (Query a) where
   showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show (Query a) where
+instance TextShow (Query a) where
   showb Device                       = "Device"
   showb ToDataURL                    = "ToDataURL"
   showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'

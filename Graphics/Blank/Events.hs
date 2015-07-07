@@ -10,7 +10,7 @@ import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
 import Data.Aeson.Types ((.:), (.=), object)
 import Data.Text (Text)
 
-import Text.Show.Text.TH (deriveShow)
+import TextShow.TH (deriveTextShow)
 
 -- | 'EventName' mirrors event names from jQuery, and uses lowercase.
 -- Possible named events
@@ -31,7 +31,7 @@ data Event = Event
         , eWhich   :: Maybe Int          -- magic code for key presses
         }
         deriving (Eq, Ord, Show)
-$(deriveShow ''Event)
+$(deriveTextShow ''Event)
 
 instance FromJSON Event where
    parseJSON (Object v) = Event <$> ((v .: "metaKey")              <|> return False)

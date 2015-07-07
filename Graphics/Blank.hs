@@ -202,14 +202,12 @@ import           Network.Wai.Handler.Warp
 
 import           Paths_blank_canvas
 
-import           Prelude.Compat hiding (show)
+import           Prelude.Compat
 
 import           System.IO.Unsafe (unsafePerformIO)
 -- import           System.Mem.StableName
 
-import qualified Text.Show as S (show)
-import qualified Text.Show.Text as T (show)
-import           Text.Show.Text (Builder, showb, singleton)
+import           TextShow (Builder, showb, showt, singleton)
 
 import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
@@ -249,7 +247,7 @@ blankCanvas opts actions = do
    connectApp <- KC.connect kc_opts $ \ kc_doc -> do
        -- register the events we want to watch for
        KC.send kc_doc $ T.unlines
-          [ "register(" <> T.show nm <> ");"
+          [ "register(" <> showt nm <> ");"
           | nm <- events opts
           ]
        
@@ -399,7 +397,7 @@ getUniq = do
 mimeType :: Text -> Text
 mimeType filePath = go $ fileNameExtensions filePath
   where
-    go [] = error $ "do not understand mime type for : " ++ S.show filePath
+    go [] = error $ "do not understand mime type for : " ++ show filePath
     go (e:es) = case M.lookup e defaultMimeMap of
                      Nothing -> go es
                      Just mt -> decodeUtf8 mt

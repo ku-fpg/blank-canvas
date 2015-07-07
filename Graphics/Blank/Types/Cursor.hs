@@ -16,9 +16,8 @@ import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char,
                                                choice, munch, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
-import qualified Text.Show      as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text hiding (Show)
+
+import           TextShow
 
 -- | A data type that can represent a browser cursor.
 class CanvasCursor a where
@@ -145,10 +144,10 @@ readURL mQuote = do
         Nothing    -> munch (/= ')')
     return $ pack url'
 
-instance S.Show Cursor where
+instance Show Cursor where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Cursor where
+instance TextShow Cursor where
     showb Auto         = "auto"
     showb Default      = "default"
     showb None         = "none"

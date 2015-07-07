@@ -10,16 +10,12 @@ import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
 
-import           Prelude hiding (Show)
+import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 
-import qualified Text.Show as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text (FromTextShow(..), showb, singleton)
-
-instance S.Show Method where
+instance Show Method where
   showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Method where
+instance TextShow Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','

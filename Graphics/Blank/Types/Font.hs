@@ -21,16 +21,13 @@ import           Graphics.Blank.Parser
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.CSS
 
-import           Prelude hiding (Show)
-
 import qualified Text.ParserCombinators.ReadP as ReadP
 import           Text.ParserCombinators.ReadP hiding ((<++), choice, pfail)
 import qualified Text.ParserCombinators.ReadPrec as ReadPrec
 import           Text.ParserCombinators.ReadPrec (ReadPrec, (<++), lift, pfail)
 import           Text.Read (Read(..), readListPrecDefault)
-import qualified Text.Show as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text hiding (Show)
+
+import           TextShow (TextShow(..), Builder, FromTextShow(..), showbSpace)
 
 -------------------------------------------------------------------------------
 
@@ -187,10 +184,10 @@ readFontProperties' mbStyle mbVariant mbWeight =
   <*> lift (option def $ skipSpaces *> char '/' *> unlift readPrec)
   <*> (lift (munch1 isSpace) *> readPrec)
 
-instance S.Show Font where
+instance Show Font where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Font where
+instance TextShow Font where
     showb (FontProperties style variant weight size height' family)
         = showb style
        <> showbSpace
@@ -245,10 +242,10 @@ instance Read FontStyle where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show FontStyle where
+instance Show FontStyle where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show FontStyle where
+instance TextShow FontStyle where
     showb NormalStyle  = "normal"
     showb ItalicStyle  = "italic"
     showb ObliqueStyle = "oblique"
@@ -278,10 +275,10 @@ instance Read FontVariant where
       (NormalVariant <$ stringCI "normal") <|> (SmallCapsVariant <$ stringCI "small-caps")
     readListPrec = readListPrecDefault
 
-instance S.Show FontVariant where
+instance Show FontVariant where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show FontVariant where
+instance TextShow FontVariant where
     showb NormalVariant    = "normal"
     showb SmallCapsVariant = "small-caps"
 
@@ -372,10 +369,10 @@ instance Read FontWeight where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show FontWeight where
+instance Show FontWeight where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show FontWeight where
+instance TextShow FontWeight where
     showb NormalWeight  = "normal"
     showb BoldWeight    = "bold"
     showb BolderWeight  = "bolder"
@@ -480,10 +477,10 @@ instance Read FontSize where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show FontSize where
+instance Show FontSize where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show FontSize where
+instance TextShow FontSize where
     showb XXSmallSize            = "xx-small"
     showb XSmallSize             = "x-small"
     showb SmallSize              = "small"
@@ -555,10 +552,10 @@ instance Read LineHeight where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show LineHeight where
+instance Show LineHeight where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show LineHeight where
+instance TextShow LineHeight where
     showb NormalLineHeight         = "normal"
     showb (LineHeightNumber n)     = jsDouble n
     showb (LineHeightLength l)     = showb l
@@ -652,11 +649,11 @@ readFontFamily mQuote = do
         Nothing    -> unwords <$> sepBy1 cssIdent (munch1 isSpace)
     return . FontFamilyName $ TS.pack name
 
-instance S.Show FontFamily where
+instance Show FontFamily where
     showsPrec p = showsPrec p . FromTextShow
     showList    = showsPrec 0 . FromTextShow
 
-instance T.Show FontFamily where
+instance TextShow FontFamily where
     showb (FontFamilyName name) = showb name
     showb SerifFamily           = "serif"
     showb SansSerifFamily       = "sans-serif"
