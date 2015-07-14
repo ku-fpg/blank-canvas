@@ -8,7 +8,6 @@ import           Control.Monad
 import           Data.Char
 import           Data.Default.Class
 import           Data.Ix (Ix)
-import           Data.List
 import           Data.Maybe
 import           Data.Monoid
 import           Data.String
