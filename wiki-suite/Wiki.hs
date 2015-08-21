@@ -70,7 +70,7 @@ snapShot context fileName = do
                         drawImage(top',[1,1])
                         toDataURL() -- of tempCanvas
 
-        writeDataURL fileName txt
+        writeDataURL ("blank-canvas.wiki/" ++ fileName) txt
 
 wiki :: a -> a
 wiki = id
@@ -102,7 +102,7 @@ anim_png nm = do
 
 build_anim :: String -> Int -> IO ()
 build_anim nm pz = do
-       callCommand $ "convert -delay " ++ show pz ++ " -loop 0 -dispose background tmp/" ++ nm ++ "_*.png images/" ++ nm ++ ".gif"
+       callCommand $ "convert -delay " ++ show pz ++ " -loop 0 -dispose background tmp/" ++ nm ++ "_*.png blank-canvas.wiki/images/" ++ nm ++ ".gif"
        return ()
 
 
