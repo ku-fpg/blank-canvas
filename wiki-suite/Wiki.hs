@@ -102,7 +102,7 @@ anim_png nm = do
 
 build_anim :: String -> Int -> IO ()
 build_anim nm pz = do
-       callCommand $ "convert -delay " ++ show pz ++ " -loop 0 -dispose background tmp/" ++ nm ++ "_*.png blank-canvas.wiki/images/" ++ nm ++ ".gif"
+       callCommand $ "convert -delay " ++ show pz ++ " -loop 0 -dispose background blank-canvas.wiki/tmp/" ++ nm ++ "_*.png blank-canvas.wiki/images/" ++ nm ++ ".gif"
        return ()
 
 
