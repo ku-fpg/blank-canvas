@@ -41,6 +41,7 @@ Stability:           Beta
 Extra-source-files:  README.md
                      Changelog.md
 Cabal-version:       >= 1.10
+tested-with:         GHC == 7.8.4, GHC == 7.10.3
 data-files:
     static/index.html
     static/jquery.js
@@ -168,4 +169,4 @@ test-suite wiki-suite
 
 source-repository head
   type:     git
-  location: git://github.com/ku-fpg/blank-canvas.git
+  location: https://github.com/ku-fpg/blank-canvas.git

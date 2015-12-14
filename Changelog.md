@@ -9,7 +9,7 @@ API additions
  * A generalized `font` function of type `CanvasFont canvasFont => canvasFont -> Canvas ()` was added to `Graphics.Blank.Font` that can accept a `Text` or `Font` argument. The `font` function in `Graphics.Blank` remains of type `Text -> Canvas ()`.
  * Added a `cursor` function to change the browser cursor. Also added the `Graphics.Blank.Cursor` module containing a generalized `cursor` function that uses a `Cursor` ADT instead of `Text`.
  * Added `Bounded`, `Enum`, `Eq`, `Ix`, `Ord`, and `Show` instances for more data types
- * Added support for more MIME types via the `mime-types` library`
+ * Added support for more MIME types via the `mime-types` library
 
 Additions
  * Allowed building with `base-4.8.0.0`
