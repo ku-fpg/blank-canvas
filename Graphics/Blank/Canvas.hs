@@ -110,8 +110,8 @@ data Method
 
 -- Audio object methods: play(), pause(), setVolume()
 data MethodAudio
-        = forall audio . Audio audio => PlayAudio        audio
-        | forall audio . Audio audio => PauseAudio       audio
+        = forall audio . Audio audio => PlayAudio  audio
+        | forall audio . Audio audio => PauseAudio audio
         -- | forall audio . Audio audio => SetVolumeAudio   (audio, Double)
 
 data Command
@@ -289,7 +289,7 @@ isPointInPath = Query . IsPointInPath
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
--- | 'newAudio' takes an URL to an audio file and returns the 'CanvasAudio' handle
+-- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
 newAudio :: Text -> Canvas CanvasAudio

@@ -96,10 +96,13 @@ instance Image CanvasContext where
 class Audio a where
     jsAudio       :: a -> Builder
     durationAudio :: Fractional b => a -> b
+    indexAudio    :: a -> Int -- the index to access the audio in the sounds array 
+
 
 instance Audio CanvasAudio where         
   jsAudio                         = jsCanvasAudio
   durationAudio (CanvasAudio _ d) = realToFrac d
+  indexAudio    (CanvasAudio n _) = n
 
 -- instance Element Video  -- Not supported
 
