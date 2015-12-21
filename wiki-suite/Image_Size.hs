@@ -2,15 +2,13 @@
 module Image_Size where
 
 import Graphics.Blank
-import Paths_wiki_suite
 import Wiki -- (578,200)
 
 main :: IO ()
 main = do
-    dat <- getDataDir
-    blankCanvas 3000 { root = dat } $ \ context -> do
+    blankCanvas 3000 $ \ context -> do
         send context $ do
-            img <- newImage "/images/Haskell.jpg"
+            img <- newImage "images/Haskell.jpg"
             drawImage(img,[69,50,97,129])
         
         

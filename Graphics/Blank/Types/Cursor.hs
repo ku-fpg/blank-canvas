@@ -1,9 +1,7 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Types.Cursor where
 
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Functor ((<$), (<$>))
-#endif
 import           Data.Monoid
 import           Data.String (IsString(..))
 import qualified Data.Text as TS (Text)
@@ -12,13 +10,14 @@ import           Data.Text (pack)
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser (stringCI, unlift)
 
+import           Prelude.Compat
+
 import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char,
                                                choice, munch, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
-import qualified Text.Show      as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text hiding (Show)
+
+import           TextShow
 
 -- | A data type that can represent a browser cursor.
 class CanvasCursor a where
@@ -145,10 +144,10 @@ readURL mQuote = do
         Nothing    -> munch (/= ')')
     return $ pack url'
 
-instance S.Show Cursor where
+instance Show Cursor where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Cursor where
+instance TextShow Cursor where
     showb Auto         = "auto"
     showb Default      = "default"
     showb None         = "none"

@@ -27,5 +27,5 @@ main = blankCanvas 3000 $ \ ctx -> send ctx $ do
           | (x,p) <- [1..3] `zip` [9,18,36]
           , (y,z) <- [1..3] `zip` [0.5,1,2]
           ]
-     top <- newImage imgPath
-     drawImage(top, [0,0,w,h/2,0,h/2,w/2,h/4])
+     top' <- newImage imgPath
+     drawImage(top', [0,0,w,h/2,0,h/2,w/2,h/4])

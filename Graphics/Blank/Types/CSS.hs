@@ -1,9 +1,8 @@
-{-# LANGUAGE CPP, OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Functor ((<$))
-#endif
 import           Data.Monoid ((<>))
 import           Data.String
 
@@ -11,14 +10,13 @@ import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
 import           Graphics.Blank.Types
 
-import           Prelude hiding (Show)
+import           Prelude.Compat
 
 import           Text.ParserCombinators.ReadP (choice)
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
-import qualified Text.Show as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text (FromTextShow(..), showb)
+
+import           TextShow (TextShow(..), FromTextShow(..))
 
 -- | Denotes CSS distance measurements, especially in the context of 'Font's.
 data Length = Em   { runLength :: Double } -- ^ The height of the current font.
@@ -127,10 +125,10 @@ instance Read Length where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show Length where
+instance Show Length where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show Length where
+instance TextShow Length where
     showb l = jsDouble (runLength l) <> showbUnits l
       where
         showbUnits (Em   _) = "em"

@@ -10,22 +10,18 @@ import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
 
-import           Prelude hiding (Show)
+import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 
-import qualified Text.Show as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text (FromTextShow(..), showb, singleton)
-
-instance S.Show Method where
+instance Show Method where
   showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show MethodAudio where
+instance TextShow MethodAudio where
   showb (PlayAudio audio)             = jsAudio audio <> ".play()"
   showb (PauseAudio audio)            = jsAudio audio <> ".pause()"
   -- showb (SetVolumeAudio (audio, vol)) = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
   -- showb (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
   
-instance T.Show Method where
+instance TextShow Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
@@ -127,7 +123,8 @@ arcTo :: (Double, Double, Double, Double, Double) -> Canvas ()
 arcTo = Method . ArcTo
 
 -- | Begins drawing a new path. This will empty the current list of subpaths.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'beginPath'()
@@ -157,7 +154,8 @@ bezierCurveTo = Method . BezierCurveTo
 
 -- | @'clearRect'(x, y, w, h)@ clears all pixels within the rectangle with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ (i.e., sets the pixels to transparent black).
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'fillStyle' \"red\"
@@ -169,7 +167,9 @@ clearRect = Method . ClearRect
 
 -- | Turns the path currently being built into the current clipping path.
 -- Anything drawn after 'clip' is called will only be visible if inside the new
--- clipping path. Example:
+-- clipping path. 
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'rect'(50, 20, 200, 120)
@@ -182,7 +182,8 @@ clip :: () -> Canvas ()
 clip () = Method Clip
 
 -- | Creates a path from the current point back to the start, to close it.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'beginPath'()
@@ -200,7 +201,8 @@ drawImage :: Image image => (image,[Double]) -> Canvas ()
 drawImage = Method . DrawImage
 
 -- | Fills the current path with the current 'fillStyle'.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'rect'(10, 10, 100, 100)
@@ -211,7 +213,8 @@ fill () = Method Fill
 
 -- | @'fillRect'(x, y, w, h)@ draws a filled rectangle with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'fillStyle'.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'fillStyle' \"red\"
@@ -221,7 +224,8 @@ fillRect :: (Double, Double, Double, Double) -> Canvas ()
 fillRect = Method . FillRect
 
 -- | Sets the color, gradient, or pattern used to fill a drawing ('black' by default).
--- Examples:
+--
+-- ==== __Examples__
 -- 
 -- @
 -- 'fillStyle' 'red'
@@ -238,7 +242,8 @@ fillStyle = Method . FillStyle
 
 -- | @'fillText'(t, x, y)@ fills the text @t@ at position @(x, y)@
 -- using the current 'fillStyle'.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'font' \"48px serif\"
@@ -248,7 +253,8 @@ fillText :: (Text, Double, Double) -> Canvas ()
 fillText = Method . FillText
 
 -- | Sets the text context's font properties.
--- Examples:
+--
+-- ==== __Examples__
 -- 
 -- @
 -- 'font' ('defFont' "Gill Sans Extrabold") { 'fontSize' = 40 # 'pt' }
@@ -267,7 +273,8 @@ globalAlpha :: Alpha -> Canvas ()
 globalAlpha = Method . GlobalAlpha
 
 -- | Sets how new shapes should be drawn over existing shapes.
--- Examples:
+--
+-- ==== __Examples__
 -- 
 -- @
 -- 'globalCompositeOperation' \"source-over\"
@@ -286,7 +293,8 @@ lineJoin = Method . LineJoin
 
 -- | @'lineTo'(x, y)@ connects the last point in the subpath to the given @(x, y)@
 -- coordinates (without actually drawing it).
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'beginPath'()
@@ -307,7 +315,8 @@ miterLimit :: Double -> Canvas ()
 miterLimit = Method . MiterLimit
 
 -- | @'moveTo'(x, y)@ moves the starting point of a new subpath to the given @(x, y)@ coordinates.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'beginPath'()
@@ -346,7 +355,8 @@ quadraticCurveTo = Method . QuadraticCurveTo
 
 -- | @'rect'(x, y, w, h)@ creates a rectangle with an upper-left corner at position
 -- @(x, y)@, width @w@, and height @h@ (where width and height are in pixels).
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'rect'(10, 10, 100, 100)
@@ -363,7 +373,8 @@ restore () = Method Restore
 -- | Applies a rotation transformation to the canvas. When you call functions
 -- such as 'fillRect' after 'rotate', the drawings will be rotated clockwise by
 -- the angle given to 'rotate' (in radians).
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'rotate' ('pi'/2)        -- Rotate the canvas 90°
@@ -379,7 +390,8 @@ save () = Method Save
 -- | Applies a scaling transformation to the canvas units, where the first argument
 -- is the percent to scale horizontally, and the second argument is the percent to
 -- scale vertically. By default, one canvas unit is one pixel.
--- Examples:
+--
+-- ==== __Examples__
 -- 
 -- @
 -- 'scale'(0.5, 0.5)        -- Halve the canvas units
@@ -399,7 +411,8 @@ shadowBlur :: Double -> Canvas ()
 shadowBlur = Method . ShadowBlur
 
 -- | Sets the color used for shadows.
--- Examples:
+--
+-- ==== __Examples__
 -- 
 -- @
 -- 'shadowColor' 'red'
@@ -417,7 +430,8 @@ shadowOffsetY :: Double -> Canvas ()
 shadowOffsetY = Method . ShadowOffsetY
 
 -- | Draws the current path's strokes with the current 'strokeStyle' ('black' by default).
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'rect'(10, 10, 100, 100)
@@ -428,7 +442,8 @@ stroke () = Method Stroke
 
 -- | @'strokeRect'(x, y, w, h)@ draws a rectangle (no fill) with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'strokeStyle'.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'strokeStyle' \"red\"
@@ -438,7 +453,8 @@ strokeRect :: (Double, Double, Double, Double) -> Canvas ()
 strokeRect = Method . StrokeRect
 
 -- | Sets the color, gradient, or pattern used for strokes.
--- Examples:
+--
+-- ==== __Examples__
 -- 
 -- @
 -- 'strokeStyle' 'red'
@@ -455,7 +471,8 @@ strokeStyle = Method . StrokeStyle
 
 -- | @'strokeText'(t, x, y)@ draws text @t@ (with no fill) at position @(x, y)@
 -- using the current 'strokeStyle'.
--- Example:
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'font' \"48px serif\"
@@ -500,7 +517,9 @@ transform = Method . Transform
 -- | Applies a translation transformation by remapping the origin (i.e., the (0,0)
 -- position) on the canvas. When you call functions such as 'fillRect' after
 -- 'translate', the values passed to 'translate' are added to the x- and
--- y-coordinate values. Example:
+-- y-coordinate values. 
+--
+-- ==== __Example__
 -- 
 -- @
 -- 'translate'(20, 20)

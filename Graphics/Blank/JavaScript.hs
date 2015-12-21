@@ -1,17 +1,14 @@
-{-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TemplateHaskell #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Graphics.Blank.JavaScript where
-
-import           Control.Applicative
 
 import           Data.Char (isControl, isAscii, ord)
 import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Monoid (mconcat)
-#endif
 import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
@@ -19,44 +16,43 @@ import           Data.Text (Text)
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as B (singleton)
 import qualified Data.Vector.Unboxed as V
-import           Data.Vector.Unboxed (Vector, Unbox, toList)
+import           Data.Vector.Unboxed (Vector, toList)
 import           Data.Word (Word8)
 
 import           Graphics.Blank.Parser
 
-import           Prelude hiding (Show)
+import           Prelude.Compat
 
 import           Text.ParserCombinators.ReadP (choice, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), parens, readListPrecDefault)
-import qualified Text.Show as S (Show)
-import qualified Text.Show.Text as T (Show)
-import           Text.Show.Text hiding (Show)
-import           Text.Show.Text.Data.Floating (showbFFloat)
-import           Text.Show.Text.Data.Integral (showbHex)
-import           Text.Show.Text.TH (deriveShow)
+
+import           TextShow
+import           TextShow.Data.Floating (showbFFloat)
+import           TextShow.Data.Integral (showbHex)
+import           TextShow.TH (deriveTextShow)
 
 -------------------------------------------------------------
 
 -- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
-data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, S.Show)
-$(deriveShow ''CanvasContext)
+data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, Show)
+$(deriveTextShow ''CanvasContext)
 
 -- | A handle to a canvas image. 'CanvasImage's cannot be destroyed.
-data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, S.Show)
-$(deriveShow ''CanvasImage)
+data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, Show)
+$(deriveTextShow ''CanvasImage)
 
 -- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
-newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, S.Show)
-$(deriveShow ''CanvasGradient)
+newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, Show)
+$(deriveTextShow ''CanvasGradient)
 
 -- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
-newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, S.Show)
-$(deriveShow ''CanvasPattern)
+newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, Show)
+$(deriveTextShow ''CanvasPattern)
 
 -- | A handle to a canvas audio. 'CanvasAudio's cannot be destroyed.
-data CanvasAudio = CanvasAudio !Int !Double deriving (Eq, Ord, S.Show)
-$(deriveShow ''CanvasAudio)
+data CanvasAudio = CanvasAudio !Int !Double    deriving (Eq, Ord, Show)
+$(deriveTextShow ''CanvasAudio)
 
 -------------------------------------------------------------
 
@@ -65,15 +61,17 @@ $(deriveShow ''CanvasAudio)
 -- 'ImageData' consists of two 'Int's and one (unboxed) 'Vector' of 'Word8's.
 -- @width@, @height@, and @data@ can be projected from 'ImageData',
 -- 'Vector.length' can be used to find the @data@ length.
--- 
+--
 -- Note: 'ImageData' lives on the server, not the client.
 
-data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, S.Show)
-$(deriveShow ''ImageData)
+data ImageData = ImageData !Int !Int !(Vector Word8) deriving (Eq, Ord, Show)
 
--- Borrowed from @text-show-instances@
-instance (T.Show a, Unbox a) => T.Show (Vector a) where
-    showbPrec p = showbUnary "fromList" p . toList
+-- Defined manually to avoid an orphan T.Show (Vector a) instance
+instance TextShow ImageData where
+    showbPrec p (ImageData w h d) = showbParen (p > 10) $
+        "ImageData " <> showbPrec 11 w <> showbSpace
+                     <> showbPrec 11 h <> showbSpace
+                     <> showbUnaryWith showbPrec "fromList" 11 (toList d)
 
 -------------------------------------------------------------
 
@@ -173,10 +171,10 @@ instance Read RepeatDirection where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show RepeatDirection where
+instance Show RepeatDirection where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show RepeatDirection where
+instance TextShow RepeatDirection where
     showb Repeat   = "repeat"
     showb RepeatX  = "repeat-x"
     showb RepeatY  = "repeat-y"
@@ -215,10 +213,10 @@ instance Read LineEndCap where
 instance RoundProperty LineEndCap where
     round_ = RoundCap
 
-instance S.Show LineEndCap where
+instance Show LineEndCap where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show LineEndCap where
+instance TextShow LineEndCap where
     showb ButtCap   = "butt"
     showb RoundCap  = "round"
     showb SquareCap = "square"
@@ -258,10 +256,10 @@ instance Read LineJoinCorner where
 instance RoundProperty LineJoinCorner where
     round_ = RoundCorner
 
-instance S.Show LineJoinCorner where
+instance Show LineJoinCorner where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show LineJoinCorner where
+instance TextShow LineJoinCorner where
     showb BevelCorner = "bevel"
     showb RoundCorner = "round"
     showb MiterCorner = "miter"
@@ -316,10 +314,10 @@ instance Read TextAnchorAlignment where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show TextAnchorAlignment where
+instance Show TextAnchorAlignment where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show TextAnchorAlignment where
+instance TextShow TextAnchorAlignment where
     showb StartAnchor  = "start"
     showb EndAnchor    = "end"
     showb CenterAnchor = "center"
@@ -379,10 +377,10 @@ instance Read TextBaselineAlignment where
             ]
     readListPrec = readListPrecDefault
 
-instance S.Show TextBaselineAlignment where
+instance Show TextBaselineAlignment where
     showsPrec p = showsPrec p . FromTextShow
 
-instance T.Show TextBaselineAlignment where
+instance TextShow TextBaselineAlignment where
     showb TopBaseline         = "top"
     showb HangingBaseline     = "hanging"
     showb MiddleBaseline      = "middle"
@@ -458,7 +456,7 @@ instance JSArg CanvasPattern where
     showbJS = jsCanvasPattern
 
 jsCanvasPattern :: CanvasPattern -> Builder
-jsCanvasPattern (CanvasPattern n) = "patterns[" <> showb n <> B.singleton ']'
+jsCanvasPattern (CanvasPattern n) = "pattern_" <> showb n
 
 instance JSArg (Colour Double) where
     showbJS = jsColour

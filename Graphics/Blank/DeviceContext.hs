@@ -10,7 +10,7 @@ import           Data.Text (Text)
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
 
-import           Text.Show.Text (Builder, toText)
+import           TextShow (Builder, toText)
 
 import qualified Web.Scotty.Comet as KC
 

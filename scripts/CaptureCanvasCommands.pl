@@ -125,17 +125,13 @@ print G "import           Graphics.Blank.Types\n";
 print G "import           Graphics.Blank.Types.CSS\n";
 print G "import           Graphics.Blank.Types.Font\n";
 print G "\n";
-print G "import           Prelude hiding (Show)\n";
-print G "\n";
-print G "import qualified Text.Show as S (Show)\n";
-print G "import qualified Text.Show.Text as T (Show)\n";
-print G "import           Text.Show.Text (FromTextShow(..), showb, singleton)\n";
+print G "import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)\n";
 
 print G "\n";
-print G "instance S.Show Method where\n";
+print G "instance Show Method where\n";
 print G "  showsPrec p = showsPrec p . FromTextShow\n";
 print G "\n";
-print G "instance T.Show Method where\n";
+print G "instance TextShow Method where\n";
 print G "$show\n";
 print G "-- DSL\n$dsl\n";
 

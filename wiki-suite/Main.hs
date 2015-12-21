@@ -1,3 +1,23 @@
+-- Shake Generator for wiki pages
+{-# LANGUAGE CPP #-}
+module Main where
+
+import           Prelude hiding ((*>))
+
+import           Control.Concurrent
+
+import           Data.Char
+import           Data.List
+
+import qualified Development.Shake as Shake
+import           Development.Shake hiding (doesFileExist)
+import           Development.Shake.FilePath
+
+import           System.Directory
+import           System.Environment
+import           System.IO
+import           System.Process
+
 -- TO test: ghci wiki-suite/Draw_Canvas.hs -idist/build/autogen/:.:wiki-suite
 import qualified Arc
 import qualified Bezier_Curve
@@ -114,3 +134,165 @@ main2 ["Translate_Transform"] = Translate_Transform.main
 main2 ["Scale_Transform"] = Scale_Transform.main
 main2 ["Rotate_Transform"] = Rotate_Transform.main
 main2 ["Custom_Transform"] = Custom_Transform.main
+
+main2 ["clean"] = do 
+        _ <- createProcess $ shell "rm blank-canvas.wiki/images/*.png blank-canvas.wiki/images/*.gif blank-canvas.wiki/examples/*.hs"
+        return ()
+        
+main2 args = shakeArgs shakeOptions $ do
+
+    if null args then do
+            want ["blank-canvas.wiki/images/" ++ nm ++ ".gif" | nm <- movies ]
+            want ["blank-canvas.wiki/images/" ++ nm ++ ".png" | nm <- examples ++ tutorial]
+            want ["blank-canvas.wiki/examples/" ++ nm ++ ".hs" | nm <- movies ++ examples ++ tutorial]
+            want ["blank-canvas.wiki/" ++ toMinus nm ++ ".md" | nm <- movies ++ examples ++ tutorial]
+    else return ()
+
+    ["blank-canvas.wiki/images/*.png", "blank-canvas.wiki/images/*.gif"] |*> \out -> do
+        let nm = takeBaseName out
+
+	liftIO $ print (out,nm)
+
+	let tmp = "tmp"
+
+        liftIO $ createDirectoryIfMissing False tmp
+        liftIO $ removeFiles tmp [nm ++ "*.png"]
+        liftIO $ createDirectoryIfMissing False tmp
+
+        need [ "blank-canvas.wiki/" ++ toMinus nm ++ ".md" ]
+        let haskell_file = nm ++ ".hs"
+        need [ "wiki-suite/" ++ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]        
+        liftIO $ print nm
+
+        txt <- readFile' $ "wiki-suite/" ++ haskell_file
+
+        let (w,h) = head $
+              [ case words ln of
+                 [_,_,_,n] -> read n
+                 _ -> (512,384)
+              | ln <- lines txt 
+              , "import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln
+              ] ++ [(512,384) :: (Int, Int)]
+
+
+        sequence_ [
+             do (_,_,_,ghc) <- liftIO $ 
+                              createProcess (proc "./dist/build/wiki-suite/wiki-suite" [nm])
+
+                 -- wait a second, for things to start
+                liftIO $ threadDelay (1 * 1000 * 1000)
+                
+#if defined(darwin_HOST_OS)
+                command_ [] "/usr/bin/open" 
+                                       ["-a"
+                                       ,"/Applications/Google Chrome.app"
+                                       ,"http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd]
+#else
+                -- TODO: Figure out what Windows/MinTTY uses
+                command_ [] "/usr/bin/xdg-open" ["http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd]
+#endif
+                 -- wait for haskell program to stop
+                liftIO $ waitForProcess ghc | hd <- [("")] ++ if nm == "Text_Wrap" then [("&hd")] else [] ]
+        return ()
+
+
+    "blank-canvas.wiki/examples/*.hs" *> \ out -> do
+        liftIO $ print out
+        let haskell_file = takeFileName out
+
+        txt <- readFile' $ "./wiki-suite/" ++ haskell_file
+
+        let new = reverse
+                $ dropWhile (all isSpace)
+                $ reverse
+                [ if "module" `isPrefixOf` ln 
+		  then "module Main where"
+		  else ln
+                | ln <- lines txt 
+                , not ("wiki $" `isInfixOf` ln)         -- remove the wiki stuff
+                , not ("import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln)
+                ]
+
+        writeFileChanged out (unlines $ map (untabify 0) new)
+
+    "blank-canvas.wiki/*.md" *> \ out -> do
+        b <- Shake.doesFileExist out
+--        liftIO $ print b
+        txts <- liftIO $ if b then do
+                        h <- openFile out ReadMode
+                        let loop = do
+                       	     b' <- hIsEOF h 
+                	     if b'
+                	     then return []
+                	     else do
+                    	   	ln <- hGetLine h
+                		lns <- loop
+                		return (ln : lns)
+                        txts <- loop 
+                        hClose h
+                        return txts
+                else return []         
+--        liftIO $ print txts
+
+        let p = not . (code_header `isPrefixOf`)
+        let textToKeep = takeWhile p txts
+
+        let haskell_file = map (\ c -> if c == '-' then '_' else c) 
+	    		 $ replaceExtension (takeFileName out) ".hs"
+
+
+        liftIO $ print haskell_file
+        txt <- readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file 
+
+        let new = unlines $
+                       [ t | t <- textToKeep 
+                       ] ++
+                       [code_header] ++
+                       lines txt ++
+                       [code_footer]
+
+--        liftIO $ putStrLn new
+
+        writeFileChanged out new
+
+
+-- to clean: rm images/*png images/*gif examples/*hs
+-- */
+
+movies :: [String]
+movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
+
+examples :: [String]
+examples = ["Red_Line","Favicon"]
+        ++ ["Color_Square"] 
+
+tutorial :: [String]
+tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
+        ++ ["Arc","Quadratic_Curve","Bezier_Curve"]
+        ++ ["Path","Line_Join","Rounded_Corners","Is_Point_In_Path"]
+        ++ ["Custom_Shape","Rectangle","Circle","Semicircle"]
+        ++ ["Color_Fill","Linear_Gradient","Radial_Gradient","Pattern"]
+        ++ ["Draw_Image","Image_Size","Image_Crop","Image_Loader", "Draw_Canvas", "Draw_Device"]
+        ++ ["Font_Size_and_Style","Text_Color","Text_Stroke","Text_Align","Text_Baseline","Text_Metrics","Text_Wrap"]
+        ++ ["Translate_Transform","Scale_Transform","Rotate_Transform","Custom_Transform"]
+        ++ ["Shadow","Global_Alpha","Clipping_Region","Global_Composite_Operations"]
+        ++ ["Grayscale","Get_Image_Data_URL","Load_Image_Data_URL"]
+        ++ ["Load_Image_Data_URL_2"]
+
+wiki_dir :: String
+wiki_dir = "."
+
+toMinus :: String -> String
+toMinus = map (\ c -> if c == '_' then '-' else c) 
+
+
+untabify :: Int -> String -> String
+untabify _ [] = []
+untabify n (c:cs) | c == '\t' = let t = 8 - n `mod` 8 in take t (cycle " ") ++ untabify (n + t) cs
+                  | otherwise = c : untabify (n + 1) cs 
+
+code_header :: String
+code_header = "````Haskell"
+
+code_footer :: String
+code_footer = "````"

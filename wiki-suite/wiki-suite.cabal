@@ -1,21 +1,22 @@
 Name:                wiki-suite
-Version:             0.5
+Version:             0.6
 Synopsis:            HTML5 Canvas Graphics Library wiki generator and test suite
 build-type:          Simple
 Cabal-version:       >= 1.10
+tested-with:         GHC == 7.8.4, GHC == 7.10.3
 data-files:          images/Haskell.jpg
                      images/House.jpg
 
 executable wiki-suite
-    build-depends:    base,
-                      blank-canvas      == 0.5.*,
+    build-depends:    base              >= 4.6  && < 4.9,
+                      blank-canvas      == 0.6.*,
                       containers        == 0.5.*,
                       process           == 1.2.*,
                       stm               >= 2.2  && < 2.5,
                       text              >= 1.1  && < 1.3,
                       time              >= 1.4  && < 1.6,
                       unix              == 2.7.*,
-                      vector            >= 0.10 && < 0.11
+                      vector            >= 0.10 && < 0.12
 
     default-language: Haskell2010
 -- add -fhpc to do coverage

@@ -3,15 +3,13 @@ module Grayscale where
 
 import qualified Data.Vector.Unboxed as V
 import           Graphics.Blank
-import           Paths_wiki_suite
 import           Wiki -- (578,400)
 
 main :: IO ()
 main = do
-    dat <- getDataDir
-    blankCanvas 3000 { root = dat } $ \ context -> do
+    blankCanvas 3000 $ \ context -> do
         ImageData w h v <- send context $ do
-            img <- newImage "/images/House.jpg"
+            img <- newImage "images/House.jpg"
             drawImage(img,[50,50])
             getImageData(50,50, width img, height img)
         

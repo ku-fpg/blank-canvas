@@ -57,15 +57,11 @@
                 }
             }
 
-            function CreatePattern(img,src) {
-                return function (u,c) {
-                    var count = patterns.push(c.createPattern(img,src));
-                    $.kc.reply(u,count - 1);
-                }
-            }
-
             function MeasureText(txt) {
                 return function (u,c) {
+	            // If we try return the object directly, via json, we
+                    // get different results on different browsers.
+	            // So we build an object explicity.
                     $.kc.reply(u,{ width: c.measureText(txt).width });
                 }
             }
@@ -105,7 +101,7 @@
                     $.kc.reply(u, []);
                 };
             }
-            
+
             function Sync(u,c) {
                 $.kc.reply(u,[]);
             }
@@ -114,22 +110,22 @@
                 var o = {};
                 o.metaKey = e.metaKey;
                 o.type    = e.type;
-                if (e.pageXY != undefined) { 
-                    o.pageXY = e.pageXY; 
+                if (e.pageXY != undefined) {
+                    o.pageXY = e.pageXY;
                 }
                 if (e.pageX != undefined && e.pageY != undefined) {
                     o.pageXY = [e.pageX,e.pageY];
                 }
-                if (e.which != undefined) { 
-                    o.which = e.which; 
+                if (e.which != undefined) {
+                    o.which = e.which;
                 }
                 $.kc.event(o);
             }
-            
+
             function register(name) {
                 $(document).bind(name,Trigger);
             }
-            
+
             function redraw() {
                 $.ajax({ url: "/canvas/" + session,
                          type: "GET",

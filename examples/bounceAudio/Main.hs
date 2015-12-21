@@ -38,7 +38,6 @@ go :: DeviceContext -> IO b
 go context = do
 
      let (w,h) = (width context, height context) :: (Double, Double)
-     print (w,h)
 
      let bounce :: Ball a -> Ball a
          bounce ((x,y),d,a)

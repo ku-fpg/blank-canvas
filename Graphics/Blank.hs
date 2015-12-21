@@ -1,4 +1,7 @@
-{-# LANGUAGE CPP, GADTs, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-|
 Module:      Graphics.Blank
@@ -170,16 +173,13 @@ module Graphics.Blank
 import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
-import           Control.Monad
+import           Control.Monad (forever)
 import           Control.Monad.IO.Class
 
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
 import qualified Data.Map as M (lookup)
-#if !(MIN_VERSION_base(4,8,0))
-import           Data.Monoid (mempty)
-#endif
 import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -208,14 +208,12 @@ import           Network.Wai.Handler.Warp
 
 import           Paths_blank_canvas
 
-import           Prelude hiding (show)
+import           Prelude.Compat
 
 import           System.IO.Unsafe (unsafePerformIO)
 -- import           System.Mem.StableName
 
-import qualified Text.Show as S (show)
-import qualified Text.Show.Text as T (show)
-import           Text.Show.Text (Builder, showb, singleton)
+import           TextShow (Builder, showb, showt, singleton)
 
 import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
@@ -248,50 +246,51 @@ blankCanvas opts actions = do
 
 --   print dataDir
 
+   -- use the comet
+   let kc_opts :: KC.Options
+       kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
+
+   connectApp <- KC.connect kc_opts $ \ kc_doc -> do
+       -- register the events we want to watch for
+       KC.send kc_doc $ T.unlines
+          [ "register(" <> showt nm <> ");"
+          | nm <- events opts
+          ]
+       
+       queue <- atomically newTChan
+       _ <- forkIO $ forever $ do
+               val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
+               case fromJSON val of
+                  Success (event :: Event) -> do
+                          atomically $ writeTChan queue event
+                  _ -> return ()
+       
+       
+       let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
+       
+       -- A bit of bootstrapping
+       DeviceAttributes w h dpr <- send cxt0 device
+       -- print (DeviceAttributes w h dpr)
+       
+       let cxt1 = cxt0
+                { ctx_width = w
+                , ctx_height = h
+                , ctx_devicePixelRatio = dpr
+                , weakRemoteMonad = weak opts
+                }
+       
+       (actions $ cxt1) `catch` \ (e :: SomeException) -> do
+               print ("Exception in blank-canvas application:" :: String)
+               print e
+               throw e
+
    app <- scottyApp $ do
 --        middleware logStdoutDev
         sequence_ [ Scotty.middleware ware
                   | ware <- middleware opts
                   ]
-        -- use the comet
-        let kc_opts :: KC.Options
-            kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
 
-
-
-        KC.connect kc_opts $ \ kc_doc -> do
-                -- register the events we want to watch for
-                KC.send kc_doc $ T.unlines
-                   [ "register(" <> T.show nm <> ");"
-                   | nm <- events opts
-                   ]
-
-                queue <- atomically newTChan
-                _ <- forkIO $ forever $ do
-                        val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
-                        case fromJSON val of
-                           Success (event :: Event) -> do
-                                   atomically $ writeTChan queue event
-                           _ -> return ()
-
-
-                let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
-
-                -- A bit of bootstrapping
-                DeviceAttributes w h dpr <- send cxt0 device
-                -- print (DeviceAttributes w h dpr)
-
-                let cxt1 = cxt0
-                         { ctx_width = w
-                         , ctx_height = h
-                         , ctx_devicePixelRatio = dpr
-                         , weakRemoteMonad = weak opts
-                         }
-
-                (actions $ cxt1) `catch` \ (e :: SomeException) -> do
-                        print ("Exception in blank-canvas application:" :: String)
-                        print e
-                        throw e
+        connectApp
 
         get "/"                 $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
@@ -320,7 +319,7 @@ blankCanvas opts actions = do
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send cxt (Return a) = return a
+send _   (Return a) = return a
 send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
 send cxt (With c (Bind m k)) | weakRemoteMonad cxt = send cxt (With c m) >>= send cxt . With c . k
 send cxt (With _ (With c m)) | weakRemoteMonad cxt = send cxt (With c m)
@@ -340,12 +339,20 @@ send cxt commands = send' (deviceCanvasContext cxt) commands mempty
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
       sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
+      sendFunc c q@(CreatePattern        _) k cmds = sendPattern  c q k cmds
 
       sendGradient :: CanvasContext -> Function a -> (CanvasGradient -> Canvas b) -> Builder -> IO b
       sendGradient c q k cmds = do
         gId <- atomically getUniq
         send' c (k $ CanvasGradient gId) $ cmds <> "var gradient_"
             <> showb gId     <> " = "   <> jsCanvasContext c
+            <> singleton '.' <> showb q <> singleton ';'
+
+      sendPattern :: CanvasContext -> Function a -> (CanvasPattern -> Canvas b) -> Builder -> IO b
+      sendPattern c q k cmds = do
+        pId <- atomically getUniq
+        send' c (k $ CanvasPattern pId) $ cmds <> "var pattern_"
+            <> showb pId     <> " = "   <> jsCanvasContext c
             <> singleton '.' <> showb q <> singleton ';'
 
       fileQuery :: Text -> IO ()
@@ -397,7 +404,7 @@ getUniq = do
 mimeType :: Text -> Text
 mimeType filePath = go $ fileNameExtensions filePath
   where
-    go [] = error $ "do not understand mime type for : " ++ S.show filePath
+    go [] = error $ "do not understand mime type for : " ++ show filePath
     go (e:es) = case M.lookup e defaultMimeMap of
                      Nothing -> go es
                      Just mt -> decodeUtf8 mt
@@ -434,8 +441,9 @@ instance Num Options where
 -- These are monomorphic versions of functions defined to curb type ambiguity errors.
 
 -- | Sets the color used to fill a drawing (@\"black\"@ by default).
--- Examples:
--- 
+--
+-- ==== __Examples__
+--
 -- @
 -- 'fillStyle' \"red\"
 -- 'fillStyle' \"#00FF00\"
@@ -444,8 +452,9 @@ fillStyle :: Text -> Canvas ()
 fillStyle = Generated.fillStyle
 
 -- | Sets the text context's font properties.
--- Examples:
--- 
+--
+-- ==== __Examples__
+--
 -- @
 -- 'font' \"40pt \'Gill Sans Extrabold\'\"
 -- 'font' \"80% sans-serif\"
@@ -455,8 +464,9 @@ font :: Text -> Canvas ()
 font = Generated.font
 
 -- | Sets the color used for strokes (@\"black\"@ by default).
--- Examples:
--- 
+--
+-- ==== __Examples__
+--
 -- @
 -- 'strokeStyle' \"red\"
 -- 'strokeStyle' \"#00FF00\"
@@ -465,8 +475,9 @@ strokeStyle :: Text -> Canvas ()
 strokeStyle = Generated.strokeStyle
 
 -- | Sets the color used for shadows.
--- Examples:
--- 
+--
+-- ==== __Examples__
+--
 -- @
 -- 'shadowColor' \"red\"
 -- 'shadowColor' \"#00FF00\"
@@ -477,8 +488,9 @@ shadowColor = Generated.shadowColor
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
 -- in a gradient.
--- Example:
--- 
+--
+-- ==== __Example__
+--
 -- @
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- grd # 'addColorStop'(0, \"red\")
@@ -487,8 +499,9 @@ addColorStop :: (Interval, Text) -> CanvasGradient -> Canvas ()
 addColorStop = Canvas.addColorStop
 
 -- | Change the canvas cursor to the specified URL or keyword.
--- Examples:
--- 
+--
+-- ==== __Examples__
+--
 -- @
 -- cursor \"url(image.png), default\"
 -- cursor \"crosshair\"
