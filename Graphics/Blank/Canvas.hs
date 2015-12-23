@@ -110,9 +110,13 @@ data Method
 
 -- Audio object methods: play(), pause(), setVolume()
 data MethodAudio
-        = forall audio . Audio audio => PlayAudio  audio
-        | forall audio . Audio audio => PauseAudio audio
-        -- | forall audio . Audio audio => SetVolumeAudio   (audio, Double)
+        = forall audio . Audio audio => PlayAudio             audio
+        | forall audio . Audio audio => PauseAudio            audio
+        | forall audio . Audio audio => SetCurrentTimeAudio  (audio, Double)
+        | forall audio . Audio audio => SetLoopAudio         (audio, Bool)
+        | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
+        | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
+        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)          
 
 data Command
   = Trigger Event

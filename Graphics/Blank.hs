@@ -135,9 +135,14 @@ module Graphics.Blank
           -- ** Audio functionality          
         , currentTimeAudio
         , durationAudio -- subject to change
+        , indexAudio
         , playAudio
         , pauseAudio
-        -- , setVolumeAudio          
+        , setCurrentTimeAudio
+        , setLoopAudio
+        , setMutedAudio
+        , setPlaybackRateAudio
+        , setVolumeAudio         
         , newAudio
         , CanvasAudio
          -- ** 'DeviceContext' attributes
@@ -194,7 +199,7 @@ import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
 import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, shadowColor)
 import qualified Graphics.Blank.JavaScript as JavaScript
-import           Graphics.Blank.JavaScript hiding (width, height)
+import           Graphics.Blank.JavaScript hiding (width, height, durationAudio, indexAudio)
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
@@ -516,3 +521,11 @@ height = JavaScript.height
 -- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width
+
+-- | The total length of the audio file in seconds.
+durationAudio :: (Audio a, Fractional b) => a -> b
+durationAudio = JavaScript.durationAudio
+
+-- | Returns the index of the given Audio in the array of Audio's in the javascript
+indexAudio :: Audio a => a -> Int
+indexAudio = JavaScript.indexAudio

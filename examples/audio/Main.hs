@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import Debug.Trace
+import qualified Data.Text as Text
 import Graphics.Blank
 import Paths_blank_canvas_examples (getDataDir)
 
@@ -31,7 +33,13 @@ loop context audio play = do
     clearRect (0,0,w,h)
     lineWidth 1
     font "30pt Calibri"
-    
+
+    -- This music sure is loud, better make it a bit softer.
+    setVolumeAudio(audio,0.9)
+
+    setPlaybackRateAudio(audio,2.0)
+
+    -- Play/pause the audio depend in which state it's in
     if (play == Playing)
       then do
         fillText("Click screen to play audio",50,50)
@@ -39,6 +47,12 @@ loop context audio play = do
       else do
         fillText("Click screen to pause audio",50,50)
         playAudio audio
+
+    -- display the current time
+    -- TODO: use threading so that the current time can continuously update while
+    --   waiting for a mouse click
+    time <- currentTimeAudio audio
+    fillText(Text.append "Current Time: " (Text.pack $ show time),50,90)
 
   -- wait for mouse click
   event <- wait context
