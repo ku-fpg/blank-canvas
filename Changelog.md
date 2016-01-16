@@ -1,3 +1,7 @@
+### next
+Additions
+ * Add `Semigroup` instance for `Canvas`
+
 ### 0.6
 API changes
  * The `(#)` function had its type generalized from `a -> (a -> Canvas b) -> Canvas b` to `a -> (a -> b) -> b`. This allows it to be used with font length units.
