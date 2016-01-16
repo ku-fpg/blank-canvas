@@ -80,6 +80,7 @@ Library
                        mime-types         >= 0.1.0.3 && < 0.2,
                        kansas-comet       >= 0.4     && < 0.5,
                        scotty             >= 0.10    && < 0.12,
+                       semigroups         >= 0.18    && < 1,
                        stm                >= 2.2     && < 2.5,
                        text               >= 1.1     && < 1.3,
                        text-show          >= 2       && < 4,

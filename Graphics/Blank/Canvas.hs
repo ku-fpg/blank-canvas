@@ -12,7 +12,7 @@ import           Control.Monad (ap, liftM2)
 
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
-import           Data.Monoid
+import           Data.Semigroup (Semigroup(..))
 import           Data.Text (Text)
 import           Data.Text.Lazy.Builder
 import           Data.Text.Lazy.Encoding (decodeUtf8)
@@ -57,6 +57,9 @@ instance Applicative Canvas where
 
 instance Functor Canvas where
   fmap f c = c >>= return . f
+
+instance Semigroup a => Semigroup (Canvas a) where
+  (<>) = liftM2 (<>)
 
 instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
@@ -351,7 +354,7 @@ newCanvas = Query . NewCanvas
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
 getImageData = Query . GetImageData
 
--- | Change the canvas cursor to the specified URL or keyword. 
+-- | Change the canvas cursor to the specified URL or keyword.
 --
 -- ==== __Examples__
 --
