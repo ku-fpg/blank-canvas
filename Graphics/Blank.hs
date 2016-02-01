@@ -132,6 +132,17 @@ module Graphics.Blank
         -- ** Reading from 'Canvas'
         , newImage
         , CanvasImage -- abstract
+          -- ** Audio functionality          
+        , currentTimeAudio
+        , durationAudio -- subject to change
+        , indexAudio
+        , playAudio
+        , pauseAudio
+        , setCurrentTimeAudio
+        , setLoopAudio
+        , setMutedAudio
+        , setPlaybackRateAudio
+        , setVolumeAudio         
         , newAudio
         , CanvasAudio
          -- ** 'DeviceContext' attributes
@@ -188,7 +199,7 @@ import           Graphics.Blank.Events
 import qualified Graphics.Blank.Generated as Generated
 import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, shadowColor)
 import qualified Graphics.Blank.JavaScript as JavaScript
-import           Graphics.Blank.JavaScript hiding (width, height)
+import           Graphics.Blank.JavaScript hiding (width, height, durationAudio, indexAudio)
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
@@ -320,14 +331,15 @@ send cxt (With _ (With c m)) | weakRemoteMonad cxt = send cxt (With c m)
 send cxt commands = send' (deviceCanvasContext cxt) commands mempty
   where
       sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
-      sendBind c (Return a)      k cmds = send' c (k a) cmds
-      sendBind c (Bind m k1)    k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
-      sendBind c (Method cmd)    k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
-      sendBind c (Command cmd)   k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
-      sendBind c (Function func) k cmds = sendFunc c func k cmds
-      sendBind c (Query query)   k cmds = sendQuery c query k cmds
-      sendBind c (With c' m)     k cmds = send' c' (Bind m (With c . k)) cmds
-      sendBind c MyContext       k cmds = send' c (k c) cmds
+      sendBind c (Return a)        k cmds = send' c (k a) cmds
+      sendBind c (Bind m k1)      k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
+      sendBind c (Method cmd)      k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
+      sendBind c (Command cmd)     k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
+      sendBind c (Function func)   k cmds = sendFunc c func k cmds
+      sendBind c (Query query)     k cmds = sendQuery c query k cmds
+      sendBind c (With c' m)       k cmds = send' c' (Bind m (With c . k)) cmds
+      sendBind c (MethodAudio cmd) k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
+      sendBind c MyContext         k cmds = send' c (k c) cmds
 
       sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
       sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
@@ -509,3 +521,11 @@ height = JavaScript.height
 -- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width
+
+-- | The total length of the audio file in seconds.
+durationAudio :: (Audio a, Fractional b) => a -> b
+durationAudio = JavaScript.durationAudio
+
+-- | Returns the index of the given Audio in the array of Audio's in the javascript
+indexAudio :: Audio a => a -> Int
+indexAudio = JavaScript.indexAudio

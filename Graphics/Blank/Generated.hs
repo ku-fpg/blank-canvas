@@ -15,6 +15,17 @@ import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 instance Show Method where
   showsPrec p = showsPrec p . FromTextShow
 
+instance TextShow MethodAudio where
+  showb (PlayAudio audio)                    = jsAudio audio <> ".play()"
+  showb (PauseAudio audio)                   = jsAudio audio <> ".pause()"
+  showb (SetCurrentTimeAudio  (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
+  showb (SetLoopAudio         (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
+  showb (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
+  showb (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
+  showb (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+
+  -- showb (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
+  
 instance TextShow Method where
   showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
@@ -320,6 +331,32 @@ miterLimit = Method . MiterLimit
 -- @
 moveTo :: (Double, Double) -> Canvas ()
 moveTo = Method . MoveTo
+
+playAudio :: Audio audio => audio -> Canvas ()
+playAudio = MethodAudio . PlayAudio
+
+pauseAudio :: Audio audio => audio -> Canvas ()
+pauseAudio = MethodAudio . PauseAudio
+
+-- | Sets the current position of the audio value (in seconds).
+setCurrentTimeAudio :: Audio audio => (audio, Double) -> Canvas ()
+setCurrentTimeAudio = MethodAudio . SetCurrentTimeAudio
+
+-- | Set whether the audio value is set to loop (True) or not (False)
+setLoopAudio :: Audio audio => (audio, Bool) -> Canvas ()
+setLoopAudio = MethodAudio . SetLoopAudio
+
+-- | Set the audio value to muted (True) or unmuted (False)
+setMutedAudio :: Audio audio => (audio, Bool) -> Canvas ()
+setMutedAudio = MethodAudio . SetMutedAudio
+
+-- | Set the playback value, as a multiplier (2.0 is twice as fast, 0.5 is half speec, -2.0 is backwards, twice as fast)
+setPlaybackRateAudio :: Audio audio => (audio, Double) -> Canvas ()
+setPlaybackRateAudio = MethodAudio . SetPlaybackRateAudio
+
+-- | Adjusts the volume.  Scaled from 0.0 - 1.0, any number outside of this range will result in an error
+setVolumeAudio :: Audio audio => (audio, Double) -> Canvas ()
+setVolumeAudio = MethodAudio . SetVolumeAudio
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()

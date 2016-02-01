@@ -94,12 +94,15 @@ instance Image CanvasContext where
     height (CanvasContext _ _ h) = fromIntegral h
 
 class Audio a where
-    jsAudio  :: a -> Builder
-    duration :: Fractional b => a -> b
+    jsAudio       :: a -> Builder
+    durationAudio :: Fractional b => a -> b
+    indexAudio    :: a -> Int -- the index to access the audio in the sounds array 
 
-instance Audio CanvasAudio where
-  jsAudio                    = jsCanvasAudio
-  duration (CanvasAudio _ d) = realToFrac d
+
+instance Audio CanvasAudio where         
+  jsAudio                         = jsCanvasAudio
+  durationAudio (CanvasAudio _ d) = realToFrac d
+  indexAudio    (CanvasAudio n _) = n
 
 -- instance Element Video  -- Not supported
 
@@ -430,6 +433,9 @@ instance JSArg CanvasAudio where
 
 jsCanvasAudio :: CanvasAudio -> Builder
 jsCanvasAudio (CanvasAudio n _ ) = "sounds[" <> showb n <> B.singleton ']'
+
+jsIndexAudio :: CanvasAudio -> Builder
+jsIndexAudio (CanvasAudio n _) = showb n
 
 instance JSArg CanvasContext where
     showbJS = jsCanvasContext

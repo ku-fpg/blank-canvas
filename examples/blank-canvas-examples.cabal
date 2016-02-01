@@ -19,6 +19,7 @@ data-files:
     images/princess.jpg
     images/fan.jpg
     music/sonata.ogg
+    music/ballbounce.wav
 
 -- cabal configure should work out of the box.
 --
@@ -154,8 +155,22 @@ executable blank-canvas-example-audio
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
   build-depends:       base         >= 4.6 && < 4.9,
-                       blank-canvas == 0.6.*
+                       blank-canvas == 0.6.*,
+                       text         >= 1.1 && < 1.3                       
   hs-source-dirs:      audio
+  default-language:    Haskell2010
+  GHC-options:         -threaded -Wall
+
+executable blank-canvas-example-bounceAudio
+  if flag(examples)
+    buildable:         True
+  else
+    buildable:         False
+  main-is:             Main.hs
+  build-depends:       base         >= 4.6 && < 4.8,
+                       blank-canvas == 0.6.*,
+                       text         >= 1.1 && < 1.3
+  hs-source-dirs:      bounceAudio
   default-language:    Haskell2010
   GHC-options:         -threaded -Wall
 

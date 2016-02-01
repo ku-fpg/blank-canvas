@@ -38,14 +38,15 @@ $(deriveTextShow ''TextMetrics)
 -----------------------------------------------------------------------------
 
 data Canvas :: * -> * where
-        Method    :: Method                      -> Canvas ()     -- <context>.<method>
-        Command   :: Command                     -> Canvas ()     -- <command>
-        Function  :: TextShow a => Function a    -> Canvas a
-        Query     :: TextShow a => Query a       -> Canvas a
-        With      :: CanvasContext -> Canvas a   -> Canvas a
-        MyContext ::                                Canvas CanvasContext
-        Bind      :: Canvas a -> (a -> Canvas b) -> Canvas b
-        Return    :: a                           -> Canvas a
+        Method      :: Method                      -> Canvas ()     -- <context>.<method>
+        Command     :: Command                     -> Canvas ()     -- <command>
+        Function    :: TextShow a => Function a    -> Canvas a
+        Query       :: TextShow a => Query a       -> Canvas a
+        With        :: CanvasContext -> Canvas a   -> Canvas a
+        MyContext   ::                                Canvas CanvasContext
+        Bind        :: Canvas a -> (a -> Canvas b) -> Canvas b
+        MethodAudio :: MethodAudio                 -> Canvas ()     -- <audiofile>.<method>        
+        Return      :: a                           -> Canvas a
 
 instance Monad Canvas where
         return = Return
@@ -109,6 +110,16 @@ data Method
         | TextBaseline TextBaselineAlignment
         | Transform (Double, Double, Double, Double, Double, Double)
         | Translate (Double, Double)
+
+-- Audio object methods: play(), pause(), setVolume()
+data MethodAudio
+        = forall audio . Audio audio => PlayAudio             audio
+        | forall audio . Audio audio => PauseAudio            audio
+        | forall audio . Audio audio => SetCurrentTimeAudio  (audio, Double)
+        | forall audio . Audio audio => SetLoopAudio         (audio, Bool)
+        | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
+        | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
+        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)          
 
 data Command
   = Trigger Event
@@ -199,6 +210,8 @@ data Query :: * -> * where
         GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
         Cursor               :: CanvasCursor cursor => cursor           -> Query ()
         Sync                 ::                                            Query ()
+        CurrentTimeAudio     :: CanvasAudio                             -> Query Double
+        -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance Show (Query a) where
   showsPrec p = showsPrec p . FromTextShow
@@ -220,6 +233,8 @@ instance TextShow (Query a) where
                                                        <> jsDouble sh <> singleton ')'
   showb (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
   showb Sync                         = "Sync"
+  showb (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  -- showb (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -236,6 +251,8 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <*> (o .: "data")
 parseQueryResult (Cursor {}) _                = return ()
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
+parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
+-- parseQueryResult (GetVolumeAudio   {}) 
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
@@ -279,11 +296,24 @@ isPointInPath = Query . IsPointInPath
 newImage :: Text -> Canvas CanvasImage
 newImage = Query . NewImage
 
--- | 'newAudio' takes an URL to an audio file and returs the 'CanvasAudio' handle
+-- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
 newAudio :: Text -> Canvas CanvasAudio
 newAudio = Query . NewAudio
+
+-- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
+-- the specified CanvasAudio.
+-- Example:
+--
+-- @
+-- aud <- 'newAudio' \"bach_invention.wav\"
+-- 'playAudio' aud
+-- cur <- 'currentTimeAudio' aud
+-- @
+
+currentTimeAudio :: CanvasAudio -> Canvas Double
+currentTimeAudio = Query . CurrentTimeAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.
@@ -304,6 +334,7 @@ newAudio = Query . NewAudio
 -- grd # 'addColorStop'(1, \"red\")
 -- 'fillStyle' grd
 -- @
+
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
 createLinearGradient = Function . CreateLinearGradient
 
