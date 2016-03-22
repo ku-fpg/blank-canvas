@@ -5,6 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Graphics.Blank.Canvas where
 
@@ -28,6 +29,10 @@ import           Prelude.Compat
 import           TextShow
 import           TextShow.TH (deriveTextShow)
 
+import           Control.Remote.Monad hiding (Command)
+import qualified Control.Remote.Monad as RM
+import           Control.Monad.State
+
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
 $(deriveTextShow ''DeviceAttributes)
 
@@ -37,34 +42,48 @@ $(deriveTextShow ''TextMetrics)
 
 -----------------------------------------------------------------------------
 
-data Canvas :: * -> * where
-        Method      :: Method                      -> Canvas ()     -- <context>.<method>
-        Command     :: Command                     -> Canvas ()     -- <command>
-        Function    :: TextShow a => Function a    -> Canvas a
-        Query       :: TextShow a => Query a       -> Canvas a
-        With        :: CanvasContext -> Canvas a   -> Canvas a
-        MyContext   ::                                Canvas CanvasContext
-        Bind        :: Canvas a -> (a -> Canvas b) -> Canvas b
-        MethodAudio :: MethodAudio                 -> Canvas ()     -- <audiofile>.<method>        
-        Return      :: a                           -> Canvas a
+data Cmd :: * where
+  Method      :: Method      -> Cmd
+  Command     :: Command     -> Cmd
+  MethodAudio :: MethodAudio -> Cmd
 
-instance Monad Canvas where
-        return = Return
-        (>>=) = Bind
+data Proc :: * -> * where
+  Function  :: TextShow a => Function a  -> Proc a
+  Query     :: TextShow a => Query a     -> Proc a
+  With      :: CanvasContext -> Canvas a -> Proc a
+  MyContext ::                              Proc CanvasContext
 
-instance Applicative Canvas where
-  pure  = return
-  (<*>) = ap
 
-instance Functor Canvas where
-  fmap f c = c >>= return . f
+type Canvas = RemoteMonad Cmd Proc
 
-instance Semigroup a => Semigroup (Canvas a) where
-  (<>) = liftM2 (<>)
+-- data Canvas :: * -> * where
+--         Method      :: Method                      -> Canvas ()     -- <context>.<method>
+--         Command     :: Command                     -> Canvas ()     -- <command>
+--         Function    :: TextShow a => Function a    -> Canvas a
+--         Query       :: TextShow a => Query a       -> Canvas a
+--         With        :: CanvasContext -> Canvas a   -> Canvas a
+--         MyContext   ::                                Canvas CanvasContext
+--         Bind        :: Canvas a -> (a -> Canvas b) -> Canvas b
+--         MethodAudio :: MethodAudio                 -> Canvas ()     -- <audiofile>.<method>
+--         Return      :: a                           -> Canvas a
 
-instance Monoid a => Monoid (Canvas a) where
-  mappend = liftM2 mappend
-  mempty  = return mempty
+-- instance Monad Canvas where
+--         return = Return
+--         (>>=) = Bind
+
+-- instance Applicative Canvas where
+--   pure  = return
+--   (<*>) = ap
+
+-- instance Functor Canvas where
+--   fmap f c = c >>= return . f
+
+-- instance Semigroup a => Semigroup (Canvas a) where
+--   (<>) = liftM2 (<>)
+
+-- instance Monoid a => Monoid (Canvas a) where
+--   mappend = liftM2 mappend
+--   mempty  = return mempty
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
@@ -119,7 +138,7 @@ data MethodAudio
         | forall audio . Audio audio => SetLoopAudio         (audio, Bool)
         | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
         | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
-        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)          
+        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)
 
 data Command
   = Trigger Event
@@ -143,17 +162,17 @@ instance TextShow Command where
 -- | 'with' runs a set of canvas commands in the context
 -- of a specific canvas buffer.
 with :: CanvasContext -> Canvas a -> Canvas a
-with = With
+with context = procedure . With context
 
 -- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
-myCanvasContext = MyContext
+myCanvasContext = procedure MyContext
 
 -----------------------------------------------------------------------------
 
 -- | Triggers a specific named event.
 trigger :: Event -> Canvas ()
-trigger = Command . Trigger
+trigger = command . Command . Trigger
 
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
@@ -166,15 +185,15 @@ trigger = Command . Trigger
 -- grd # 'addColorStop'(0, 'red')
 -- @
 addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) = Command . AddColorStop (off,rep)
+addColorStop (off,rep) = command . Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
-console_log = Command . Log
+console_log = command . Command . Log
 
 -- | 'eval' executes the argument in JavaScript directly.
 eval :: Text -> Canvas ()
-eval = Command . Eval
+eval = command . Command . Eval
 
 -----------------------------------------------------------------------------
 
@@ -259,14 +278,14 @@ uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
-device = Query Device
+device = procedure $ Query Device
 
 -- | Turn the canvas into a PNG data stream / data URL.
 --
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
 toDataURL :: () -> Canvas Text
-toDataURL () = Query ToDataURL
+toDataURL () = procedure $ Query ToDataURL
 
 -- | Queries the measured width of the text argument.
 --
@@ -276,7 +295,7 @@ toDataURL () = Query ToDataURL
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
 measureText :: Text -> Canvas TextMetrics
-measureText = Query . MeasureText
+measureText = procedure . Query . MeasureText
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
 --
@@ -288,19 +307,19 @@ measureText = Query . MeasureText
 -- b <- 'isPointInPath'(10, 10) -- b == True
 -- @
 isPointInPath :: (Double, Double) -> Canvas Bool
-isPointInPath = Query . IsPointInPath
+isPointInPath = procedure . Query . IsPointInPath
 
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
 -- If you are using local images, loading should be near instant.
 newImage :: Text -> Canvas CanvasImage
-newImage = Query . NewImage
+newImage = procedure . Query . NewImage
 
 -- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
 newAudio :: Text -> Canvas CanvasAudio
-newAudio = Query . NewAudio
+newAudio = procedure . Query . NewAudio
 
 -- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
 -- the specified CanvasAudio.
@@ -313,7 +332,7 @@ newAudio = Query . NewAudio
 -- @
 
 currentTimeAudio :: CanvasAudio -> Canvas Double
-currentTimeAudio = Query . CurrentTimeAudio
+currentTimeAudio = procedure . Query . CurrentTimeAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.
@@ -336,7 +355,7 @@ currentTimeAudio = Query . CurrentTimeAudio
 -- @
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
-createLinearGradient = Function . CreateLinearGradient
+createLinearGradient = procedure . Function . CreateLinearGradient
 
 -- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
 -- by the coordinates of two circles, which can be used to fill other shapes.
@@ -362,7 +381,7 @@ createLinearGradient = Function . CreateLinearGradient
 -- 'fillStyle' grd
 -- @
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
-createRadialGradient = Function . CreateRadialGradient
+createRadialGradient = procedure . Function . CreateRadialGradient
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
 --
@@ -374,16 +393,16 @@ createRadialGradient = Function . CreateRadialGradient
 -- 'fillStyle' pat
 -- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = Function . CreatePattern
+createPattern = procedure . Function . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
-newCanvas = Query . NewCanvas
+newCanvas = procedure . Query . NewCanvas
 
 -- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
 -- upper-left corner @(x, y)@, width @w@, and height @h@.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
-getImageData = Query . GetImageData
+getImageData = procedure . Query . GetImageData
 
 -- | Change the canvas cursor to the specified URL or keyword.
 --
@@ -394,8 +413,8 @@ getImageData = Query . GetImageData
 -- cursor 'crosshair'
 -- @
 cursor :: CanvasCursor cursor => cursor -> Canvas ()
-cursor = Query . Cursor
+cursor = procedure . Query . Cursor
 
 -- | Send all commands to the browser, wait for the browser to act, then continue.
 sync :: Canvas ()
-sync = Query Sync
+sync = procedure $ Query Sync

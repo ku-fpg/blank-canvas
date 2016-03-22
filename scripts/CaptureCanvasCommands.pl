@@ -61,10 +61,10 @@ while(<F>) {
                         }
 			$dsl .= "$name :: $type\n";
 			if ($args eq "") {
-				$dsl .= "$name () = Method $cmd\n";
+				$dsl .= "$name () = command (Method $cmd)\n";
 				$show .= "  showb $cmd = \"$name()\"\n";
 			} else {
-				$dsl .= "$name = Method . $cmd\n";
+				$dsl .= "$name = command . Method . $cmd\n";
 				@ins = ();
 				$n = 1;
 				foreach (@args) {
@@ -126,6 +126,9 @@ print G "import           Graphics.Blank.Types.CSS\n";
 print G "import           Graphics.Blank.Types.Font\n";
 print G "\n";
 print G "import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)\n";
+print G "\n";
+print G "import           Control.Remote.Monad\n";
+
 
 print G "\n";
 print G "instance Show Method where\n";
