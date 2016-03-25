@@ -33,6 +33,7 @@ import           TextShow.TH (deriveTextShow)
 import           Control.Remote.Monad hiding (Command, procedure, command)
 import qualified Control.Remote.Monad as RM
 import           Control.Monad.Reader
+import           Control.Monad.State
 
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
 $(deriveTextShow ''DeviceAttributes)
@@ -56,25 +57,26 @@ data Proc :: * -> * where
 instance TextShow a => TextShow (Proc a) where
     showb (Query q _) = showb q
 
-newtype Canvas a = Canvas (ReaderT CanvasContext (RemoteMonad Cmd Proc) a)
+newtype Canvas a = Canvas (StateT Int (ReaderT CanvasContext (RemoteMonad Cmd Proc)) a)
                    deriving (Functor, Applicative, Monad)
 
 procedure :: (CanvasContext -> Proc a) -> Canvas a
 procedure f = Canvas $ do
   c <- ask
-  lift (RM.procedure (f c))
+  lift $ lift (RM.procedure (f c))
 
 command :: (CanvasContext -> Cmd) -> Canvas ()
 command f = Canvas $ do
   c <- ask
-  lift (RM.command (f c))
+  lift $ lift (RM.command (f c))
 
 function :: TextShow a => (Int -> a) -> Function a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
-  let n = 4 :: Int   -- TODO: Change this to a unique number.
-      a = alloc n
-  lift (RM.command (Function f a c))
+  n <- get
+  put (n+1)
+  let a = alloc n
+  lift $ lift (RM.command (Function f a c))
   return a
 
 -- data Canvas :: * -> * where

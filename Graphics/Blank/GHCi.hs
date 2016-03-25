@@ -24,6 +24,7 @@ import Control.Remote.Monad
 import System.IO.Unsafe (unsafePerformIO)
 
 import Control.Monad.Reader (runReaderT)
+import Control.Monad.State  (runStateT)
 import Graphics.Blank.DeviceContext
 
 -- | splitCanvas is the GHCi entry point into @blank-canvas@.
@@ -53,7 +54,7 @@ splatCanvas opts cmds = do
       Nothing -> return ()
       Just ch -> do _ <- forkIO $ blankCanvas opts $ \ cxt -> forever $ do
                            Canvas cmd0 <- atomically $ takeTMVar ch
-                           let cmd1 = runReaderT cmd0 (deviceCanvasContext cxt)
+                           let cmd1 = runReaderT (runStateT cmd0 0) (deviceCanvasContext cxt)
                            N.run (runMonad (nat (sendW cxt))) cmd1    -- run the command
                     return ()
 

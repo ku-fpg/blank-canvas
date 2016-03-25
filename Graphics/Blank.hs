@@ -231,6 +231,7 @@ import           Control.Remote.Monad
 import qualified Control.Remote.Monad.Packet.Weak as WP
 
 import           Control.Monad.Reader (runReaderT)
+import           Control.Monad.State  (runStateT)
 
 
 -- | 'blankCanvas' is the main entry point into @blank-canvas@.
@@ -284,8 +285,8 @@ blankCanvas opts actions = do
        
        -- A bit of bootstrapping
        let Canvas rm0 = device
-       let rm1 = runReaderT rm0 (deviceCanvasContext cxt0)
-       DeviceAttributes w h dpr <- N.run (runMonad (nat (sendW cxt0))) rm1
+           rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
+       (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW cxt0))) rm1
        -- print (DeviceAttributes w h dpr)
        
        let cxt1 = cxt0
