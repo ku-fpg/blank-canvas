@@ -6,6 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Graphics.Blank.Canvas where
 
@@ -29,9 +30,9 @@ import           Prelude.Compat
 import           TextShow
 import           TextShow.TH (deriveTextShow)
 
-import           Control.Remote.Monad hiding (Command)
+import           Control.Remote.Monad hiding (Command, procedure, command)
 import qualified Control.Remote.Monad as RM
-import           Control.Monad.State
+import           Control.Monad.Reader
 
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
 $(deriveTextShow ''DeviceAttributes)
@@ -43,22 +44,31 @@ $(deriveTextShow ''TextMetrics)
 -----------------------------------------------------------------------------
 
 data Cmd :: * where
-  Method      :: Method      -> Cmd
-  Command     :: Command     -> Cmd
-  MethodAudio :: MethodAudio -> Cmd
+  Method      :: Method      -> CanvasContext -> Cmd
+  Command     :: Command     -> CanvasContext -> Cmd -- TODO: Remove this CanvasContext (it's never used)
+  -- TODO: To be merged with 'Method':
+  MethodAudio :: MethodAudio -> CanvasContext -> Cmd
 
 data Proc :: * -> * where
-  Function  :: TextShow a => Function a  -> Proc a
-  Query     :: TextShow a => Query a     -> Proc a
-  With      :: CanvasContext -> Canvas a -> Proc a
-  MyContext ::                              Proc CanvasContext
+  Function  :: TextShow a => Function a  -> CanvasContext -> Proc a
+  Query     :: TextShow a => Query a     -> CanvasContext -> Proc a
 
 instance TextShow a => TextShow (Proc a) where
-    showb (Function f) = showb f
-    showb (Query q) = showb q
-    -- TODO: Take care of 'with' and 'myContext' locally
+    showb (Function f _) = showb f
+    showb (Query q _) = showb q
 
-type Canvas = RemoteMonad Cmd Proc
+newtype Canvas a = Canvas (ReaderT CanvasContext (RemoteMonad Cmd Proc) a)
+                   deriving (Functor, Applicative, Monad)
+
+procedure :: (CanvasContext -> Proc a) -> Canvas a
+procedure f = Canvas $ do
+  c <- ask
+  lift (RM.procedure (f c))
+
+command :: (CanvasContext -> Cmd) -> Canvas ()
+command f = Canvas $ do
+  c <- ask
+  lift (RM.command (f c))
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
@@ -82,12 +92,12 @@ type Canvas = RemoteMonad Cmd Proc
 -- instance Functor Canvas where
 --   fmap f c = c >>= return . f
 
--- instance Semigroup a => Semigroup (Canvas a) where
---   (<>) = liftM2 (<>)
+instance Semigroup a => Semigroup (Canvas a) where
+  (<>) = liftM2 (<>)
 
--- instance Monoid a => Monoid (Canvas a) where
---   mappend = liftM2 mappend
---   mempty  = return mempty
+instance Monoid a => Monoid (Canvas a) where
+  mappend = liftM2 mappend
+  mempty  = return mempty
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
@@ -166,11 +176,12 @@ instance TextShow Command where
 -- | 'with' runs a set of canvas commands in the context
 -- of a specific canvas buffer.
 with :: CanvasContext -> Canvas a -> Canvas a
-with context = procedure . With context
+with context (Canvas m) = Canvas $ do
+  local (const context) m
 
 -- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
-myCanvasContext = procedure MyContext
+myCanvasContext = Canvas ask
 
 -----------------------------------------------------------------------------
 

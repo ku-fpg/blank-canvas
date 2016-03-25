@@ -230,6 +230,9 @@ import qualified Control.Natural as N
 import           Control.Remote.Monad
 import qualified Control.Remote.Monad.Packet.Weak as WP
 
+import           Control.Monad.Reader (runReaderT)
+
+
 -- | 'blankCanvas' is the main entry point into @blank-canvas@.
 -- A typical invocation would be
 --
@@ -280,7 +283,9 @@ blankCanvas opts actions = do
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
        
        -- A bit of bootstrapping
-       DeviceAttributes w h dpr <- N.run (runMonad (nat (sendW cxt0))) device
+       let Canvas rm0 = device
+       let rm1 = runReaderT rm0 (deviceCanvasContext cxt0)
+       DeviceAttributes w h dpr <- N.run (runMonad (nat (sendW cxt0))) rm1
        -- print (DeviceAttributes w h dpr)
        
        let cxt1 = cxt0
@@ -336,23 +341,22 @@ sendW cxt = go mempty
     go :: Builder -> WP.WeakPacket Cmd Proc a -> IO a
     go cmds (WP.Command cmd) =
       case cmd of
-        Method m         -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showb m <> singleton ';')
-        Canvas.Command c -> send' (cmds <> showb cmd <> singleton ';')
-        MethodAudio a    -> send' (cmds <> showb cmd <> singleton ';')
+        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showb m <> singleton ';')
+        Canvas.Command c _ -> send' (cmds <> showb cmd <> singleton ';')
+        MethodAudio a    _ -> send' (cmds <> showb cmd <> singleton ';')
 
     go cmds (WP.Procedure p) =
       case p of
-        Function f -> sendFunc cmds f
-        Query q    -> sendQuery cmds q
+        Function f c -> sendFunc cmds f c
+        Query    q c -> sendQuery cmds q c
         -- ...
 
-    canvasCxt = deviceCanvasContext cxt
     send'     = sendToCanvas cxt
 
-    sendFunc :: Builder -> Function a -> IO a
-    sendFunc cmds q@(CreateLinearGradient _) = sendGradient cmds q
-    sendFunc cmds q@(CreateRadialGradient _) = sendGradient cmds q
-    sendFunc cmds q@(CreatePattern        _) = sendPattern  cmds q
+    sendFunc :: Builder -> Function a -> CanvasContext -> IO a
+    sendFunc cmds q@(CreateLinearGradient _) c = sendGradient cmds q c
+    sendFunc cmds q@(CreateRadialGradient _) c = sendGradient cmds q c
+    sendFunc cmds q@(CreatePattern        _) c = sendPattern  cmds q c
 
     fileQuery :: Text -> IO ()
     fileQuery url = do
@@ -361,8 +365,8 @@ sendW cxt = go mempty
             db <- readTVar (localFiles cxt)
             writeTVar (localFiles cxt) $ S.insert url' $ db
 
-    sendQuery :: Builder -> Query a -> IO a
-    sendQuery cmds query = do
+    sendQuery :: Builder -> Query a -> CanvasContext -> IO a
+    sendQuery cmds query c = do
       case query of
         NewImage url -> fileQuery url
         NewAudio url -> fileQuery url
@@ -371,26 +375,26 @@ sendW cxt = go mempty
       -- send the com
       uq <- atomically getUniq
       -- The query function returns a function takes the unique port number of the reply.
-      sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext canvasCxt <> ");"
+      sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
       v <- KC.getReply (theComet cxt) uq
       case parse (parseQueryResult query) v of
         Error msg -> fail msg
         Success a -> return a
 
-    sendGradient :: Builder -> Function CanvasGradient -> IO CanvasGradient
-    sendGradient cmds q = do
+    sendGradient :: Builder -> Function CanvasGradient -> CanvasContext -> IO CanvasGradient
+    sendGradient cmds q c = do
       gId <- atomically getUniq
       send' $ cmds <> "var gradient_"
-          <> showb gId     <> " = "   <> jsCanvasContext canvasCxt
+          <> showb gId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showb q <> singleton ';'
 
       return (CanvasGradient gId)
 
-    sendPattern :: Builder -> Function CanvasPattern -> IO CanvasPattern
-    sendPattern cmds q = do
+    sendPattern :: Builder -> Function CanvasPattern -> CanvasContext -> IO CanvasPattern
+    sendPattern cmds q c = do
       pId <- atomically getUniq
       send' $ cmds <> "var pattern_"
-          <> showb pId     <> " = "   <> jsCanvasContext canvasCxt
+          <> showb pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showb q <> singleton ';'
 
       return (CanvasPattern pId)

@@ -12,7 +12,7 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Graphics.Blank.JavaScript
 
-import Control.Remote.Monad
+import Control.Remote.Monad hiding (command, procedure)
 
 -- | Clear the screen. Restores the default transformation matrix.
 clearCanvas :: Canvas ()

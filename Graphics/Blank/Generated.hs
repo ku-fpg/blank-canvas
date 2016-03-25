@@ -12,12 +12,12 @@ import           Graphics.Blank.Types.Font
 
 import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 
-import           Control.Remote.Monad
+import           Control.Remote.Monad hiding (procedure, command)
 
 instance TextShow Cmd where
-    showb (Method m)      = showb m
-    showb (Command c)     = showb c
-    showb (MethodAudio a) = showb a
+    showb (Method m _)      = showb m
+    showb (Command c _)     = showb c
+    showb (MethodAudio a _) = showb a
 
 instance Show Method where
   showsPrec p = showsPrec p . FromTextShow
