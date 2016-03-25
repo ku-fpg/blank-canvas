@@ -344,19 +344,20 @@ sendW cxt = go mempty
         Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showb m <> singleton ';')
         Canvas.Command c _ -> send' (cmds <> showb cmd <> singleton ';')
         MethodAudio a    _ -> send' (cmds <> showb cmd <> singleton ';')
+        Function f r c -> sendFunc cmds f r c
 
     go cmds (WP.Procedure p) =
       case p of
-        Function f c -> sendFunc cmds f c
         Query    q c -> sendQuery cmds q c
         -- ...
 
-    send'     = sendToCanvas cxt
+    send' :: Builder -> IO ()
+    send' = sendToCanvas cxt
 
-    sendFunc :: Builder -> Function a -> CanvasContext -> IO a
-    sendFunc cmds q@(CreateLinearGradient _) c = sendGradient cmds q c
-    sendFunc cmds q@(CreateRadialGradient _) c = sendGradient cmds q c
-    sendFunc cmds q@(CreatePattern        _) c = sendPattern  cmds q c
+    sendFunc :: Builder -> Function a -> a -> CanvasContext -> IO ()
+    sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
+    sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
+    sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
 
     fileQuery :: Text -> IO ()
     fileQuery url = do
@@ -381,23 +382,17 @@ sendW cxt = go mempty
         Error msg -> fail msg
         Success a -> return a
 
-    sendGradient :: Builder -> Function CanvasGradient -> CanvasContext -> IO CanvasGradient
-    sendGradient cmds q c = do
-      gId <- atomically getUniq
+    sendGradient :: Builder -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
+    sendGradient cmds q r@(CanvasGradient gId) c = do
       send' $ cmds <> "var gradient_"
           <> showb gId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showb q <> singleton ';'
 
-      return (CanvasGradient gId)
-
-    sendPattern :: Builder -> Function CanvasPattern -> CanvasContext -> IO CanvasPattern
-    sendPattern cmds q c = do
-      pId <- atomically getUniq
+    sendPattern :: Builder -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
+    sendPattern cmds q r@(CanvasPattern pId) c = do
       send' $ cmds <> "var pattern_"
           <> showb pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showb q <> singleton ';'
-
-      return (CanvasPattern pId)
 
 -- -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- -- to common up as many commands as possible. Should not crash.

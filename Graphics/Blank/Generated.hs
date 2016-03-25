@@ -15,6 +15,7 @@ import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 import           Control.Remote.Monad hiding (procedure, command)
 
 instance TextShow Cmd where
+    showb (Function f _ _) = showb f
     showb (Method m _)      = showb m
     showb (Command c _)     = showb c
     showb (MethodAudio a _) = showb a

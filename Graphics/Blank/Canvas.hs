@@ -48,13 +48,12 @@ data Cmd :: * where
   Command     :: Command     -> CanvasContext -> Cmd -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
   MethodAudio :: MethodAudio -> CanvasContext -> Cmd
+  Function  :: TextShow a => Function a -> a -> CanvasContext -> Cmd
 
 data Proc :: * -> * where
-  Function  :: TextShow a => Function a  -> CanvasContext -> Proc a
   Query     :: TextShow a => Query a     -> CanvasContext -> Proc a
 
 instance TextShow a => TextShow (Proc a) where
-    showb (Function f _) = showb f
     showb (Query q _) = showb q
 
 newtype Canvas a = Canvas (ReaderT CanvasContext (RemoteMonad Cmd Proc) a)
@@ -69,6 +68,14 @@ command :: (CanvasContext -> Cmd) -> Canvas ()
 command f = Canvas $ do
   c <- ask
   lift (RM.command (f c))
+
+function :: TextShow a => (Int -> a) -> Function a -> Canvas a
+function alloc f = Canvas $ do
+  c <- ask
+  let n = 4 :: Int   -- TODO: Change this to a unique number.
+      a = alloc n
+  lift (RM.command (Function f a c))
+  return a
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
@@ -370,7 +377,7 @@ currentTimeAudio = procedure . Query . CurrentTimeAudio
 -- @
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
-createLinearGradient = procedure . Function . CreateLinearGradient
+createLinearGradient = function CanvasGradient . CreateLinearGradient
 
 -- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
 -- by the coordinates of two circles, which can be used to fill other shapes.
@@ -396,7 +403,7 @@ createLinearGradient = procedure . Function . CreateLinearGradient
 -- 'fillStyle' grd
 -- @
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
-createRadialGradient = procedure . Function . CreateRadialGradient
+createRadialGradient = function CanvasGradient . CreateRadialGradient
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
 --
@@ -408,7 +415,7 @@ createRadialGradient = procedure . Function . CreateRadialGradient
 -- 'fillStyle' pat
 -- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = procedure . Function . CreatePattern
+createPattern = function CanvasPattern . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
