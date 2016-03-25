@@ -53,6 +53,10 @@ data Proc :: * -> * where
   With      :: CanvasContext -> Canvas a -> Proc a
   MyContext ::                              Proc CanvasContext
 
+instance TextShow a => TextShow (Proc a) where
+    showb (Function f) = showb f
+    showb (Query q) = showb q
+    -- TODO: Take care of 'with' and 'myContext' locally
 
 type Canvas = RemoteMonad Cmd Proc
 

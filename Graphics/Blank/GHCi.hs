@@ -15,7 +15,10 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 
-import Graphics.Blank (Options(..),port,send, Canvas, blankCanvas)
+import Graphics.Blank (Options(..),port,sendW, Canvas, blankCanvas)
+
+import Control.Natural as N
+import Control.Remote.Monad
 
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -46,7 +49,7 @@ splatCanvas opts cmds = do
       Nothing -> return ()
       Just ch -> do _ <- forkIO $ blankCanvas opts $ \ cxt -> forever $ do
                            cmd <- atomically $ takeTMVar ch
-                           send cxt cmd    -- run the command
+                           N.run (runMonad (nat (sendW cxt))) cmd    -- run the command
                     return ()
 
 -- common TVar for all ports in use.

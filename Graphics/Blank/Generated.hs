@@ -14,6 +14,11 @@ import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 
 import           Control.Remote.Monad
 
+instance TextShow Cmd where
+    showb (Method m)      = showb m
+    showb (Command c)     = showb c
+    showb (MethodAudio a) = showb a
+
 instance Show Method where
   showsPrec p = showsPrec p . FromTextShow
 
