@@ -57,7 +57,11 @@ data Proc :: * -> * where
 instance TextShow a => TextShow (Proc a) where
     showb (Query q _) = showb q
 
-newtype Canvas a = Canvas (StateT Int (ReaderT CanvasContext (RemoteMonad Cmd Proc)) a)
+newtype Canvas a = Canvas 
+        (StateT  Int                -- number for locally allocated resour
+        (ReaderT CanvasContext      -- the context, for the graphic contexts
+        (RemoteMonad Cmd Proc
+          )) a)
                    deriving (Functor, Applicative, Monad)
 
 procedure :: (CanvasContext -> Proc a) -> Canvas a
