@@ -35,6 +35,10 @@ import qualified Control.Remote.Monad as RM
 import           Control.Monad.Reader
 import           Control.Monad.State
 
+import           Control.Monad.Trans.Free
+
+
+
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
 $(deriveTextShow ''DeviceAttributes)
 
@@ -57,8 +61,8 @@ data Proc :: * -> * where
 instance TextShow a => TextShow (Proc a) where
     showb (Query q _) = showb q
 
-newtype Canvas a = Canvas 
-        (StateT  Int                -- number for locally allocated resour
+newtype Canvas a = Canvas
+        (FreeT (Reader Int)         -- number for locally allocated resour
         (ReaderT CanvasContext      -- the context, for the graphic contexts
         (RemoteMonad Cmd Proc
           )) a)
@@ -77,11 +81,11 @@ command f = Canvas $ do
 function :: TextShow a => (Int -> a) -> Function a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
-  n <- get
-  put (n+1)
-  let a = alloc n
-  lift $ lift (RM.command (Function f a c))
-  return a
+  wrap . reader $ \n -> do
+    -- put (n+1)
+    let a = alloc n
+    lift $ lift (RM.command (Function f a c))
+    return a
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>

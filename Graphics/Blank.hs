@@ -2,6 +2,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 
 {-|
 Module:      Graphics.Blank
@@ -233,9 +234,11 @@ import qualified Control.Remote.Monad.Packet.Weak as WP
 import qualified Control.Remote.Monad.Packet.Strong as SP
 
 
-import           Control.Monad.Reader (runReaderT)
+import           Control.Monad.Reader hiding (local)
 import           Control.Monad.State  (runStateT, evalStateT)
 
+import           Control.Monad.Trans.Free
+import           Control.Monad.Identity
 
 -- | 'blankCanvas' is the main entry point into @blank-canvas@.
 -- A typical invocation would be
@@ -287,9 +290,10 @@ blankCanvas opts actions = do
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
        
        -- A bit of bootstrapping
-       let Canvas rm0 = device
-           rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
-       (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW' cxt0))) rm1
+       DeviceAttributes w h dpr <- send cxt0 device
+       -- let Canvas rm0 = device
+       --     rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
+       -- (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW' cxt0))) rm1
        -- print (DeviceAttributes w h dpr)
        
        let cxt1 = cxt0
@@ -336,17 +340,24 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
+generalSend :: RunMonad m => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
+generalSend n cxt (Canvas c) =
+    iterT iterGo $ hoistFreeT go c
+    where
+      go :: ReaderT CanvasContext (RemoteMonad Cmd Proc) a -> IO a
+      go r = do
+        let cmd = runReaderT r (deviceCanvasContext cxt)
+        N.run (runMonad (n cxt)) cmd
+
+      iterGo :: Reader Int (IO a) -> IO a
+      iterGo r = do
+        n <- atomically getUniq
+        runReader r n
 
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
-sendS cxt (Canvas cmd0) =
-    let cmd1 = runReaderT (evalStateT cmd0 0) (deviceCanvasContext cxt)
-    in
-    N.run (runMonad (nat (sendS' cxt))) cmd1
+sendS = generalSend (\cxt -> nat (sendS' cxt))
 
-sendW cxt (Canvas cmd0) =
-    let cmd1 = runReaderT (evalStateT cmd0 0) (deviceCanvasContext cxt)
-    in
-    N.run (runMonad (nat (sendW' cxt))) cmd1
+sendW = generalSend (\cxt -> nat (sendW' cxt))
 
 sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
 sendS' cxt = go mempty
@@ -471,10 +482,7 @@ sendW' cxt = go mempty
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send cxt (Canvas rm) = do
-    let rm1 = runReaderT (runStateT rm 0) (deviceCanvasContext cxt)
-    (a, n) <- N.run (runMonad (nat (sendW' cxt))) rm1
-    return a
+send = sendW
 
 
 -- send :: DeviceContext -> Canvas a -> IO a

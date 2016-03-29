@@ -91,7 +91,8 @@ Library
                        vector             >= 0.10    && < 0.12,
                        natural-transformation,
                        remote-monad,
-                       mtl
+                       mtl,
+                       free
 
   GHC-options:         -Wall
   GHC-prof-options:    -Wall -fsimpl-tick-factor=100000
