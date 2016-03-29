@@ -53,9 +53,10 @@ splatCanvas opts cmds = do
     case optCh of
       Nothing -> return ()
       Just ch -> do _ <- forkIO $ blankCanvas opts $ \ cxt -> forever $ do
-                           Canvas cmd0 <- atomically $ takeTMVar ch
-                           let cmd1 = runReaderT (runStateT cmd0 0) (deviceCanvasContext cxt)
-                           N.run (runMonad (nat (sendW cxt))) cmd1    -- run the command
+                           cmd0 <- atomically $ takeTMVar ch
+                           -- let cmd1 = runReaderT (runStateT cmd0 0) (deviceCanvasContext cxt)
+                           -- N.run (runMonad (nat (sendW cxt))) cmd1    -- run the command
+                           sendW cxt cmd0    -- run the command
                     return ()
 
 -- common TVar for all ports in use.

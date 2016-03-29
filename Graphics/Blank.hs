@@ -27,6 +27,7 @@ module Graphics.Blank
         , DeviceContext       -- abstact
         -- , send
         , sendW
+        , sendS
           -- * HTML5 Canvas API
           -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
@@ -229,9 +230,11 @@ import           Control.Natural
 import qualified Control.Natural as N
 import           Control.Remote.Monad
 import qualified Control.Remote.Monad.Packet.Weak as WP
+import qualified Control.Remote.Monad.Packet.Strong as SP
+
 
 import           Control.Monad.Reader (runReaderT)
-import           Control.Monad.State  (runStateT)
+import           Control.Monad.State  (runStateT, evalStateT)
 
 
 -- | 'blankCanvas' is the main entry point into @blank-canvas@.
@@ -286,7 +289,7 @@ blankCanvas opts actions = do
        -- A bit of bootstrapping
        let Canvas rm0 = device
            rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
-       (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW cxt0))) rm1
+       (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW' cxt0))) rm1
        -- print (DeviceAttributes w h dpr)
        
        let cxt1 = cxt0
@@ -334,10 +337,81 @@ blankCanvas opts actions = do
                ) app
 
 
--- send = undefined
+sendS, sendW :: DeviceContext -> Canvas a -> IO a
+sendS cxt (Canvas cmd0) =
+    let cmd1 = runReaderT (evalStateT cmd0 0) (deviceCanvasContext cxt)
+    in
+    N.run (runMonad (nat (sendS' cxt))) cmd1
 
-sendW :: DeviceContext -> WP.WeakPacket Cmd Proc a -> IO a
-sendW cxt = go mempty
+sendW cxt (Canvas cmd0) =
+    let cmd1 = runReaderT (evalStateT cmd0 0) (deviceCanvasContext cxt)
+    in
+    N.run (runMonad (nat (sendW' cxt))) cmd1
+
+sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
+sendS' cxt = go mempty
+  where
+    go :: Builder -> SP.StrongPacket Cmd Proc a -> IO a
+    go cmds (SP.Command cmd rest) = do
+      case cmd of
+        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showb m <> singleton ';')
+        Canvas.Command c _ -> send' (cmds <> showb cmd <> singleton ';')
+        MethodAudio    a _ -> send' (cmds <> showb cmd <> singleton ';')
+        Function f r c     -> sendFunc cmds f r c
+      go cmds rest
+
+    go cmds (SP.Procedure p) =
+      case p of
+        Query    q c -> sendQuery cmds q c
+
+    go _ SP.Done = return ()
+
+    send' :: Builder -> IO ()
+    send' = sendToCanvas cxt
+
+    sendFunc :: Builder -> Function a -> a -> CanvasContext -> IO ()
+    sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
+    sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
+    sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
+
+    fileQuery :: Text -> IO ()
+    fileQuery url = do
+        let url' = if "/" `T.isPrefixOf` url then T.tail url else url
+        atomically $ do
+            db <- readTVar (localFiles cxt)
+            writeTVar (localFiles cxt) $ S.insert url' $ db
+
+    sendQuery :: Builder -> Query a -> CanvasContext -> IO a
+    sendQuery cmds query c = do
+      case query of
+        NewImage url -> fileQuery url
+        NewAudio url -> fileQuery url
+        _            -> return ()
+
+      -- send the com
+      uq <- atomically getUniq
+      -- The query function returns a function takes the unique port number of the reply.
+      sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
+      v <- KC.getReply (theComet cxt) uq
+      case parse (parseQueryResult query) v of
+        Error msg -> fail msg
+        Success a -> return a
+
+    sendGradient :: Builder -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
+    sendGradient cmds q r@(CanvasGradient gId) c = do
+      send' $ cmds <> "var gradient_"
+          <> showb gId     <> " = "   <> jsCanvasContext c
+          <> singleton '.' <> showb q <> singleton ';'
+
+    sendPattern :: Builder -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
+    sendPattern cmds q r@(CanvasPattern pId) c = do
+      send' $ cmds <> "var pattern_"
+          <> showb pId     <> " = "   <> jsCanvasContext c
+          <> singleton '.' <> showb q <> singleton ';'
+
+
+sendW' :: DeviceContext -> WP.WeakPacket Cmd Proc a -> IO a
+sendW' cxt = go mempty
   where
     go :: Builder -> WP.WeakPacket Cmd Proc a -> IO a
     go cmds (WP.Command cmd) =
@@ -350,7 +424,6 @@ sendW cxt = go mempty
     go cmds (WP.Procedure p) =
       case p of
         Query    q c -> sendQuery cmds q c
-        -- ...
 
     send' :: Builder -> IO ()
     send' = sendToCanvas cxt
