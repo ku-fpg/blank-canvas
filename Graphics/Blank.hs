@@ -473,7 +473,7 @@ sendW' cxt = go mempty
 send :: DeviceContext -> Canvas a -> IO a
 send cxt (Canvas rm) = do
     let rm1 = runReaderT (runStateT rm 0) (deviceCanvasContext cxt)
-    (a, n) <- N.run (runMonad (nat (sendW cxt))) rm1
+    (a, n) <- N.run (runMonad (nat (sendW' cxt))) rm1
     return a
 
 
