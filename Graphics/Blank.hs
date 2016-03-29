@@ -468,8 +468,15 @@ sendW' cxt = go mempty
           <> showb pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showb q <> singleton ';'
 
--- -- | Sends a set of canvas commands to the 'Canvas'. Attempts
--- -- to common up as many commands as possible. Should not crash.
+-- | Sends a set of canvas commands to the 'Canvas'. Attempts
+-- to common up as many commands as possible. Should not crash.
+send :: DeviceContext -> Canvas a -> IO a
+send cxt (Canvas rm) = do
+    let rm1 = runReaderT (runStateT rm 0) (deviceCanvasContext cxt)
+    (a, n) <- N.run (runMonad (nat (sendW cxt))) rm1
+    return a
+
+
 -- send :: DeviceContext -> Canvas a -> IO a
 -- -- send _   (Return a) = return a
 -- -- send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
