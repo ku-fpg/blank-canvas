@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Debug.Trace
 import qualified Data.Text as Text
 import Graphics.Blank
 import Paths_blank_canvas_examples (getDataDir)
@@ -36,7 +35,8 @@ loop context audio play = do
 
     -- This music sure is loud, better make it a bit softer.
     setVolumeAudio(audio,0.9)
-
+    
+    -- Everyone likes faster music, let's make it twice as fast
     setPlaybackRateAudio(audio,2.0)
 
     -- Play/pause the audio depend in which state it's in

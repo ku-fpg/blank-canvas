@@ -2,7 +2,8 @@
 module Main where
 
 import Control.Concurrent
-import Control.Monad
+import Control.Monad (when)
+import Data.Maybe (isJust)
 import Data.Text (Text)
 import Graphics.Blank
 import Paths_blank_canvas_examples (getDataDir)
@@ -10,12 +11,33 @@ import Paths_blank_canvas_examples (getDataDir)
 main :: IO ()
 
 main = do
-  dat <- getDataDir    
+  dat <- getDataDir
   blankCanvas 3000 { root = dat, events = ["mousedown"]} $ go
 
 type Ball a = ((Double, Double), Double, a)
 
 type Color = String
+
+-- returns a list of all the separate audio files - mapping to a pentatonic scale
+getAudios :: DeviceContext -> IO [CanvasAudio]
+getAudios context = do
+  root   <- send context $ newAudio "music/ballbounce_root.wav"
+  second <- send context $ newAudio "music/ballbounce_second.wav"
+  third  <- send context $ newAudio "music/ballbounce_third.wav"
+  fifth  <- send context $ newAudio "music/ballbounce_fifth.wav"
+  sixth  <- send context $ newAudio "music/ballbounce_sixth.wav"
+  return [root,second,third,fifth,sixth]
+
+-- each color is mapped to a specific pitch in the pentatonic scale
+colorToAudio :: [CanvasAudio] -> Maybe (Text) -> CanvasAudio
+colorToAudio as (Just c)
+  | c == "red"     = as !! 0
+  | c == "blue"    = as !! 1
+  | c == "green"   = as !! 2
+  | c == "orange"  = as !! 3
+  | c == "cyan"    = as !! 4
+  | otherwise      = as !! 0
+colorToAudio as Nothing = as !! 0
 
 epoch :: [Ball ()]
 epoch = []
@@ -37,8 +59,10 @@ moveBall ((x,y),d,a) = ((x,y+d),d+0.5,a)
 go :: DeviceContext -> IO b
 go context = do
 
-     let (w,h) = (width context, height context) :: (Double, Double)
+     let (_w,h) = (width context, height context) :: (Double, Double)
 
+     audios <- getAudios context
+     
      let bounce :: Ball a -> Ball a
          bounce ((x,y),d,a)
             | y + 25 >= h && d > 0 = ((x,y),-(d-0.5)*0.97,a)
@@ -50,6 +74,11 @@ go context = do
             | y + 25 >= h          = True
             | otherwise            = False
 
+     let hit :: Ball a -> Maybe a 
+         hit ((_,y),_,a)
+            | y + 25 >= h          = Just a
+            | otherwise            = Nothing
+
      let loop (balls,cols) = do
              send context $ do
                 clearCanvas
@@ -57,12 +86,15 @@ go context = do
                      [ showBall xy col
                      | (xy,_,col) <- balls
                      ]
-                let x = map hit $ balls
-                    y = elem True x
-                sound <- newAudio "music/ballbounce.wav"
-                when y $ playAudio sound -- When at least one ball is at the bottom of the Canvas, play the bounce sound
+                let x       = map hit $ balls
+                    -- all values that are hitting the bottom of the screen in this frame
+                    ys      = filter (\a -> isJust a) x
+                    -- get the associated notes from the balls that are hitting the bottom of the screen
+                    yssound = map (colorToAudio audios) ys
 
-             threadDelay (20 * 1000)	                   
+                mapM_ playAudio yssound -- play all the sounds
+
+             threadDelay (20 * 1000) -- delay the redrawing of frame (keeps things smooth)
 
              es <- flush context
              if (null es) then return () else print es
