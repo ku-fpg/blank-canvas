@@ -26,7 +26,7 @@ module Graphics.Blank
         , Options(..)
           -- ** 'send'ing to the Graphics 'DeviceContext'
         , DeviceContext       -- abstact
-        -- , send
+        , send
         , sendW
         , sendS
           -- * HTML5 Canvas API
@@ -206,6 +206,8 @@ import           Graphics.Blank.JavaScript hiding (width, height, durationAudio,
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
+import           Graphics.Blank.GenSym (runGenSym)
+
 import qualified Network.HTTP.Types as H
 import           Network.Mime (defaultMimeMap, fileNameExtensions)
 import           Network.Wai (Middleware, responseLBS)
@@ -342,17 +344,8 @@ blankCanvas opts actions = do
 
 generalSend :: RunMonad m => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
 generalSend n cxt (Canvas c) =
-    iterT iterGo $ hoistFreeT go c
-    where
-      go :: ReaderT CanvasContext (RemoteMonad Cmd Proc) a -> IO a
-      go r = do
-        let cmd = runReaderT r (deviceCanvasContext cxt)
-        N.run (runMonad (n cxt)) cmd
-
-      iterGo :: Reader Int (IO a) -> IO a
-      iterGo r = do
-        n <- atomically getUniq
-        runReader r n
+    -- XXX: Is it ok to hardcode 0 as the start value here?
+  N.run (runMonadT (n cxt)) (mapRemoteT (runGenSym 0) (runReaderT c (deviceCanvasContext cxt)))
 
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> nat (sendS' cxt))

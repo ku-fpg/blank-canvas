@@ -25,6 +25,8 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
+import           Graphics.Blank.GenSym
+
 import           Prelude.Compat
 
 import           TextShow
@@ -62,30 +64,28 @@ instance TextShow a => TextShow (Proc a) where
     showb (Query q _) = showb q
 
 newtype Canvas a = Canvas
-        (FreeT (Reader Int)         -- number for locally allocated resour
         (ReaderT CanvasContext      -- the context, for the graphic contexts
-        (RemoteMonad Cmd Proc
-          )) a)
+        (RemoteT Cmd Proc
+                      GenSym        -- number for locally allocated resourm
+          ) a)
                    deriving (Functor, Applicative, Monad)
 
 procedure :: (CanvasContext -> Proc a) -> Canvas a
 procedure f = Canvas $ do
   c <- ask
-  lift $ lift (RM.procedure (f c))
+  lift $ RM.procedure (f c)
 
 command :: (CanvasContext -> Cmd) -> Canvas ()
 command f = Canvas $ do
   c <- ask
-  lift $ lift (RM.command (f c))
+  lift $ RM.command (f c)
 
 function :: TextShow a => (Int -> a) -> Function a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
-  wrap . reader $ \n -> do
-    -- put (n+1)
-    let a = alloc n
-    lift $ lift (RM.command (Function f a c))
-    return a
+  a <- lift $ lift $ fmap alloc uniq
+  lift $ RM.command (Function f a c)
+  return a
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
