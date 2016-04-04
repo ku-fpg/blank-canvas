@@ -8,7 +8,7 @@ import Control.Concurrent.STM
 
 import Data.Aeson (FromJSON(..), Value(..), ToJSON(..))
 import Data.Aeson.Types ((.:), (.=), object)
-import Data.Text (Text)
+import Data.Text.Lazy (Text)
 
 import TextShow.TH (deriveTextShow)
 

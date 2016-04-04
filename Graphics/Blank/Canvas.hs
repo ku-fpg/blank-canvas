@@ -15,8 +15,8 @@ import           Control.Monad (ap, liftM2)
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
 import           Data.Semigroup (Semigroup(..))
-import           Data.Text (Text)
-import           Data.Text.Lazy.Builder
+import           Data.Text.Lazy (Text)
+import           Data.Text.Lazy.Builder hiding (singleton, fromText)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
 
 import           Graphics.Blank.Events
@@ -26,10 +26,12 @@ import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
 import           Graphics.Blank.GenSym
+import           Graphics.Blank.Instr
+import qualified Graphics.Blank.Instr as I
 
 import           Prelude.Compat
 
-import           TextShow
+import           TextShow hiding (singleton, fromText)
 import           TextShow.TH (deriveTextShow)
 
 import           Control.Remote.Monad hiding (Command, procedure, command)
@@ -44,9 +46,13 @@ import           Control.Monad.Trans.Free
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
 $(deriveTextShow ''DeviceAttributes)
 
+instance InstrShow DeviceAttributes
+
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
 data TextMetrics = TextMetrics Double deriving Show
 $(deriveTextShow ''TextMetrics)
+
+instance InstrShow TextMetrics
 
 -----------------------------------------------------------------------------
 
@@ -55,13 +61,14 @@ data Cmd :: * where
   Command     :: Command     -> CanvasContext -> Cmd -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
   MethodAudio :: MethodAudio -> CanvasContext -> Cmd
-  Function  :: TextShow a => Function a -> a -> CanvasContext -> Cmd
+  Function  :: InstrShow a => Function a -> a -> CanvasContext -> Cmd
 
 data Proc :: * -> * where
-  Query     :: TextShow a => Query a     -> CanvasContext -> Proc a
+  Query     :: InstrShow a => Query a     -> CanvasContext -> Proc a
 
-instance TextShow a => TextShow (Proc a) where
-    showb (Query q _) = showb q
+instance InstrShow a => InstrShow (Proc a) where
+    showiPrec _ = showi
+    showi (Query q _) = showi q
 
 newtype Canvas a = Canvas
         (ReaderT CanvasContext      -- the context, for the graphic contexts
@@ -80,7 +87,7 @@ command f = Canvas $ do
   c <- ask
   lift $ RM.command (f c)
 
-function :: TextShow a => (Int -> a) -> Function a -> Canvas a
+function :: InstrShow a => (Int -> a) -> Function a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
   a <- lift $ lift $ fmap alloc uniq
@@ -178,15 +185,16 @@ data Command
   | Eval Text
 
 instance Show Command where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . I.toString . showi
 
-instance TextShow Command where
-  showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
-  showb (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
+instance InstrShow Command where
+  showiPrec _ = showi
+  showi (Trigger e) = "Trigger(" <> (fromText . decodeUtf8 $ encode e) <> singleton ')'
+  showi (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
          <> jsDouble off <> singleton ',' <> jsCanvasColor rep
          <> singleton ')'
-  showb (Log msg) = "console.log(" <> showbJS msg <> singleton ')'
-  showb (Eval cmd) = fromText cmd -- no escaping or interpretation
+  showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
+  showi (Eval cmd) = fromText cmd -- no escaping or interpretation
 
 -----------------------------------------------------------------------------
 
@@ -236,16 +244,17 @@ data Function :: * -> * where
 
 
 instance Show (Function a) where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . I.toString . showi
 
-instance TextShow (Function a) where
-  showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
+instance InstrShow (Function a) where
+  showiPrec _ = showi
+  showi (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ')'
-  showb (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
+  showi (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ',' <> jsDouble r1 <> singleton ')'
-  showb (CreatePattern (img,dir)) = "createPattern("
+  showi (CreatePattern (img,dir)) = "createPattern("
         <> jsImage img <> singleton ',' <> jsRepeatDirection dir <> singleton ')'
 
 -----------------------------------------------------------------------------
@@ -265,27 +274,28 @@ data Query :: * -> * where
         -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance Show (Query a) where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . I.toString . showi
 
-instance TextShow (Query a) where
-  showb Device                       = "Device"
-  showb ToDataURL                    = "ToDataURL"
-  showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
-  showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
+instance InstrShow (Query a) where
+  showiPrec _ = showi
+  showi Device                       = "Device"
+  showi ToDataURL                    = "ToDataURL"
+  showi (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
+  showi (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
                                                         <> jsDouble y <> singleton ')'
-  showb (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
-  showb (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
+  showi (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
+  showi (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
 
-  showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
+  showi (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
                                                     <> jsInt y <> singleton ')'
-  showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
+  showi (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
                                                        <> jsDouble sy <> singleton ','
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
-  showb (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
-  showb Sync                         = "Sync"
-  showb (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
-  -- showb (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
+  showi (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
+  showi Sync                         = "Sync"
+  showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a

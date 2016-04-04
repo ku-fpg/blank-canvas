@@ -66,6 +66,7 @@ Library
                        Graphics.Blank.Types.Font
                        Graphics.Blank.Utils
                        Graphics.Blank.GenSym
+                       Graphics.Blank.Instr
                        Paths_blank_canvas
 
   default-language:    Haskell2010

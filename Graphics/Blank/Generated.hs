@@ -3,103 +3,108 @@
 module Graphics.Blank.Generated where
 
 import           Data.Monoid ((<>))
-import           Data.Text (Text)
+import           Data.Text.Lazy (Text)
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
 
-import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
+import           Graphics.Blank.Instr
+
+-- import           TextShow (TextShow(..), FromTextShow(..), singleton)
 
 import           Control.Remote.Monad hiding (procedure, command)
 
-instance TextShow Cmd where
-    showb (Function f _ _) = showb f
-    showb (Method m _)      = showb m
-    showb (Command c _)     = showb c
-    showb (MethodAudio a _) = showb a
+instance InstrShow Cmd where
+    showiPrec _ = showi
+    showi (Function f _ _) = showi f
+    showi (Method m _)      = showi m
+    showi (Command c _)     = showi c
+    showi (MethodAudio a _) = showi a
 
 instance Show Method where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . toString . showi
 
-instance TextShow MethodAudio where
-  showb (PlayAudio audio)                    = jsAudio audio <> ".play()"
-  showb (PauseAudio audio)                   = jsAudio audio <> ".pause()"
-  showb (SetCurrentTimeAudio  (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
-  showb (SetLoopAudio         (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
-  showb (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
-  showb (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
-  showb (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+instance InstrShow MethodAudio where
+  showiPrec _ = showi
+  showi (PlayAudio audio)                    = jsAudio audio <> ".play()"
+  showi (PauseAudio audio)                   = jsAudio audio <> ".pause()"
+  showi (SetCurrentTimeAudio  (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
+  showi (SetLoopAudio         (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
+  showi (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
+  showi (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
+  showi (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
 
-  -- showb (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
+  -- showi (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
   
-instance TextShow Method where
-  showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
+instance InstrShow Method where
+  showiPrec _ = showi
+  showi (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsBool a6   <> singleton ')'
-  showb (ArcTo (a1,a2,a3,a4,a5)) = "arcTo("
+  showi (ArcTo (a1,a2,a3,a4,a5)) = "arcTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ','
          <> jsDouble a4 <> singleton ',' <> jsDouble a5 <> singleton ')'
-  showb BeginPath = "beginPath()"
-  showb (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo("
+  showi BeginPath = "beginPath()"
+  showi (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showb (ClearRect (a1,a2,a3,a4)) = "clearRect("
+  showi (ClearRect (a1,a2,a3,a4)) = "clearRect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb Clip = "clip()"
-  showb ClosePath = "closePath()"
-  showb (DrawImage (a1,a2)) = "drawImage(" <> jsImage a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
-  showb Fill = "fill()"
-  showb (FillRect (a1,a2,a3,a4)) = "fillRect("
+  showi Clip = "clip()"
+  showi ClosePath = "closePath()"
+  showi (DrawImage (a1,a2)) = "drawImage(" <> jsImage a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
+  showi Fill = "fill()"
+  showi (FillRect (a1,a2,a3,a4)) = "fillRect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb (FillStyle (a1)) = "fillStyle = (" <> jsStyle a1 <> singleton ')'
-  showb (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
-  showb (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
-  showb (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
-  showb (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
-  showb (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
-  showb (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
-  showb (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showb (LineWidth (a1)) = "lineWidth = (" <> jsDouble a1 <> singleton ')'
-  showb (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
-  showb (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showb (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
-  showb (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
+  showi (FillStyle (a1)) = "fillStyle = (" <> jsStyle a1 <> singleton ')'
+  showi (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
+  showi (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
+  showi (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
+  showi (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
+  showi (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
+  showi (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
+  showi (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (LineWidth (a1)) = "lineWidth = (" <> jsDouble a1 <> singleton ')'
+  showi (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
+  showi (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
+  showi (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb (Rect (a1,a2,a3,a4)) = "rect("
+  showi (Rect (a1,a2,a3,a4)) = "rect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb Restore = "restore()"
-  showb (Rotate (a1)) = "rotate(" <> jsDouble a1 <> singleton ')'
-  showb Save = "save()"
-  showb (Scale (a1,a2)) = "scale(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showb (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform("
+  showi Restore = "restore()"
+  showi (Rotate (a1)) = "rotate(" <> jsDouble a1 <> singleton ')'
+  showi Save = "save()"
+  showi (Scale (a1,a2)) = "scale(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showb (ShadowBlur (a1)) = "shadowBlur = (" <> jsDouble a1 <> singleton ')'
-  showb (ShadowColor (a1)) = "shadowColor = (" <> jsCanvasColor a1 <> singleton ')'
-  showb (ShadowOffsetX (a1)) = "shadowOffsetX = (" <> jsDouble a1 <> singleton ')'
-  showb (ShadowOffsetY (a1)) = "shadowOffsetY = (" <> jsDouble a1 <> singleton ')'
-  showb Stroke = "stroke()"
-  showb (StrokeRect (a1,a2,a3,a4)) = "strokeRect("
+  showi (ShadowBlur (a1)) = "shadowBlur = (" <> jsDouble a1 <> singleton ')'
+  showi (ShadowColor (a1)) = "shadowColor = (" <> jsCanvasColor a1 <> singleton ')'
+  showi (ShadowOffsetX (a1)) = "shadowOffsetX = (" <> jsDouble a1 <> singleton ')'
+  showi (ShadowOffsetY (a1)) = "shadowOffsetY = (" <> jsDouble a1 <> singleton ')'
+  showi Stroke = "stroke()"
+  showi (StrokeRect (a1,a2,a3,a4)) = "strokeRect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb (StrokeStyle (a1)) = "strokeStyle = (" <> jsStyle a1 <> singleton ')'
-  showb (StrokeText (a1,a2,a3)) = "strokeText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
-  showb (TextAlign (a1)) = "textAlign = (" <> jsTextAnchorAlignment a1 <> singleton ')'
-  showb (TextBaseline (a1)) = "textBaseline = (" <> jsTextBaselineAlignment a1 <> singleton ')'
-  showb (Transform (a1,a2,a3,a4,a5,a6)) = "transform("
+  showi (StrokeStyle (a1)) = "strokeStyle = (" <> jsStyle a1 <> singleton ')'
+  showi (StrokeText (a1,a2,a3)) = "strokeText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
+  showi (TextAlign (a1)) = "textAlign = (" <> jsTextAnchorAlignment a1 <> singleton ')'
+  showi (TextBaseline (a1)) = "textBaseline = (" <> jsTextBaselineAlignment a1 <> singleton ')'
+  showi (Transform (a1,a2,a3,a4,a5,a6)) = "transform("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showb (Translate (a1,a2)) = "translate(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (Translate (a1,a2)) = "translate(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
 
 -- DSL
 

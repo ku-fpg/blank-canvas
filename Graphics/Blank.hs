@@ -190,8 +190,8 @@ import           Data.List as L
 import qualified Data.Map as M (lookup)
 import           Data.Monoid ((<>))
 import qualified Data.Set as S
-import qualified Data.Text as T
-import           Data.Text (Text)
+import qualified Data.Text.Lazy as T
+import           Data.Text.Lazy (Text)
 import           Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as LT
 
@@ -207,6 +207,7 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
 import           Graphics.Blank.GenSym (runGenSym)
+import           Graphics.Blank.Instr
 
 import qualified Network.HTTP.Types as H
 import           Network.Mime (defaultMimeMap, fileNameExtensions)
@@ -223,7 +224,7 @@ import           Prelude.Compat
 import           System.IO.Unsafe (unsafePerformIO)
 -- import           System.Mem.StableName
 
-import           TextShow (Builder, showb, showt, singleton)
+-- import           TextShow (Builder, showb, showt)
 
 import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
@@ -241,6 +242,8 @@ import           Control.Monad.State  (runStateT, evalStateT)
 
 import           Control.Monad.Trans.Free
 import           Control.Monad.Identity
+
+import           Data.String
 
 -- | 'blankCanvas' is the main entry point into @blank-canvas@.
 -- A typical invocation would be
@@ -275,8 +278,8 @@ blankCanvas opts actions = do
 
    connectApp <- KC.connect kc_opts $ \ kc_doc -> do
        -- register the events we want to watch for
-       KC.send kc_doc $ T.unlines
-          [ "register(" <> showt nm <> ");"
+       KC.send kc_doc $ fromString $ unlines $ map toString
+          [ "register(" <> showi nm <> ");"
           | nm <- events opts
           ]
        
@@ -330,7 +333,7 @@ blankCanvas opts actions = do
           if fileName `S.member` db
           then do
             let mime = mimeType fileName
-            Scotty.setHeader "Content-Type" $ LT.fromStrict $ mime
+            Scotty.setHeader "Content-Type" $ mime
             file $ (root opts ++ "/" ++ T.unpack fileName)
           else do
             Scotty.next
@@ -355,12 +358,12 @@ sendW = generalSend (\cxt -> nat (sendW' cxt))
 sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
 sendS' cxt = go mempty
   where
-    go :: Builder -> SP.StrongPacket Cmd Proc a -> IO a
+    go :: Instr -> SP.StrongPacket Cmd Proc a -> IO a
     go cmds (SP.Command cmd rest) = do
       case cmd of
-        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showb m <> singleton ';')
-        Canvas.Command c _ -> send' (cmds <> showb cmd <> singleton ';')
-        MethodAudio    a _ -> send' (cmds <> showb cmd <> singleton ';')
+        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
+        Canvas.Command c _ -> send' (cmds <> showi cmd <> singleton ';')
+        MethodAudio    a _ -> send' (cmds <> showi cmd <> singleton ';')
         Function f r c     -> sendFunc cmds f r c
       go cmds rest
 
@@ -370,10 +373,10 @@ sendS' cxt = go mempty
 
     go _ SP.Done = return ()
 
-    send' :: Builder -> IO ()
+    send' :: Instr -> IO ()
     send' = sendToCanvas cxt
 
-    sendFunc :: Builder -> Function a -> a -> CanvasContext -> IO ()
+    sendFunc :: Instr -> Function a -> a -> CanvasContext -> IO ()
     sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
     sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
     sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
@@ -385,7 +388,7 @@ sendS' cxt = go mempty
             db <- readTVar (localFiles cxt)
             writeTVar (localFiles cxt) $ S.insert url' $ db
 
-    sendQuery :: Builder -> Query a -> CanvasContext -> IO a
+    sendQuery :: Instr -> Query a -> CanvasContext -> IO a
     sendQuery cmds query c = do
       case query of
         NewImage url -> fileQuery url
@@ -395,44 +398,44 @@ sendS' cxt = go mempty
       -- send the com
       uq <- atomically getUniq
       -- The query function returns a function takes the unique port number of the reply.
-      sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
+      sendToCanvas cxt $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
       v <- KC.getReply (theComet cxt) uq
       case parse (parseQueryResult query) v of
         Error msg -> fail msg
         Success a -> return a
 
-    sendGradient :: Builder -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
+    sendGradient :: Instr -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
     sendGradient cmds q r@(CanvasGradient gId) c = do
       send' $ cmds <> "var gradient_"
-          <> showb gId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showb q <> singleton ';'
+          <> showi gId     <> " = "   <> jsCanvasContext c
+          <> singleton '.' <> showi q <> singleton ';'
 
-    sendPattern :: Builder -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
+    sendPattern :: Instr -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
     sendPattern cmds q r@(CanvasPattern pId) c = do
       send' $ cmds <> "var pattern_"
-          <> showb pId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showb q <> singleton ';'
+          <> showi pId     <> " = "   <> jsCanvasContext c
+          <> singleton '.' <> showi q <> singleton ';'
 
 
 sendW' :: DeviceContext -> WP.WeakPacket Cmd Proc a -> IO a
 sendW' cxt = go mempty
   where
-    go :: Builder -> WP.WeakPacket Cmd Proc a -> IO a
+    go :: Instr -> WP.WeakPacket Cmd Proc a -> IO a
     go cmds (WP.Command cmd) =
       case cmd of
-        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showb m <> singleton ';')
-        Canvas.Command c _ -> send' (cmds <> showb cmd <> singleton ';')
-        MethodAudio a    _ -> send' (cmds <> showb cmd <> singleton ';')
+        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
+        Canvas.Command c _ -> send' (cmds <> showi cmd <> singleton ';')
+        MethodAudio a    _ -> send' (cmds <> showi cmd <> singleton ';')
         Function f r c -> sendFunc cmds f r c
 
     go cmds (WP.Procedure p) =
       case p of
         Query    q c -> sendQuery cmds q c
 
-    send' :: Builder -> IO ()
+    send' :: Instr -> IO ()
     send' = sendToCanvas cxt
 
-    sendFunc :: Builder -> Function a -> a -> CanvasContext -> IO ()
+    sendFunc :: Instr -> Function a -> a -> CanvasContext -> IO ()
     sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
     sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
     sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
@@ -444,7 +447,7 @@ sendW' cxt = go mempty
             db <- readTVar (localFiles cxt)
             writeTVar (localFiles cxt) $ S.insert url' $ db
 
-    sendQuery :: Builder -> Query a -> CanvasContext -> IO a
+    sendQuery :: Instr -> Query a -> CanvasContext -> IO a
     sendQuery cmds query c = do
       case query of
         NewImage url -> fileQuery url
@@ -454,23 +457,23 @@ sendW' cxt = go mempty
       -- send the com
       uq <- atomically getUniq
       -- The query function returns a function takes the unique port number of the reply.
-      sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
+      sendToCanvas cxt $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
       v <- KC.getReply (theComet cxt) uq
       case parse (parseQueryResult query) v of
         Error msg -> fail msg
         Success a -> return a
 
-    sendGradient :: Builder -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
+    sendGradient :: Instr -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
     sendGradient cmds q r@(CanvasGradient gId) c = do
       send' $ cmds <> "var gradient_"
-          <> showb gId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showb q <> singleton ';'
+          <> showi gId     <> " = "   <> jsCanvasContext c
+          <> singleton '.' <> showi q <> singleton ';'
 
-    sendPattern :: Builder -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
+    sendPattern :: Instr -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
     sendPattern cmds q r@(CanvasPattern pId) c = do
       send' $ cmds <> "var pattern_"
-          <> showb pId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showb q <> singleton ';'
+          <> showi pId     <> " = "   <> jsCanvasContext c
+          <> singleton '.' <> showi q <> singleton ';'
 
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
@@ -566,7 +569,7 @@ getUniq = do
     return u
 
 mimeType :: Text -> Text
-mimeType filePath = go $ fileNameExtensions filePath
+mimeType filePath = LT.fromStrict $ go $ fileNameExtensions $ LT.toStrict filePath
   where
     go [] = error $ "do not understand mime type for : " ++ show filePath
     go (e:es) = case M.lookup e defaultMimeMap of

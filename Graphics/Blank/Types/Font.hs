@@ -11,14 +11,15 @@ import           Data.Ix (Ix)
 import           Data.Maybe
 import           Data.Monoid
 import           Data.String
-import qualified Data.Text as TS
-import           Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import           Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy.Builder as B (singleton)
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.CSS
+import           Graphics.Blank.Instr
 
 import qualified Text.ParserCombinators.ReadP as ReadP
 import           Text.ParserCombinators.ReadP hiding ((<++), choice, pfail)
@@ -33,7 +34,7 @@ import           TextShow (TextShow(..), Builder, FromTextShow(..), showbSpace)
 -- | A data type that can represent a browser font.
 class CanvasFont a where
     -- | Convert a value into a JavaScript string representing a font value.
-    jsCanvasFont :: a -> Builder
+    jsCanvasFont :: a -> Instr
 
 instance CanvasFont Text where
     jsCanvasFont = jsText
@@ -104,10 +105,10 @@ instance IsString Font where
     fromString = read
 
 instance JSArg Font where
-    showbJS = jsFont
+    showiJS = jsFont
 
-jsFont :: Font -> Builder
-jsFont = jsLiteralBuilder . showb
+jsFont :: Font -> Instr
+jsFont = jsLiteralBuilder . showi
 
 instance Read Font where
     readPrec = do
@@ -206,6 +207,8 @@ instance TextShow Font where
     showb SmallCaptionFont = "small-caption"
     showb StatusBarFont    = "status-bar"
 
+instance InstrShow Font
+
 -------------------------------------------------------------------------------
 
 -- | Specifies if a 'Font' is italic or oblique.
@@ -249,6 +252,8 @@ instance TextShow FontStyle where
     showb ItalicStyle  = "italic"
     showb ObliqueStyle = "oblique"
 
+instance InstrShow FontStyle
+
 -------------------------------------------------------------------------------
 
 -- | Specifies the face of a 'Font'.
@@ -280,6 +285,8 @@ instance Show FontVariant where
 instance TextShow FontVariant where
     showb NormalVariant    = "normal"
     showb SmallCapsVariant = "small-caps"
+
+instance InstrShow FontVariant
 
 -------------------------------------------------------------------------------
 
@@ -386,6 +393,8 @@ instance TextShow FontWeight where
     showb Weight800     = "800"
     showb Weight900     = "900"
 
+instance InstrShow FontWeight
+
 -------------------------------------------------------------------------------
 
 -- | The desired height of 'Font' glyphs.
@@ -490,7 +499,9 @@ instance TextShow FontSize where
     showb LargerSize             = "larger"
     showb SmallerSize            = "smaller"
     showb (FontSizeLength l)     = showb l
-    showb (FontSizePercentage p) = jsDouble p <> B.singleton '%'
+    showb (FontSizePercentage p) = toBuilder (jsDouble p) <> B.singleton '%'
+
+instance InstrShow FontSize
 
 -------------------------------------------------------------------------------
 
@@ -556,9 +567,11 @@ instance Show LineHeight where
 
 instance TextShow LineHeight where
     showb NormalLineHeight         = "normal"
-    showb (LineHeightNumber n)     = jsDouble n
+    showb (LineHeightNumber n)     = toBuilder $ jsDouble n
     showb (LineHeightLength l)     = showb l
-    showb (LineHeightPercentage p) = jsDouble p <> B.singleton '%'
+    showb (LineHeightPercentage p) = toBuilder (jsDouble p) <> B.singleton '%'
+
+instance InstrShow LineHeight
 
 -------------------------------------------------------------------------------
 
@@ -646,7 +659,7 @@ readFontFamily mQuote = do
     name <- case mQuote of
         Just quote -> munch (/= quote)
         Nothing    -> unwords <$> sepBy1 cssIdent (munch1 isSpace)
-    return . FontFamilyName $ TS.pack name
+    return . FontFamilyName $ TL.pack name
 
 instance Show FontFamily where
     showsPrec p = showsPrec p . FromTextShow
@@ -662,7 +675,9 @@ instance TextShow FontFamily where
     
     -- Omit the square brackets when showing a list of font families so that
     -- it matches the CSS syntax.
-    showbList = jsList showb
+    showbList = toBuilder . jsList showi
+
+instance InstrShow FontFamily
 
 -------------------------------------------------------------------------------
 

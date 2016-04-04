@@ -9,6 +9,7 @@ import           Data.String
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
 import           Graphics.Blank.Types
+import           Graphics.Blank.Instr
 
 import           Prelude.Compat
 
@@ -129,7 +130,7 @@ instance Show Length where
     showsPrec p = showsPrec p . FromTextShow
 
 instance TextShow Length where
-    showb l = jsDouble (runLength l) <> showbUnits l
+    showb l = toBuilder (jsDouble (runLength l)) <> showbUnits l
       where
         showbUnits (Em   _) = "em"
         showbUnits (Ex   _) = "ex"
@@ -145,6 +146,8 @@ instance TextShow Length where
         showbUnits (In   _) = "in"
         showbUnits (Pt   _) = "pt"
         showbUnits (Pc   _) = "pc"
+
+instance InstrShow Length
 
 -- | Designates CSS properties that can consist of a 'Percentage'.
 class PercentageProperty a where
