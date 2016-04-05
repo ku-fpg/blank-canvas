@@ -12,8 +12,9 @@ import           Data.Ix
 import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
-import           Data.Text.Lazy (Text)
+import           Data.Text.Lazy (Text, fromStrict)
 import qualified Data.Text.Lazy as TL
+import qualified Data.Text as ST
 import qualified Data.Text.Lazy.Builder as B (singleton)
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector, toList)
@@ -540,6 +541,9 @@ jsRepeatDirection = jsLiteralBuilder . showi
 
 instance JSArg Text where
     showiJS = jsText
+
+instance JSArg ST.Text where
+    showiJS = jsText . fromStrict
 
 jsText :: TL.Text -> Instr
 jsText = jsLiteralBuilder . I.fromText

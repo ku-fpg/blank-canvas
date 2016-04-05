@@ -15,7 +15,7 @@ import           Control.Monad (ap, liftM2)
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
 import           Data.Semigroup (Semigroup(..))
-import           Data.Text.Lazy (Text, fromStrict)
+import           Data.Text.Lazy (Text, fromStrict, toStrict)
 import           Data.Text.Lazy.Builder hiding (singleton, fromText)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text as ST
@@ -327,8 +327,8 @@ device = procedure $ Query Device
 --
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
-toDataURL :: () -> Canvas Text
-toDataURL () = procedure $ Query ToDataURL
+toDataURL :: () -> Canvas ST.Text
+toDataURL () = fmap toStrict . procedure $ Query ToDataURL
 
 -- | Queries the measured width of the text argument.
 --
