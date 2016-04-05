@@ -194,6 +194,7 @@ import qualified Data.Text.Lazy as T
 import           Data.Text.Lazy (Text)
 import           Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as LT
+import qualified Data.Text as ST
 
 import qualified Graphics.Blank.Canvas as Canvas
 import           Graphics.Blank.Canvas hiding (addColorStop, cursor)
@@ -615,8 +616,8 @@ instance Num Options where
 -- 'fillStyle' \"red\"
 -- 'fillStyle' \"#00FF00\"
 -- @
-fillStyle :: Text -> Canvas ()
-fillStyle = Generated.fillStyle
+fillStyle :: ST.Text -> Canvas ()
+fillStyle = Generated.fillStyle . LT.fromStrict
 
 -- | Sets the text context's font properties.
 --
@@ -627,8 +628,8 @@ fillStyle = Generated.fillStyle
 -- 'font' \"80% sans-serif\"
 -- 'font' \"bold italic large serif\"
 -- @
-font :: Text -> Canvas ()
-font = Generated.font
+font :: ST.Text -> Canvas ()
+font = Generated.font . LT.fromStrict
 
 -- | Sets the color used for strokes (@\"black\"@ by default).
 --
@@ -638,8 +639,8 @@ font = Generated.font
 -- 'strokeStyle' \"red\"
 -- 'strokeStyle' \"#00FF00\"
 -- @
-strokeStyle :: Text -> Canvas ()
-strokeStyle = Generated.strokeStyle
+strokeStyle :: ST.Text -> Canvas ()
+strokeStyle = Generated.strokeStyle . LT.fromStrict
 
 -- | Sets the color used for shadows.
 --
@@ -649,8 +650,8 @@ strokeStyle = Generated.strokeStyle
 -- 'shadowColor' \"red\"
 -- 'shadowColor' \"#00FF00\"
 -- @
-shadowColor :: Text -> Canvas ()
-shadowColor = Generated.shadowColor
+shadowColor :: ST.Text -> Canvas ()
+shadowColor = Generated.shadowColor . LT.fromStrict
 
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
@@ -662,8 +663,8 @@ shadowColor = Generated.shadowColor
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- grd # 'addColorStop'(0, \"red\")
 -- @
-addColorStop :: (Interval, Text) -> CanvasGradient -> Canvas ()
-addColorStop = Canvas.addColorStop
+addColorStop :: (Interval, ST.Text) -> CanvasGradient -> Canvas ()
+addColorStop (i, t) = Canvas.addColorStop (i, LT.fromStrict t)
 
 -- | Change the canvas cursor to the specified URL or keyword.
 --
@@ -673,8 +674,8 @@ addColorStop = Canvas.addColorStop
 -- cursor \"url(image.png), default\"
 -- cursor \"crosshair\"
 -- @
-cursor :: Text -> Canvas ()
-cursor = Canvas.cursor
+cursor :: ST.Text -> Canvas ()
+cursor = Canvas.cursor . LT.fromStrict
 
 -- | The height of an 'Image' in pixels.
 height :: (Image image, Num a) => image -> a

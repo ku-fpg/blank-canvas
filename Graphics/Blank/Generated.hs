@@ -3,7 +3,8 @@
 module Graphics.Blank.Generated where
 
 import           Data.Monoid ((<>))
-import           Data.Text.Lazy (Text)
+import           Data.Text.Lazy (Text, fromStrict)
+import qualified Data.Text as ST
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.JavaScript
@@ -267,8 +268,8 @@ fillStyle = command . Method . FillStyle
 -- 'font' \"48px serif\"
 -- 'fillText'(\"Hello, World!\", 50, 100)
 -- @
-fillText :: (Text, Double, Double) -> Canvas ()
-fillText = command . Method . FillText
+fillText :: (ST.Text, Double, Double) -> Canvas ()
+fillText (t, a, b) = command . Method $ FillText (fromStrict t, a, b)
 
 -- | Sets the text context's font properties.
 --
@@ -298,8 +299,8 @@ globalAlpha = command . Method . GlobalAlpha
 -- 'globalCompositeOperation' \"source-over\"
 -- 'globalCompositeOperation' \"destination-atop\"
 -- @
-globalCompositeOperation :: Text -> Canvas ()
-globalCompositeOperation = command . Method . GlobalCompositeOperation
+globalCompositeOperation :: ST.Text -> Canvas ()
+globalCompositeOperation = command . Method . GlobalCompositeOperation . fromStrict
 
 -- | Sets the 'LineEndCap' to use when drawing the endpoints of lines.
 lineCap :: LineEndCap -> Canvas ()
@@ -513,8 +514,8 @@ strokeStyle = command . Method . StrokeStyle
 -- 'font' \"48px serif\"
 -- 'strokeText'(\"Hello, World!\", 50, 100)
 -- @
-strokeText :: (Text,Double, Double) -> Canvas ()
-strokeText = command . Method . StrokeText
+strokeText :: (ST.Text, Double, Double) -> Canvas ()
+strokeText (t, a, b) = command . Method $ StrokeText (fromStrict t, a, b)
 
 -- | Sets the 'TextAnchorAlignment' to use when drawing text.
 textAlign :: TextAnchorAlignment -> Canvas ()

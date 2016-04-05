@@ -15,9 +15,10 @@ import           Control.Monad (ap, liftM2)
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
 import           Data.Semigroup (Semigroup(..))
-import           Data.Text.Lazy (Text)
+import           Data.Text.Lazy (Text, fromStrict)
 import           Data.Text.Lazy.Builder hiding (singleton, fromText)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
+import qualified Data.Text as ST
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
@@ -232,8 +233,8 @@ console_log :: JSArg msg => msg -> Canvas ()
 console_log = command . Command . Log
 
 -- | 'eval' executes the argument in JavaScript directly.
-eval :: Text -> Canvas ()
-eval = command . Command . Eval
+eval :: ST.Text -> Canvas ()
+eval = command . Command . Eval . fromStrict
 
 -----------------------------------------------------------------------------
 
@@ -336,8 +337,8 @@ toDataURL () = procedure $ Query ToDataURL
 -- @
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
-measureText :: Text -> Canvas TextMetrics
-measureText = procedure . Query . MeasureText
+measureText :: ST.Text -> Canvas TextMetrics
+measureText = procedure . Query . MeasureText . fromStrict
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
 --
@@ -354,14 +355,14 @@ isPointInPath = procedure . Query . IsPointInPath
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
 -- If you are using local images, loading should be near instant.
-newImage :: Text -> Canvas CanvasImage
-newImage = procedure . Query . NewImage
+newImage :: ST.Text -> Canvas CanvasImage
+newImage = procedure . Query . NewImage . fromStrict
 
 -- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
-newAudio :: Text -> Canvas CanvasAudio
-newAudio = procedure . Query . NewAudio
+newAudio :: ST.Text -> Canvas CanvasAudio
+newAudio = procedure . Query . NewAudio . fromStrict
 
 -- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
 -- the specified CanvasAudio.
