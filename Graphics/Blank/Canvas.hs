@@ -272,6 +272,7 @@ data Query :: * -> * where
         Cursor               :: CanvasCursor cursor => cursor           -> Query ()
         Sync                 ::                                            Query ()
         CurrentTimeAudio     :: CanvasAudio                             -> Query Double
+        Frame                ::                                            Query ()
         -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance Show (Query a) where
@@ -296,6 +297,8 @@ instance InstrShow (Query a) where
   showi (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
   showi Sync                         = "Sync"
   showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+    -- TODO: Find the correct way to implement this:
+  showi Frame                        = surround "setInterval(function(){ " "}, 30);"
   -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
@@ -461,3 +464,6 @@ cursor = procedure . Query . Cursor
 -- | Send all commands to the browser, wait for the browser to act, then continue.
 sync :: Canvas ()
 sync = procedure $ Query Sync
+
+frame :: Canvas ()
+frame = procedure $ Query Frame

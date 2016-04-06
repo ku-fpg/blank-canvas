@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE RankNTypes #-}
 
 {-|
 Module:      Graphics.Blank
@@ -169,6 +170,7 @@ module Graphics.Blank
         , eventQueue
         , wait
         , flush
+        , frame
         , Event(..)
         , EventName
         , EventQueue
@@ -220,7 +222,8 @@ import           Network.Wai.Handler.Warp
 
 import           Paths_blank_canvas
 
-import           Prelude.Compat
+import           Prelude.Compat hiding ((.), id)
+import           Control.Category
 
 import           System.IO.Unsafe (unsafePerformIO)
 -- import           System.Mem.StableName
@@ -239,7 +242,9 @@ import qualified Control.Remote.Monad.Packet.Strong as SP
 
 
 import           Control.Monad.Reader hiding (local)
-import           Control.Monad.State  (runStateT, evalStateT)
+import           Control.Monad.State  (StateT, modify, runStateT, evalStateT)
+import qualified Control.Monad.State as State
+import           Control.Monad.Writer
 
 import           Control.Monad.Trans.Free
 import           Control.Monad.Identity
@@ -349,7 +354,10 @@ blankCanvas opts actions = do
 generalSend :: RunMonad m => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
 generalSend n cxt (Canvas c) =
     -- XXX: Is it ok to hardcode 0 as the start value here?
-  N.run (runMonadT (n cxt)) (mapRemoteT (runGenSym 0) (runReaderT c (deviceCanvasContext cxt)))
+  N.run (runMonadT (n cxt))
+        (mapRemoteT (runGenSym 0)
+                    (runReaderT c
+                                (deviceCanvasContext cxt)))
 
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> nat (sendS' cxt))
@@ -357,30 +365,31 @@ sendS = generalSend (\cxt -> nat (sendS' cxt))
 sendW = generalSend (\cxt -> nat (sendW' cxt))
 
 sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
-sendS' cxt = go mempty
+sendS' cxt sp = evalStateT (go sp) mempty
   where
-    go :: Instr -> SP.StrongPacket Cmd Proc a -> IO a
-    go cmds (SP.Command cmd rest) = do
+    go :: SP.StrongPacket Cmd Proc a -> StateT Instr IO a
+    go (SP.Command cmd rest) = do
       case cmd of
-        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
-        Canvas.Command c _ -> send' (cmds <> showi cmd <> singleton ';')
-        MethodAudio    a _ -> send' (cmds <> showi cmd <> singleton ';')
-        Function f r c     -> sendFunc cmds f r c
-      go cmds rest
+        Method m canvasCxt -> modify (<> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
+        Canvas.Command c _ -> modify (<> showi cmd <> singleton ';')
+        MethodAudio    a _ -> modify (<> showi cmd <> singleton ';')
+        Function f r c     -> sendFunc f r c
+      go rest
 
-    go cmds (SP.Procedure p) =
+    go (SP.Procedure p) =
       case p of
-        Query    q c -> sendQuery cmds q c
+        Query    q c -> sendQuery q c
 
-    go _ SP.Done = return ()
+    go SP.Done = do
+      cmds <- State.get
+      liftIO $ sendToCanvas cxt cmds
+      State.put mempty
+      return ()
 
-    send' :: Instr -> IO ()
-    send' = sendToCanvas cxt
-
-    sendFunc :: Instr -> Function a -> a -> CanvasContext -> IO ()
-    sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
-    sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
-    sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
+    sendFunc :: Function a -> a -> CanvasContext -> StateT Instr IO ()
+    sendFunc q@(CreateLinearGradient _) r c = sendGradient q r c
+    sendFunc q@(CreateRadialGradient _) r c = sendGradient q r c
+    sendFunc q@(CreatePattern        _) r c = sendPattern  q r c
 
     fileQuery :: Text -> IO ()
     fileQuery url = do
@@ -389,33 +398,42 @@ sendS' cxt = go mempty
             db <- readTVar (localFiles cxt)
             writeTVar (localFiles cxt) $ S.insert url' $ db
 
-    sendQuery :: Instr -> Query a -> CanvasContext -> IO a
-    sendQuery cmds query c = do
-      case query of
-        NewImage url -> fileQuery url
-        NewAudio url -> fileQuery url
-        _            -> return ()
+    -- TODO: See if the query should be added to the end and then
+    -- everything sent over in one transmission.
+    sendQuery :: Query a -> CanvasContext -> StateT Instr IO a
+    sendQuery query c = do
+        -- Send waiting commands and clear the command queue
 
-      -- send the com
-      uq <- atomically getUniq
-      -- The query function returns a function takes the unique port number of the reply.
-      sendToCanvas cxt $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
-      v <- KC.getReply (theComet cxt) uq
-      case parse (parseQueryResult query) v of
-        Error msg -> fail msg
-        Success a -> return a
+      prevCmds <- State.get
+      State.put mempty
 
-    sendGradient :: Instr -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
-    sendGradient cmds q r@(CanvasGradient gId) c = do
-      send' $ cmds <> "var gradient_"
+        -- Send actual query
+      liftIO $ do
+        case query of
+          NewImage url -> fileQuery url
+          NewAudio url -> fileQuery url
+          _            -> return ()
+
+        -- send the com
+        uq <- atomically getUniq
+        -- The query function returns a function takes the unique port number of the reply.
+        sendToCanvas cxt $ prevCmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
+        v <- KC.getReply (theComet cxt) uq
+        case parse (parseQueryResult query) v of
+          Error msg -> fail msg
+          Success a -> return a
+
+    sendGradient :: Function CanvasGradient -> CanvasGradient -> CanvasContext -> StateT Instr IO ()
+    sendGradient q r@(CanvasGradient gId) c = do
+      modify (<> "var gradient_"
           <> showi gId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showi q <> singleton ';'
+          <> singleton '.' <> showi q <> singleton ';')
 
-    sendPattern :: Instr -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
-    sendPattern cmds q r@(CanvasPattern pId) c = do
-      send' $ cmds <> "var pattern_"
+    sendPattern :: Function CanvasPattern -> CanvasPattern -> CanvasContext -> StateT Instr IO ()
+    sendPattern q r@(CanvasPattern pId) c = do
+      modify (<> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showi q <> singleton ';'
+          <> singleton '.' <> showi q <> singleton ';')
 
 
 sendW' :: DeviceContext -> WP.WeakPacket Cmd Proc a -> IO a
@@ -453,12 +471,14 @@ sendW' cxt = go mempty
       case query of
         NewImage url -> fileQuery url
         NewAudio url -> fileQuery url
+        -- TODO: See if this is possible:
+        Frame        -> error "Frame not yet implemented for weak send"
         _            -> return ()
 
       -- send the com
       uq <- atomically getUniq
       -- The query function returns a function takes the unique port number of the reply.
-      sendToCanvas cxt $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
+      send' $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
       v <- KC.getReply (theComet cxt) uq
       case parse (parseQueryResult query) v of
         Error msg -> fail msg
@@ -479,7 +499,7 @@ sendW' cxt = go mempty
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send = sendW
+send = sendS
 
 
 -- send :: DeviceContext -> Canvas a -> IO a
