@@ -402,8 +402,7 @@ sendS' cxt sp = evalStateT (go sp) mempty
     -- everything sent over in one transmission.
     sendQuery :: Query a -> CanvasContext -> StateT Instr IO a
     sendQuery query c = do
-        -- Send waiting commands and clear the command queue
-
+        -- Grab waiting commands and clear the command queue
       prevCmds <- State.get
       State.put mempty
 
