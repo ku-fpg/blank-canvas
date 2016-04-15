@@ -471,7 +471,7 @@ sendW' cxt = go mempty
         NewImage url -> fileQuery url
         NewAudio url -> fileQuery url
         -- TODO: See if this is possible:
-        Frame        -> error "Frame not yet implemented for weak send"
+        -- Frame        -> error "Frame not yet implemented for weak send"
         _            -> return ()
 
       -- send the com

@@ -184,6 +184,7 @@ data Command
   | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
+  | Frame
 
 instance Show Command where
   showsPrec p = showsPrec p . I.toString . showi
@@ -196,6 +197,8 @@ instance InstrShow Command where
          <> singleton ')'
   showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
   showi (Eval cmd) = fromText cmd -- no escaping or interpretation
+  showi Frame                        = surround "setInterval(function(){ "
+                                                "}, 30);"
 
 -----------------------------------------------------------------------------
 
@@ -272,7 +275,6 @@ data Query :: * -> * where
         Cursor               :: CanvasCursor cursor => cursor           -> Query ()
         Sync                 ::                                            Query ()
         CurrentTimeAudio     :: CanvasAudio                             -> Query Double
-        Frame                ::                                            Query ()
         -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance Show (Query a) where
@@ -298,7 +300,6 @@ instance InstrShow (Query a) where
   showi Sync                         = "Sync"
   showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
     -- TODO: Find the correct way to implement this:
-  showi Frame                        = surround "setInterval(function(){ " "}, 30);"
   -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
@@ -466,4 +467,4 @@ sync :: Canvas ()
 sync = procedure $ Query Sync
 
 frame :: Canvas ()
-frame = procedure $ Query Frame
+frame = command $ Command Frame
