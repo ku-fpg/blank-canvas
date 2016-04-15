@@ -197,8 +197,15 @@ instance InstrShow Command where
          <> singleton ')'
   showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
   showi (Eval cmd) = fromText cmd -- no escaping or interpretation
-  showi Frame                        = surround "setInterval(function(){ "
-                                                "}, 30);"
+    -- TODO: Make sure all browsers are supported:
+  showi Frame                        = surround (fromString $ unlines
+                                                  [ "function draw() {"
+                                                  , "  requestAnimationFrame(draw);"
+                                                  ])
+                                                (fromString $ unlines
+                                                  [ "}"
+                                                  , "draw();"
+                                                  ])
 
 -----------------------------------------------------------------------------
 
