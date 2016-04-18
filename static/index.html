@@ -46,11 +46,18 @@
               futureFrameCode.push(f); // Whole new list
               requestAnimationFrame(function () {
                 // Clone so we can blank the futureFrameCode before starting the frame
+                console.log("requestAnimationFrame futureFrameCode",futureFrameCode);
                 var fns = futureFrameCode.slice(0);
                 futureFrameCode = [];
-                fns.every(function(f) {
+                console.log("requestAnimationFrame fns",fns);
+                $.each(fns,function(ix,f) {
                   // Do all the callbacks.
-                  f();
+                  console.log("callback",f);
+                  try { 
+                    f();
+                  } catch (e) {
+                    alert(e);
+                  }
                 });
               });
             }
@@ -59,7 +66,13 @@
             // The callback code itself should never contain a syncToFrame.
             function syncToFrame(f) {
               if (futureFrameCode.length == 0) {
-                f(); // Call code *now*, because there is no future requestAnimationFrame pending.
+                try { 
+                  f(); // Call code *now*, because there is no future
+                       // requestAnimationFrame pending.
+                } catch (e) {
+                  alert(e);
+                }
+
               } else {
                  // Perform the callback *after* the future frame list, by appending to it.
                 futureFrameCode.push(f);
