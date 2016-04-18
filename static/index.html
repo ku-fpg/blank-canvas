@@ -33,6 +33,44 @@
                 }
                 alert("no canvas");
             }
+            // ##############################################################
+            // This is the sync-ing with framerate-based output
+            
+            var futureFrameCode = [];
+
+            // run the given argument after the frame sync, using requestAnimationFrame.
+            function nextFrame(f) {
+              if (futureFrameCode.length != 0) {
+                alert("Bad nextFrame(..) in context where futureFrameCode is not length==0");
+              }
+              futureFrameCode.push(f); // Whole new list
+              requestAnimationFrame(function () {
+                // Clone so we can blank the futureFrameCode before starting the frame
+                var fns = futureFrameCode.slice(0);
+                futureFrameCode = [];
+                fns.every(function(f) {
+                  // Do all the callbacks.
+                  f();
+                });
+              });
+            }
+
+            // syncToFrame syncs the argument with any pause-for-frame requirements
+            // The callback code itself should never contain a syncToFrame.
+            function syncToFrame(f) {
+              if (futureFrameCode.length == 0) {
+                f(); // Call code *now*, because there is no future requestAnimationFrame pending.
+              } else {
+                 // Perform the callback *after* the future frame list, by appending to it.
+                futureFrameCode.push(f);
+              }
+            }
+
+            // All code generated and sent from Haskell should use
+            //   syncToFrame(function() { ... })
+            // as wrapper.
+
+            // ##############################################################
             // These are the Queries
 
             function Device(u,c) {
