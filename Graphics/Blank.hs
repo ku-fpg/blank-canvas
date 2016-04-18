@@ -209,13 +209,14 @@ import           Graphics.Blank.JavaScript hiding (width, height, durationAudio,
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
-import           Graphics.Blank.GenSym (runGenSym)
+import           Graphics.Blank.GenSym (GenSym)
+import qualified Graphics.Blank.GenSym as GenSym
 import           Graphics.Blank.Instr
 
 import qualified Network.HTTP.Types as H
 import           Network.Mime (defaultMimeMap, fileNameExtensions)
 import           Network.Wai (Middleware, responseLBS)
-import           Network.Wai.Middleware.Local
+import           Network.Wai.Middleware.Local as Local
 import           Network.Wai.Handler.Warp
 -- import           Network.Wai.Middleware.RequestLogger -- Used when debugging
 -- import           Network.Wai.Middleware.Static
@@ -351,14 +352,15 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
-generalSend :: RunMonad m => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
-generalSend n cxt (Canvas c) =
+generalSend :: forall m a . RunMonad m 
+            => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
+generalSend f cxt (Canvas c) = do
     -- XXX: Is it ok to hardcode 0 as the start value here?
-  N.run (runMonadT (n cxt))
-        (mapRemoteT (runGenSym 0)
-                    (runReaderT c
-                                (deviceCanvasContext cxt)))
-
+    -- AJG: No, its not.
+   let m0 :: RemoteLocalMonad GenSym Cmd Proc a
+       m0 = runReaderT c (deviceCanvasContext cxt)
+   runLocalMonad (nat $ GenSym.runGenSym 0) (f cxt) N.# m0
+  
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> nat (sendS' cxt))
 
@@ -575,7 +577,7 @@ send = sendS
 --           send' c cmd                   cmds = sendBind c cmd return cmds
 
 local_only :: Middleware
-local_only = local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
+local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
 
 
 {-# NOINLINE uniqVar #-}

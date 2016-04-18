@@ -35,7 +35,7 @@ import           Prelude.Compat
 import           TextShow hiding (singleton, fromText)
 import           TextShow.TH (deriveTextShow)
 
-import           Control.Remote.Monad hiding (Command, procedure, command)
+import           Control.Remote.Monad hiding (Command, procedure, command, local)
 import qualified Control.Remote.Monad as RM
 import           Control.Monad.Reader
 import           Control.Monad.State
@@ -73,10 +73,11 @@ instance InstrShow a => InstrShow (Proc a) where
 
 newtype Canvas a = Canvas
         (ReaderT CanvasContext      -- the context, for the graphic contexts
-        (RemoteT Cmd Proc
-                      GenSym        -- number for locally allocated resourm
+        (RemoteLocalMonad
+                     GenSym        -- local number allocations
+                     Cmd Proc      -- commands and procedures
           ) a)
-                   deriving (Functor, Applicative, Monad)
+       deriving (Functor, Applicative, Monad)
 
 procedure :: (CanvasContext -> Proc a) -> Canvas a
 procedure f = Canvas $ do
@@ -91,7 +92,8 @@ command f = Canvas $ do
 function :: InstrShow a => (Int -> a) -> Function a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
-  a <- lift $ lift $ fmap alloc uniq
+  u <- lift $ RM.local uniq
+  let a = alloc u
   lift $ RM.command (Function f a c)
   return a
 

@@ -92,7 +92,7 @@ Library
                        warp               == 3.*,
                        vector             >= 0.10    && < 0.12,
                        natural-transformation,
-                       remote-monad,
+                       remote-monad       == 0.3,
                        mtl,
                        free
 
