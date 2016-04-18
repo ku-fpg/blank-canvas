@@ -53,8 +53,7 @@ devicePixelRatio = ctx_devicePixelRatio
 -- | Internal command to send a message to the canvas.
 sendToCanvas :: DeviceContext -> Instr -> IO ()
 sendToCanvas cxt cmds = do
-    KC.send (theComet cxt) . toStrict . toLazyText $ surround "try{"  "}catch(e){alert('JavaScript Failure: '+e.message);}" <> cmds
-        -- KC.send (theComet cxt) . toStrict . toLazyText $ "try{" <> cmds <> "}catch(e){alert('JavaScript Failure: '+e.message);}"
+    KC.send (theComet cxt) . toStrict . toLazyText $ surround "syncToFrame(function(){"  "});" <> cmds
 
 -- | Wait for any event. Blocks.
 wait :: DeviceContext -> IO Event
