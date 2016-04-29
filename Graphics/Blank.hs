@@ -136,7 +136,7 @@ module Graphics.Blank
         -- ** Reading from 'Canvas'
         , newImage
         , CanvasImage -- abstract
-          -- ** Audio functionality          
+          -- ** Audio functionality
         , currentTimeAudio
         , durationAudio -- subject to change
         , indexAudio
@@ -146,7 +146,7 @@ module Graphics.Blank
         , setLoopAudio
         , setMutedAudio
         , setPlaybackRateAudio
-        , setVolumeAudio         
+        , setVolumeAudio
         , newAudio
         , CanvasAudio
          -- ** 'DeviceContext' attributes
@@ -289,7 +289,7 @@ blankCanvas opts actions = do
           [ "register(" <> showi nm <> ");"
           | nm <- events opts
           ]
-       
+
        queue <- atomically newTChan
        _ <- forkIO $ forever $ do
                val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
@@ -297,24 +297,24 @@ blankCanvas opts actions = do
                   Success (event :: Event) -> do
                           atomically $ writeTChan queue event
                   _ -> return ()
-       
-       
+
+
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
-       
+
        -- A bit of bootstrapping
        DeviceAttributes w h dpr <- send cxt0 device
        -- let Canvas rm0 = device
        --     rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
        -- (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW' cxt0))) rm1
        -- print (DeviceAttributes w h dpr)
-       
+
        let cxt1 = cxt0
                 { ctx_width = w
                 , ctx_height = h
                 , ctx_devicePixelRatio = dpr
                 , weakRemoteMonad = weak opts
                 }
-       
+
        (actions $ cxt1) `catch` \ (e :: SomeException) -> do
                print ("Exception in blank-canvas application:" :: String)
                print e
@@ -352,7 +352,7 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
-generalSend :: forall m a . RunMonad m 
+generalSend :: forall m a . RunMonad m
             => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
 generalSend f cxt (Canvas c) = do
     -- XXX: Is it ok to hardcode 0 as the start value here?
@@ -360,7 +360,7 @@ generalSend f cxt (Canvas c) = do
    let m0 :: RemoteLocalMonad GenSym Cmd Proc a
        m0 = runReaderT c (deviceCanvasContext cxt)
    runLocalMonad (nat $ GenSym.runGenSym 0) (f cxt) N.# m0
-  
+
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> nat (sendS' cxt))
 
@@ -502,79 +502,6 @@ sendW' cxt = go mempty
 send :: DeviceContext -> Canvas a -> IO a
 send = sendS
 
-
--- send :: DeviceContext -> Canvas a -> IO a
--- -- send _   (Return a) = return a
--- -- send cxt (Bind m k)          | weakRemoteMonad cxt = send cxt m >>= send cxt . k
--- -- send cxt (With c (Bind m k)) | weakRemoteMonad cxt = send cxt (With c m) >>= send cxt . With c . k
--- send cxt = N.run $ runMonad (nat go)
---   where
---     go :: WP.WeakPacket Cmd Proc a -> IO a
---     -- TODO: See if this optimization can be done with remote-monad:
---     -- go (WP.Procedure (With _ (WP.Procedure (With c m)))) | weakRemoteMonad cxt = go (With c m)
---     go commands = send' (deviceCanvasContext cxt) commands mempty
---       where
---           sendBind :: CanvasContext -> Canvas a -> (a -> Canvas b) -> Builder -> IO b
---           -- sendBind c (Return a)        k cmds = send' c (k a) cmds
---           -- sendBind c (Bind m k1)      k2 cmds = sendBind c m (\ r -> Bind (k1 r) k2) cmds
---           sendBind c (Method cmd)      k cmds = send' c (k ()) (cmds <> jsCanvasContext c <> singleton '.' <> showb cmd <> singleton ';')
---           sendBind c (Command cmd)     k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
---           sendBind c (Function func)   k cmds = sendFunc c func k cmds
---           sendBind c (Query query)     k cmds = sendQuery c query k cmds
---           sendBind c (With c' m)       k cmds = send' c' (m >>= (With c . k)) cmds
---           sendBind c (MethodAudio cmd) k cmds = send' c (k ()) (cmds <> showb cmd <> singleton ';')
---           sendBind c MyContext         k cmds = send' c (k c) cmds
-
---           sendFunc :: CanvasContext -> Function a -> (a -> Canvas b) -> Builder -> IO b
---           sendFunc c q@(CreateLinearGradient _) k cmds = sendGradient c q k cmds
---           sendFunc c q@(CreateRadialGradient _) k cmds = sendGradient c q k cmds
---           sendFunc c q@(CreatePattern        _) k cmds = sendPattern  c q k cmds
-
---           sendGradient :: CanvasContext -> Function a -> (CanvasGradient -> Canvas b) -> Builder -> IO b
---           sendGradient c q k cmds = do
---             gId <- atomically getUniq
---             send' c (k $ CanvasGradient gId) $ cmds <> "var gradient_"
---                 <> showb gId     <> " = "   <> jsCanvasContext c
---                 <> singleton '.' <> showb q <> singleton ';'
-
---           sendPattern :: CanvasContext -> Function a -> (CanvasPattern -> Canvas b) -> Builder -> IO b
---           sendPattern c q k cmds = do
---             pId <- atomically getUniq
---             send' c (k $ CanvasPattern pId) $ cmds <> "var pattern_"
---                 <> showb pId     <> " = "   <> jsCanvasContext c
---                 <> singleton '.' <> showb q <> singleton ';'
-
---           fileQuery :: Text -> IO ()
---           fileQuery url = do
---               let url' = if "/" `T.isPrefixOf` url then T.tail url else url
---               atomically $ do
---                   db <- readTVar (localFiles cxt)
---                   writeTVar (localFiles cxt) $ S.insert url' $ db
-
---           sendQuery :: CanvasContext -> Query a -> (a -> Canvas b) -> Builder -> IO b
---           sendQuery c query k cmds = do
---               case query of
---                 NewImage url -> fileQuery url
---                 NewAudio url -> fileQuery url
---                 _ -> return ()
-
---               -- send the com
---               uq <- atomically $ getUniq
---               -- The query function returns a function takes the unique port number of the reply.
---               sendToCanvas cxt $ cmds <> showb query <> singleton '(' <> showb uq <> singleton ',' <> jsCanvasContext c <> ");"
---               v <- KC.getReply (theComet cxt) uq
---               case parse (parseQueryResult query) v of
---                 Error msg -> fail msg
---                 Success a -> send' c (k a) mempty
-
---           send' :: CanvasContext -> Canvas a -> Builder -> IO a
---           -- Most of these can be factored out, except return
---           -- send' c (Bind m k)            cmds = sendBind c m k cmds
---           send' _ (With c m)            cmds = send' c m cmds  -- This is a bit of a hack
---           -- send' _ (Return a)            cmds = do
---           --         sendToCanvas cxt cmds
---           --         return a
---           send' c cmd                   cmds = sendBind c cmd return cmds
 
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
