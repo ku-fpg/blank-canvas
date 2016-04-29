@@ -15,9 +15,17 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 
-import Graphics.Blank (Options(..),port,send, Canvas, blankCanvas)
+import Graphics.Blank (Options(..),port,sendW, Canvas, blankCanvas)
+import Graphics.Blank.Canvas
+
+import Control.Natural as N
+import Control.Remote.Monad
 
 import System.IO.Unsafe (unsafePerformIO)
+
+import Control.Monad.Reader (runReaderT)
+import Control.Monad.State  (runStateT)
+import Graphics.Blank.DeviceContext
 
 -- | splitCanvas is the GHCi entry point into @blank-canvas@.
 -- A typical invocation would be
@@ -45,8 +53,10 @@ splatCanvas opts cmds = do
     case optCh of
       Nothing -> return ()
       Just ch -> do _ <- forkIO $ blankCanvas opts $ \ cxt -> forever $ do
-                           cmd <- atomically $ takeTMVar ch
-                           send cxt cmd    -- run the command
+                           cmd0 <- atomically $ takeTMVar ch
+                           -- let cmd1 = runReaderT (runStateT cmd0 0) (deviceCanvasContext cxt)
+                           -- N.run (runMonad (nat (sendW cxt))) cmd1    -- run the command
+                           sendW cxt cmd0    -- run the command
                     return ()
 
 -- common TVar for all ports in use.

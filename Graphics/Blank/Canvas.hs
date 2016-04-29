@@ -5,6 +5,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Graphics.Blank.Canvas where
 
@@ -13,9 +15,10 @@ import           Control.Monad (ap, liftM2)
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
 import           Data.Semigroup (Semigroup(..))
-import           Data.Text (Text)
-import           Data.Text.Lazy.Builder
+import           Data.Text.Lazy (Text, fromStrict, toStrict)
+import           Data.Text.Lazy.Builder hiding (singleton, fromText)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
+import qualified Data.Text as ST
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
@@ -23,41 +26,98 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
+import           Graphics.Blank.GenSym
+import           Graphics.Blank.Instr
+import qualified Graphics.Blank.Instr as I
+
 import           Prelude.Compat
 
-import           TextShow
+import           TextShow hiding (singleton, fromText)
 import           TextShow.TH (deriveTextShow)
+
+import           Control.Remote.Monad hiding (Command, procedure, command, local)
+import qualified Control.Remote.Monad as RM
+import           Control.Monad.Reader
+import           Control.Monad.State
+
+import           Control.Monad.Trans.Free
+
+
 
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
 $(deriveTextShow ''DeviceAttributes)
+
+instance InstrShow DeviceAttributes
 
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
 data TextMetrics = TextMetrics Double deriving Show
 $(deriveTextShow ''TextMetrics)
 
+instance InstrShow TextMetrics
+
 -----------------------------------------------------------------------------
 
-data Canvas :: * -> * where
-        Method      :: Method                      -> Canvas ()     -- <context>.<method>
-        Command     :: Command                     -> Canvas ()     -- <command>
-        Function    :: TextShow a => Function a    -> Canvas a
-        Query       :: TextShow a => Query a       -> Canvas a
-        With        :: CanvasContext -> Canvas a   -> Canvas a
-        MyContext   ::                                Canvas CanvasContext
-        Bind        :: Canvas a -> (a -> Canvas b) -> Canvas b
-        MethodAudio :: MethodAudio                 -> Canvas ()     -- <audiofile>.<method>        
-        Return      :: a                           -> Canvas a
+data Cmd :: * where
+  Method      :: Method      -> CanvasContext -> Cmd
+  Command     :: Command     -> CanvasContext -> Cmd -- TODO: Remove this CanvasContext (it's never used)
+  -- TODO: To be merged with 'Method':
+  MethodAudio :: MethodAudio -> CanvasContext -> Cmd
+  Function  :: InstrShow a => Function a -> a -> CanvasContext -> Cmd
 
-instance Monad Canvas where
-        return = Return
-        (>>=) = Bind
+data Proc :: * -> * where
+  Query     :: InstrShow a => Query a     -> CanvasContext -> Proc a
 
-instance Applicative Canvas where
-  pure  = return
-  (<*>) = ap
+instance InstrShow a => InstrShow (Proc a) where
+    showiPrec _ = showi
+    showi (Query q _) = showi q
 
-instance Functor Canvas where
-  fmap f c = c >>= return . f
+newtype Canvas a = Canvas
+        (ReaderT CanvasContext      -- the context, for the graphic contexts
+        (RemoteLocalMonad
+                     GenSym        -- local number allocations
+                     Cmd Proc      -- commands and procedures
+          ) a)
+       deriving (Functor, Applicative, Monad)
+
+procedure :: (CanvasContext -> Proc a) -> Canvas a
+procedure f = Canvas $ do
+  c <- ask
+  lift $ RM.procedure (f c)
+
+command :: (CanvasContext -> Cmd) -> Canvas ()
+command f = Canvas $ do
+  c <- ask
+  lift $ RM.command (f c)
+
+function :: InstrShow a => (Int -> a) -> Function a -> Canvas a
+function alloc f = Canvas $ do
+  c <- ask
+  u <- lift $ RM.local uniq
+  let a = alloc u
+  lift $ RM.command (Function f a c)
+  return a
+
+-- data Canvas :: * -> * where
+--         Method      :: Method                      -> Canvas ()     -- <context>.<method>
+--         Command     :: Command                     -> Canvas ()     -- <command>
+--         Function    :: TextShow a => Function a    -> Canvas a
+--         Query       :: TextShow a => Query a       -> Canvas a
+--         With        :: CanvasContext -> Canvas a   -> Canvas a
+--         MyContext   ::                                Canvas CanvasContext
+--         Bind        :: Canvas a -> (a -> Canvas b) -> Canvas b
+--         MethodAudio :: MethodAudio                 -> Canvas ()     -- <audiofile>.<method>
+--         Return      :: a                           -> Canvas a
+
+-- instance Monad Canvas where
+--         return = Return
+--         (>>=) = Bind
+
+-- instance Applicative Canvas where
+--   pure  = return
+--   (<*>) = ap
+
+-- instance Functor Canvas where
+--   fmap f c = c >>= return . f
 
 instance Semigroup a => Semigroup (Canvas a) where
   (<>) = liftM2 (<>)
@@ -119,41 +179,46 @@ data MethodAudio
         | forall audio . Audio audio => SetLoopAudio         (audio, Bool)
         | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
         | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
-        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)          
+        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)
 
 data Command
   = Trigger Event
   | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
+  | Frame
 
 instance Show Command where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . I.toString . showi
 
-instance TextShow Command where
-  showb (Trigger e) = "Trigger(" <> (fromLazyText . decodeUtf8 $ encode e) <> singleton ')'
-  showb (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
+instance InstrShow Command where
+  showiPrec _ = showi
+  showi (Trigger e) = "Trigger(" <> (fromText . decodeUtf8 $ encode e) <> singleton ')'
+  showi (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
          <> jsDouble off <> singleton ',' <> jsCanvasColor rep
          <> singleton ')'
-  showb (Log msg) = "console.log(" <> showbJS msg <> singleton ')'
-  showb (Eval cmd) = fromText cmd -- no escaping or interpretation
+  showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
+  showi (Eval cmd) = fromText cmd -- no escaping or interpretation
+    -- TODO: Make sure all browsers are supported:
+  showi Frame                        = surround "nextFrame(function(){" "})"
 
 -----------------------------------------------------------------------------
 
 -- | 'with' runs a set of canvas commands in the context
 -- of a specific canvas buffer.
 with :: CanvasContext -> Canvas a -> Canvas a
-with = With
+with context (Canvas m) = Canvas $ do
+  local (const context) m
 
 -- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
-myCanvasContext = MyContext
+myCanvasContext = Canvas ask
 
 -----------------------------------------------------------------------------
 
 -- | Triggers a specific named event.
 trigger :: Event -> Canvas ()
-trigger = Command . Trigger
+trigger = command . Command . Trigger
 
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
@@ -166,15 +231,15 @@ trigger = Command . Trigger
 -- grd # 'addColorStop'(0, 'red')
 -- @
 addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) = Command . AddColorStop (off,rep)
+addColorStop (off,rep) = command . Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
-console_log = Command . Log
+console_log = command . Command . Log
 
 -- | 'eval' executes the argument in JavaScript directly.
-eval :: Text -> Canvas ()
-eval = Command . Eval
+eval :: ST.Text -> Canvas ()
+eval = command . Command . Eval . fromStrict
 
 -----------------------------------------------------------------------------
 
@@ -185,16 +250,17 @@ data Function :: * -> * where
 
 
 instance Show (Function a) where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . I.toString . showi
 
-instance TextShow (Function a) where
-  showb (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
+instance InstrShow (Function a) where
+  showiPrec _ = showi
+  showi (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ')'
-  showb (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
+  showi (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ','
         <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ',' <> jsDouble r1 <> singleton ')'
-  showb (CreatePattern (img,dir)) = "createPattern("
+  showi (CreatePattern (img,dir)) = "createPattern("
         <> jsImage img <> singleton ',' <> jsRepeatDirection dir <> singleton ')'
 
 -----------------------------------------------------------------------------
@@ -214,27 +280,29 @@ data Query :: * -> * where
         -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance Show (Query a) where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . I.toString . showi
 
-instance TextShow (Query a) where
-  showb Device                       = "Device"
-  showb ToDataURL                    = "ToDataURL"
-  showb (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
-  showb (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
+instance InstrShow (Query a) where
+  showiPrec _ = showi
+  showi Device                       = "Device"
+  showi ToDataURL                    = "ToDataURL"
+  showi (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
+  showi (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
                                                         <> jsDouble y <> singleton ')'
-  showb (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
-  showb (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
+  showi (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
+  showi (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
 
-  showb (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
+  showi (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
                                                     <> jsInt y <> singleton ')'
-  showb (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
+  showi (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
                                                        <> jsDouble sy <> singleton ','
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
-  showb (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
-  showb Sync                         = "Sync"
-  showb (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
-  -- showb (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
+  showi (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
+  showi Sync                         = "Sync"
+  showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+    -- TODO: Find the correct way to implement this:
+  -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
@@ -259,14 +327,14 @@ uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
-device = Query Device
+device = procedure $ Query Device
 
 -- | Turn the canvas into a PNG data stream / data URL.
 --
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
-toDataURL :: () -> Canvas Text
-toDataURL () = Query ToDataURL
+toDataURL :: () -> Canvas ST.Text
+toDataURL () = fmap toStrict . procedure $ Query ToDataURL
 
 -- | Queries the measured width of the text argument.
 --
@@ -275,8 +343,8 @@ toDataURL () = Query ToDataURL
 -- @
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
-measureText :: Text -> Canvas TextMetrics
-measureText = Query . MeasureText
+measureText :: ST.Text -> Canvas TextMetrics
+measureText = procedure . Query . MeasureText . fromStrict
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
 --
@@ -288,19 +356,19 @@ measureText = Query . MeasureText
 -- b <- 'isPointInPath'(10, 10) -- b == True
 -- @
 isPointInPath :: (Double, Double) -> Canvas Bool
-isPointInPath = Query . IsPointInPath
+isPointInPath = procedure . Query . IsPointInPath
 
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
 -- If you are using local images, loading should be near instant.
-newImage :: Text -> Canvas CanvasImage
-newImage = Query . NewImage
+newImage :: ST.Text -> Canvas CanvasImage
+newImage = procedure . Query . NewImage . fromStrict
 
 -- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
-newAudio :: Text -> Canvas CanvasAudio
-newAudio = Query . NewAudio
+newAudio :: ST.Text -> Canvas CanvasAudio
+newAudio = procedure . Query . NewAudio . fromStrict
 
 -- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
 -- the specified CanvasAudio.
@@ -313,7 +381,7 @@ newAudio = Query . NewAudio
 -- @
 
 currentTimeAudio :: CanvasAudio -> Canvas Double
-currentTimeAudio = Query . CurrentTimeAudio
+currentTimeAudio = procedure . Query . CurrentTimeAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.
@@ -336,7 +404,7 @@ currentTimeAudio = Query . CurrentTimeAudio
 -- @
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
-createLinearGradient = Function . CreateLinearGradient
+createLinearGradient = function CanvasGradient . CreateLinearGradient
 
 -- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
 -- by the coordinates of two circles, which can be used to fill other shapes.
@@ -362,7 +430,7 @@ createLinearGradient = Function . CreateLinearGradient
 -- 'fillStyle' grd
 -- @
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
-createRadialGradient = Function . CreateRadialGradient
+createRadialGradient = function CanvasGradient . CreateRadialGradient
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
 --
@@ -374,16 +442,16 @@ createRadialGradient = Function . CreateRadialGradient
 -- 'fillStyle' pat
 -- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = Function . CreatePattern
+createPattern = function CanvasPattern . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
-newCanvas = Query . NewCanvas
+newCanvas = procedure . Query . NewCanvas
 
 -- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
 -- upper-left corner @(x, y)@, width @w@, and height @h@.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
-getImageData = Query . GetImageData
+getImageData = procedure . Query . GetImageData
 
 -- | Change the canvas cursor to the specified URL or keyword.
 --
@@ -394,8 +462,11 @@ getImageData = Query . GetImageData
 -- cursor 'crosshair'
 -- @
 cursor :: CanvasCursor cursor => cursor -> Canvas ()
-cursor = Query . Cursor
+cursor = procedure . Query . Cursor
 
 -- | Send all commands to the browser, wait for the browser to act, then continue.
 sync :: Canvas ()
-sync = Query Sync
+sync = procedure $ Query Sync
+
+frame :: Canvas ()
+frame = command $ Command Frame

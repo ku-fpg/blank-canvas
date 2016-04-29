@@ -33,6 +33,74 @@
                 }
                 alert("no canvas");
             }
+            // ##############################################################
+            // This is the sync-ing with framerate-based output
+            
+            var futureFrameCode = [];
+            var indent = 0;
+            var old_n = 0;
+
+            function indenter(i) {
+              return new Array(i+1).join(".");
+            }
+
+            // run the given argument after the frame sync, using requestAnimationFrame.
+            function nextFrame(f) {
+//              console.log(indenter(indent++),"-> calling nextFrame");
+              if (futureFrameCode.length != 0) {
+                // suspend the call inside the callback list
+                futureFrameCode.push(function(){ nextFrame(f); }); 
+                $.kc.event({metaKey:false,type:"frame"});
+                console.log("double nextFrame",futureFrameCode.length)
+                return;
+              }
+              futureFrameCode.push(f); // Whole new list
+              requestAnimationFrame(function (n) {
+                var d = n - old_n;
+                old_n = n;
+                if (d > 20) { console.log("timing",d); }
+                // Clone so we can blank the futureFrameCode before starting the frame
+//                console.log("requestAnimationFrame futureFrameCode",futureFrameCode);
+                var fns = futureFrameCode.slice(0);
+                futureFrameCode = [];
+//                console.log(indenter(indent++),"-> calling requestAnimationFrame callback",fns.length);
+//                console.log("requestAnimationFrame fns",fns);
+                $.each(fns,function(ix,f) {
+                  // Do all the callbacks.
+//                  console.log("callback",f);
+                  try { 
+                    f();
+                  } catch (e) {
+                    alert('JavaScript Failure: '+e.message);
+                  }
+                });
+//                console.log(indenter(--indent),"<- done requestAnimationFrame callback");
+              });
+//              console.log(indenter(--indent),"<- done nextFrame");
+            }
+
+            // syncToFrame syncs the argument with any pause-for-frame requirements
+            // The callback code itself should never contain a syncToFrame.
+            function syncToFrame(f) {
+              if (futureFrameCode.length == 0) {
+                try { 
+                  f(); // Call code *now*, because there is no future
+                       // requestAnimationFrame pending.
+                } catch (e) {
+                  alert('JavaScript Failure: '+e.message);
+                }
+              } else {
+                 // Perform the callback *after* the future frame list, by appending to it.
+//                console.log(indenter(indent),"pushing futureFrameCode",futureFrameCode.length);
+                futureFrameCode.push(f);
+              }
+            }
+
+            // All code generated and sent from Haskell should use
+            //   syncToFrame(function() { ... })
+            // as wrapper.
+
+            // ##############################################################
             // These are the Queries
 
             function Device(u,c) {

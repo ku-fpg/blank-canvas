@@ -3,95 +3,109 @@
 module Graphics.Blank.Generated where
 
 import           Data.Monoid ((<>))
-import           Data.Text (Text)
+import           Data.Text.Lazy (Text, fromStrict)
+import qualified Data.Text as ST
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
 
-import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
+import           Graphics.Blank.Instr
+
+-- import           TextShow (TextShow(..), FromTextShow(..), singleton)
+
+import           Control.Remote.Monad hiding (procedure, command)
+
+instance InstrShow Cmd where
+    showiPrec _ = showi
+    showi (Function f _ _) = showi f
+    showi (Method m _)      = showi m
+    showi (Command c _)     = showi c
+    showi (MethodAudio a _) = showi a
 
 instance Show Method where
-  showsPrec p = showsPrec p . FromTextShow
+  showsPrec p = showsPrec p . toString . showi
 
-instance TextShow MethodAudio where
-  showb (PlayAudio audio)                    = jsAudio audio <> ".play()"
-  showb (PauseAudio audio)                   = jsAudio audio <> ".pause()"
-  showb (SetCurrentTimeAudio  (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
-  showb (SetLoopAudio         (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
-  showb (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
-  showb (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
-  showb (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+instance InstrShow MethodAudio where
+  showiPrec _ = showi
+  showi (PlayAudio audio)                    = jsAudio audio <> ".play()"
+  showi (PauseAudio audio)                   = jsAudio audio <> ".pause()"
+  showi (SetCurrentTimeAudio  (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
+  showi (SetLoopAudio         (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
+  showi (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
+  showi (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
+  showi (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
 
-  -- showb (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
+  -- showi (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
   
-instance TextShow Method where
-  showb (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
+instance InstrShow Method where
+  showiPrec _ = showi
+  showi (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsBool a6   <> singleton ')'
-  showb (ArcTo (a1,a2,a3,a4,a5)) = "arcTo("
+  showi (ArcTo (a1,a2,a3,a4,a5)) = "arcTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ','
          <> jsDouble a4 <> singleton ',' <> jsDouble a5 <> singleton ')'
-  showb BeginPath = "beginPath()"
-  showb (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo("
+  showi BeginPath = "beginPath()"
+  showi (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showb (ClearRect (a1,a2,a3,a4)) = "clearRect("
+  showi (ClearRect (a1,a2,a3,a4)) = "clearRect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb Clip = "clip()"
-  showb ClosePath = "closePath()"
-  showb (DrawImage (a1,a2)) = "drawImage(" <> jsImage a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
-  showb Fill = "fill()"
-  showb (FillRect (a1,a2,a3,a4)) = "fillRect("
+  showi Clip = "clip()"
+  showi ClosePath = "closePath()"
+  showi (DrawImage (a1,a2)) = "drawImage(" <> jsImage a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
+  showi Fill = "fill()"
+  showi (FillRect (a1,a2,a3,a4)) = "fillRect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb (FillStyle (a1)) = "fillStyle = (" <> jsStyle a1 <> singleton ')'
-  showb (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
-  showb (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
-  showb (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
-  showb (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
-  showb (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
-  showb (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
-  showb (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showb (LineWidth (a1)) = "lineWidth = (" <> jsDouble a1 <> singleton ')'
-  showb (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
-  showb (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showb (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
-  showb (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
+  showi (FillStyle (a1)) = "fillStyle = (" <> jsStyle a1 <> singleton ')'
+  showi (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
+  showi (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
+  showi (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
+  showi (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
+  showi (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
+  showi (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
+  showi (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (LineWidth (a1)) = "lineWidth = (" <> jsDouble a1 <> singleton ')'
+  showi (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
+  showi (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
+  showi (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb (Rect (a1,a2,a3,a4)) = "rect("
+  showi (Rect (a1,a2,a3,a4)) = "rect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb Restore = "restore()"
-  showb (Rotate (a1)) = "rotate(" <> jsDouble a1 <> singleton ')'
-  showb Save = "save()"
-  showb (Scale (a1,a2)) = "scale(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showb (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform("
+  showi Restore = "restore()"
+  showi (Rotate (a1)) = "rotate(" <> jsDouble a1 <> singleton ')'
+  showi Save = "save()"
+  showi (Scale (a1,a2)) = "scale(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showb (ShadowBlur (a1)) = "shadowBlur = (" <> jsDouble a1 <> singleton ')'
-  showb (ShadowColor (a1)) = "shadowColor = (" <> jsCanvasColor a1 <> singleton ')'
-  showb (ShadowOffsetX (a1)) = "shadowOffsetX = (" <> jsDouble a1 <> singleton ')'
-  showb (ShadowOffsetY (a1)) = "shadowOffsetY = (" <> jsDouble a1 <> singleton ')'
-  showb Stroke = "stroke()"
-  showb (StrokeRect (a1,a2,a3,a4)) = "strokeRect("
+  showi (ShadowBlur (a1)) = "shadowBlur = (" <> jsDouble a1 <> singleton ')'
+  showi (ShadowColor (a1)) = "shadowColor = (" <> jsCanvasColor a1 <> singleton ')'
+  showi (ShadowOffsetX (a1)) = "shadowOffsetX = (" <> jsDouble a1 <> singleton ')'
+  showi (ShadowOffsetY (a1)) = "shadowOffsetY = (" <> jsDouble a1 <> singleton ')'
+  showi Stroke = "stroke()"
+  showi (StrokeRect (a1,a2,a3,a4)) = "strokeRect("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showb (StrokeStyle (a1)) = "strokeStyle = (" <> jsStyle a1 <> singleton ')'
-  showb (StrokeText (a1,a2,a3)) = "strokeText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
-  showb (TextAlign (a1)) = "textAlign = (" <> jsTextAnchorAlignment a1 <> singleton ')'
-  showb (TextBaseline (a1)) = "textBaseline = (" <> jsTextBaselineAlignment a1 <> singleton ')'
-  showb (Transform (a1,a2,a3,a4,a5,a6)) = "transform("
+  showi (StrokeStyle (a1)) = "strokeStyle = (" <> jsStyle a1 <> singleton ')'
+  showi (StrokeText (a1,a2,a3)) = "strokeText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
+  showi (TextAlign (a1)) = "textAlign = (" <> jsTextAnchorAlignment a1 <> singleton ')'
+  showi (TextBaseline (a1)) = "textBaseline = (" <> jsTextBaselineAlignment a1 <> singleton ')'
+  showi (Transform (a1,a2,a3,a4,a5,a6)) = "transform("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
          <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showb (Translate (a1,a2)) = "translate(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
+  showi (Translate (a1,a2)) = "translate(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
 
 -- DSL
 
@@ -110,7 +124,7 @@ instance TextShow Method where
 -- * @cc@ is the arc direction, where @True@ indicates counterclockwise and
 --   @False@ indicates clockwise.
 arc :: (Double, Double, Double, Radians, Radians, Bool) -> Canvas ()
-arc = Method . Arc
+arc = command . Method . Arc
 
 -- | @'arcTo'(x1, y1, x2, y2, r)@ creates an arc between two tangents,
 -- specified by two control points and a radius.
@@ -125,7 +139,7 @@ arc = Method . Arc
 -- 
 -- * @r@ is the arc's radius
 arcTo :: (Double, Double, Double, Double, Double) -> Canvas ()
-arcTo = Method . ArcTo
+arcTo = command . Method . ArcTo
 
 -- | Begins drawing a new path. This will empty the current list of subpaths.
 --
@@ -138,7 +152,7 @@ arcTo = Method . ArcTo
 -- 'stroke'()
 -- @
 beginPath :: () -> Canvas ()
-beginPath () = Method BeginPath
+beginPath () = command $ Method BeginPath
 
 -- | @'bezierCurveTo'(cp1x, cp1y, cp2x, cp2y x, y)@ adds a cubic Bézier curve to the path
 -- (whereas 'quadraticCurveTo' adds a quadratic Bézier curve).
@@ -155,7 +169,7 @@ beginPath () = Method BeginPath
 -- 
 -- * @y@ is the y-coordinate of the end point
 bezierCurveTo :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
-bezierCurveTo = Method . BezierCurveTo
+bezierCurveTo = command . Method . BezierCurveTo
 
 -- | @'clearRect'(x, y, w, h)@ clears all pixels within the rectangle with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ (i.e., sets the pixels to transparent black).
@@ -168,7 +182,7 @@ bezierCurveTo = Method . BezierCurveTo
 -- 'clearRect'(20, 20, 100, 50)
 -- @
 clearRect :: (Double, Double, Double, Double) -> Canvas ()
-clearRect = Method . ClearRect
+clearRect = command . Method . ClearRect
 
 -- | Turns the path currently being built into the current clipping path.
 -- Anything drawn after 'clip' is called will only be visible if inside the new
@@ -184,7 +198,7 @@ clearRect = Method . ClearRect
 -- 'fillRect'(0, 0, 150, 100)
 -- @
 clip :: () -> Canvas ()
-clip () = Method Clip
+clip () = command $ Method Clip
 
 -- | Creates a path from the current point back to the start, to close it.
 --
@@ -199,11 +213,11 @@ clip () = Method Clip
 -- 'stroke'()
 -- @
 closePath :: () -> Canvas ()
-closePath () = Method ClosePath
+closePath () = command $ Method ClosePath
 
 -- | drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize', and 'drawImageCrop' for variants with exact numbers of arguments.
 drawImage :: Image image => (image,[Double]) -> Canvas ()
-drawImage = Method . DrawImage
+drawImage = command . Method . DrawImage
 
 -- | Fills the current path with the current 'fillStyle'.
 --
@@ -214,7 +228,7 @@ drawImage = Method . DrawImage
 -- 'fill'()
 -- @
 fill :: () -> Canvas ()
-fill () = Method Fill
+fill () = command $ Method Fill
 
 -- | @'fillRect'(x, y, w, h)@ draws a filled rectangle with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'fillStyle'.
@@ -226,7 +240,7 @@ fill () = Method Fill
 -- 'fillRect'(0, 0, 300, 150)
 -- @
 fillRect :: (Double, Double, Double, Double) -> Canvas ()
-fillRect = Method . FillRect
+fillRect = command . Method . FillRect
 
 -- | Sets the color, gradient, or pattern used to fill a drawing ('black' by default).
 --
@@ -243,7 +257,7 @@ fillRect = Method . FillRect
 -- 'fillStyle' pat
 -- @
 fillStyle :: Style style => style -> Canvas ()
-fillStyle = Method . FillStyle
+fillStyle = command . Method . FillStyle
 
 -- | @'fillText'(t, x, y)@ fills the text @t@ at position @(x, y)@
 -- using the current 'fillStyle'.
@@ -254,8 +268,8 @@ fillStyle = Method . FillStyle
 -- 'font' \"48px serif\"
 -- 'fillText'(\"Hello, World!\", 50, 100)
 -- @
-fillText :: (Text, Double, Double) -> Canvas ()
-fillText = Method . FillText
+fillText :: (ST.Text, Double, Double) -> Canvas ()
+fillText (t, a, b) = command . Method $ FillText (fromStrict t, a, b)
 
 -- | Sets the text context's font properties.
 --
@@ -271,11 +285,11 @@ fillText = Method . FillText
 -- }
 -- @
 font :: CanvasFont canvasFont => canvasFont -> Canvas ()
-font = Method . Font
+font = command . Method . Font
 
 -- | Set the alpha value that is applied to shapes before they are drawn onto the canvas.
 globalAlpha :: Alpha -> Canvas ()
-globalAlpha = Method . GlobalAlpha
+globalAlpha = command . Method . GlobalAlpha
 
 -- | Sets how new shapes should be drawn over existing shapes.
 --
@@ -285,16 +299,16 @@ globalAlpha = Method . GlobalAlpha
 -- 'globalCompositeOperation' \"source-over\"
 -- 'globalCompositeOperation' \"destination-atop\"
 -- @
-globalCompositeOperation :: Text -> Canvas ()
-globalCompositeOperation = Method . GlobalCompositeOperation
+globalCompositeOperation :: ST.Text -> Canvas ()
+globalCompositeOperation = command . Method . GlobalCompositeOperation . fromStrict
 
 -- | Sets the 'LineEndCap' to use when drawing the endpoints of lines.
 lineCap :: LineEndCap -> Canvas ()
-lineCap = Method . LineCap
+lineCap = command . Method . LineCap
 
 -- | Sets the 'LineJoinCorner' to use when drawing two connected lines.
 lineJoin :: LineJoinCorner -> Canvas ()
-lineJoin = Method . LineJoin
+lineJoin = command . Method . LineJoin
 
 -- | @'lineTo'(x, y)@ connects the last point in the subpath to the given @(x, y)@
 -- coordinates (without actually drawing it).
@@ -308,16 +322,16 @@ lineJoin = Method . LineJoin
 -- 'stroke'()
 -- @
 lineTo :: (Double, Double) -> Canvas ()
-lineTo = Method . LineTo
+lineTo = command . Method . LineTo
 
 -- | Sets the thickness of lines in pixels (@1.0@ by default).
 lineWidth :: Double -> Canvas ()
-lineWidth = Method . LineWidth
+lineWidth = command . Method . LineWidth
 
 -- | Sets the maximum miter length (@10.0@ by default) to use when the
 -- 'lineWidth' is 'miter'.
 miterLimit :: Double -> Canvas ()
-miterLimit = Method . MiterLimit
+miterLimit = command . Method . MiterLimit
 
 -- | @'moveTo'(x, y)@ moves the starting point of a new subpath to the given @(x, y)@ coordinates.
 --
@@ -330,37 +344,37 @@ miterLimit = Method . MiterLimit
 -- 'stroke'()
 -- @
 moveTo :: (Double, Double) -> Canvas ()
-moveTo = Method . MoveTo
+moveTo = command . Method . MoveTo
 
 playAudio :: Audio audio => audio -> Canvas ()
-playAudio = MethodAudio . PlayAudio
+playAudio = command . MethodAudio . PlayAudio
 
 pauseAudio :: Audio audio => audio -> Canvas ()
-pauseAudio = MethodAudio . PauseAudio
+pauseAudio = command . MethodAudio . PauseAudio
 
 -- | Sets the current position of the audio value (in seconds).
 setCurrentTimeAudio :: Audio audio => (audio, Double) -> Canvas ()
-setCurrentTimeAudio = MethodAudio . SetCurrentTimeAudio
+setCurrentTimeAudio = command . MethodAudio . SetCurrentTimeAudio
 
 -- | Set whether the audio value is set to loop (True) or not (False)
 setLoopAudio :: Audio audio => (audio, Bool) -> Canvas ()
-setLoopAudio = MethodAudio . SetLoopAudio
+setLoopAudio = command . MethodAudio . SetLoopAudio
 
 -- | Set the audio value to muted (True) or unmuted (False)
 setMutedAudio :: Audio audio => (audio, Bool) -> Canvas ()
-setMutedAudio = MethodAudio . SetMutedAudio
+setMutedAudio = command . MethodAudio . SetMutedAudio
 
 -- | Set the playback value, as a multiplier (2.0 is twice as fast, 0.5 is half speec, -2.0 is backwards, twice as fast)
 setPlaybackRateAudio :: Audio audio => (audio, Double) -> Canvas ()
-setPlaybackRateAudio = MethodAudio . SetPlaybackRateAudio
+setPlaybackRateAudio = command . MethodAudio . SetPlaybackRateAudio
 
 -- | Adjusts the volume.  Scaled from 0.0 - 1.0, any number outside of this range will result in an error
 setVolumeAudio :: Audio audio => (audio, Double) -> Canvas ()
-setVolumeAudio = MethodAudio . SetVolumeAudio
+setVolumeAudio = command . MethodAudio . SetVolumeAudio
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()
-putImageData = Method . PutImageData
+putImageData = command . Method . PutImageData
 
 -- | @'quadraticCurveTo'(cpx, cpy, x, y)@ adds a quadratic Bézier curve to the path
 -- (whereas 'bezierCurveTo' adds a cubic Bézier curve).
@@ -373,7 +387,7 @@ putImageData = Method . PutImageData
 -- 
 -- * @y@ is the y-coordinate of the end point
 quadraticCurveTo :: (Double, Double, Double, Double) -> Canvas ()
-quadraticCurveTo = Method . QuadraticCurveTo
+quadraticCurveTo = command . Method . QuadraticCurveTo
 
 -- | @'rect'(x, y, w, h)@ creates a rectangle with an upper-left corner at position
 -- @(x, y)@, width @w@, and height @h@ (where width and height are in pixels).
@@ -385,12 +399,12 @@ quadraticCurveTo = Method . QuadraticCurveTo
 -- 'fill'()
 -- @
 rect :: (Double, Double, Double, Double) -> Canvas ()
-rect = Method . Rect
+rect = command . Method . Rect
 
 -- | Restores the most recently saved canvas by popping the top entry off of the
 -- drawing state stack. If there is no state, do nothing.
 restore :: () -> Canvas ()
-restore () = Method Restore
+restore () = command $ Method Restore
 
 -- | Applies a rotation transformation to the canvas. When you call functions
 -- such as 'fillRect' after 'rotate', the drawings will be rotated clockwise by
@@ -403,11 +417,11 @@ restore () = Method Restore
 -- 'fillRect'(0, 0, 20, 10) -- Draw a 10x20 rectangle
 -- @
 rotate :: Radians -> Canvas ()
-rotate = Method . Rotate
+rotate = command . Method . Rotate
 
 -- | Saves the entire canvas by pushing the current state onto a stack.
 save :: () -> Canvas ()
-save () = Method Save
+save () = command $ Method Save
 
 -- | Applies a scaling transformation to the canvas units, where the first argument
 -- is the percent to scale horizontally, and the second argument is the percent to
@@ -421,16 +435,16 @@ save () = Method Save
 -- 'scale'(-1, 1)           -- Flip the context horizontally
 -- @
 scale :: (Interval, Interval) -> Canvas ()
-scale = Method . Scale
+scale = command . Method . Scale
 
 -- | Resets the canvas's transformation matrix to the identity matrix,
 -- then calls 'transform' with the given arguments.
 setTransform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
-setTransform = Method . SetTransform
+setTransform = command . Method . SetTransform
 
 -- | Sets the blur level for shadows (@0.0@ by default).
 shadowBlur :: Double -> Canvas ()
-shadowBlur = Method . ShadowBlur
+shadowBlur = command . Method . ShadowBlur
 
 -- | Sets the color used for shadows.
 --
@@ -441,15 +455,15 @@ shadowBlur = Method . ShadowBlur
 -- 'shadowColor' $ 'rgb' 0 255 0
 -- @
 shadowColor :: CanvasColor canvasColor => canvasColor -> Canvas ()
-shadowColor = Method . ShadowColor
+shadowColor = command . Method . ShadowColor
 
 -- | Sets the horizontal distance that a shadow will be offset (@0.0@ by default).
 shadowOffsetX :: Double -> Canvas ()
-shadowOffsetX = Method . ShadowOffsetX
+shadowOffsetX = command . Method . ShadowOffsetX
 
 -- | Sets the vertical distance that a shadow will be offset (@0.0@ by default).
 shadowOffsetY :: Double -> Canvas ()
-shadowOffsetY = Method . ShadowOffsetY
+shadowOffsetY = command . Method . ShadowOffsetY
 
 -- | Draws the current path's strokes with the current 'strokeStyle' ('black' by default).
 --
@@ -460,7 +474,7 @@ shadowOffsetY = Method . ShadowOffsetY
 -- 'stroke'()
 -- @
 stroke :: () -> Canvas ()
-stroke () = Method Stroke
+stroke () = command $ Method Stroke
 
 -- | @'strokeRect'(x, y, w, h)@ draws a rectangle (no fill) with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'strokeStyle'.
@@ -472,7 +486,7 @@ stroke () = Method Stroke
 -- 'strokeRect'(0, 0, 300, 150)
 -- @
 strokeRect :: (Double, Double, Double, Double) -> Canvas ()
-strokeRect = Method . StrokeRect
+strokeRect = command . Method . StrokeRect
 
 -- | Sets the color, gradient, or pattern used for strokes.
 --
@@ -489,7 +503,7 @@ strokeRect = Method . StrokeRect
 -- 'strokeStyle' pat
 -- @
 strokeStyle :: Style style => style -> Canvas ()
-strokeStyle = Method . StrokeStyle
+strokeStyle = command . Method . StrokeStyle
 
 -- | @'strokeText'(t, x, y)@ draws text @t@ (with no fill) at position @(x, y)@
 -- using the current 'strokeStyle'.
@@ -500,16 +514,16 @@ strokeStyle = Method . StrokeStyle
 -- 'font' \"48px serif\"
 -- 'strokeText'(\"Hello, World!\", 50, 100)
 -- @
-strokeText :: (Text,Double, Double) -> Canvas ()
-strokeText = Method . StrokeText
+strokeText :: (ST.Text, Double, Double) -> Canvas ()
+strokeText (t, a, b) = command . Method $ StrokeText (fromStrict t, a, b)
 
 -- | Sets the 'TextAnchorAlignment' to use when drawing text.
 textAlign :: TextAnchorAlignment -> Canvas ()
-textAlign = Method . TextAlign
+textAlign = command . Method . TextAlign
 
 -- | Sets the 'TextBaselineAlignment' to use when drawing text.
 textBaseline :: TextBaselineAlignment -> Canvas ()
-textBaseline = Method . TextBaseline
+textBaseline = command . Method . TextBaseline
 
 -- | Applies a transformation by multiplying a matrix to the canvas's
 -- current transformation. If @'transform'(a, b, c, d, e, f)@ is called, the matrix
@@ -534,7 +548,7 @@ textBaseline = Method . TextBaseline
 -- 
 -- * @f@ is the vertical movement
 transform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
-transform = Method . Transform
+transform = command . Method . Transform
 
 -- | Applies a translation transformation by remapping the origin (i.e., the (0,0)
 -- position) on the canvas. When you call functions such as 'fillRect' after
@@ -548,4 +562,4 @@ transform = Method . Transform
 -- 'fillRect'(0, 0, 40, 40) -- Draw a 40x40 square, starting in position (20, 20)
 -- @
 translate :: (Double, Double) -> Canvas ()
-translate = Method . Translate
+translate = command . Method . Translate

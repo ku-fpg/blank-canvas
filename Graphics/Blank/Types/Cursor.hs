@@ -4,11 +4,12 @@ module Graphics.Blank.Types.Cursor where
 
 import           Data.Monoid
 import           Data.String (IsString(..))
-import qualified Data.Text as TS (Text)
-import           Data.Text (pack)
+import qualified Data.Text.Lazy as TL (Text)
+import           Data.Text.Lazy (pack)
 
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser (stringCI, unlift)
+import           Graphics.Blank.Instr
 
 import           Prelude.Compat
 
@@ -17,14 +18,15 @@ import           Text.ParserCombinators.ReadP (ReadP, (<++), between, char,
 import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
 
-import           TextShow
+import           TextShow (TextShow(..), FromTextShow(..))
+import qualified TextShow as T
 
 -- | A data type that can represent a browser cursor.
 class CanvasCursor a where
     -- | Convert a value into a JavaScript string representing a cursor value.
-    jsCanvasCursor :: a -> Builder
+    jsCanvasCursor :: a -> Instr
 
-instance CanvasCursor TS.Text where
+instance CanvasCursor TL.Text where
     jsCanvasCursor = jsText
 
 instance CanvasCursor Cursor where
@@ -71,7 +73,7 @@ data Cursor = Auto         -- ^ The browser determines the cursor to display bas
             | ZoomOut      -- ^ <<https://developer.mozilla.org/@api/deki/files/3460/=zoom-out.gif>>
             | Grab         -- ^ <<https://developer.mozilla.org/@api/deki/files/3440/=grab.gif>>
             | Grabbing     -- ^ <<https://developer.mozilla.org/@api/deki/files/3441/=grabbing.gif>>
-            | URL TS.Text Cursor
+            | URL TL.Text Cursor
               -- ^ An image from a URL. Must be followed by another 'Cursor'.
     deriving (Eq, Ord)
 
@@ -79,10 +81,10 @@ instance IsString Cursor where
     fromString = read
 
 instance JSArg Cursor where
-    showbJS = jsCursor
+    showiJS = jsCursor
 
-jsCursor :: Cursor -> Builder
-jsCursor = jsLiteralBuilder . showb
+jsCursor :: Cursor -> Instr
+jsCursor = jsLiteralBuilder . showi
 
 instance Read Cursor where
     readPrec = lift $ do
@@ -137,7 +139,7 @@ instance Read Cursor where
     
     readListPrec = readListPrecDefault
 
-readURL :: Maybe Char -> ReadP TS.Text
+readURL :: Maybe Char -> ReadP TL.Text
 readURL mQuote = do
     url' <- case mQuote of
         Just quote -> munch (/= quote)
@@ -185,13 +187,15 @@ instance TextShow Cursor where
     showb Grab         = "grab"
     showb Grabbing     = "grabbing"
     showb (URL url' cur) =
-        "url(" <> jsLiteralBuilder (fromText url') <> "), " <> showb cur
+        "url(" <> toBuilder (jsLiteralBuilder (fromText url')) <> "), " <> showb cur
+
+instance InstrShow Cursor
 
 -- | Shorthand for 'Auto'.
 auto :: Cursor
 auto = Auto
 
--- | Shorthand for 'Default', with an underscore to distinguish it from the
+-- | Shorthand for 'Default', with an underscore to distinguishshowirom the
 -- Haskell keyword @default@.
 default_ :: Cursor
 default_ = Default
@@ -333,5 +337,5 @@ grabbing :: Cursor
 grabbing = Grabbing
 
 -- | Shorthand for 'URL'.
-url :: TS.Text -> Cursor -> Cursor
+url :: TL.Text -> Cursor -> Cursor
 url = URL

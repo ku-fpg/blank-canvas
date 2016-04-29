@@ -12,6 +12,8 @@ import Graphics.Blank.Canvas
 import Graphics.Blank.Generated
 import Graphics.Blank.JavaScript
 
+import Control.Remote.Monad hiding (command, procedure)
+
 -- | Clear the screen. Restores the default transformation matrix.
 clearCanvas :: Canvas ()
 clearCanvas = do
@@ -72,12 +74,12 @@ writeDataURL fileName
 
 -- | Draws an image onto the canvas at the given x- and y-coordinates.
 drawImageAt :: Image image => (image, Double, Double) -> Canvas ()
-drawImageAt (img, dx, dy) = Method $ DrawImage (img, [dx, dy])
+drawImageAt (img, dx, dy) = command . Method $ DrawImage (img, [dx, dy])
 
 -- | Acts like 'drawImageAt', but with two extra 'Double' arguments. The third and fourth
 --   'Double's specify the width and height of the image, respectively.
 drawImageSize :: Image image => (image, Double, Double, Double, Double) -> Canvas ()
-drawImageSize (img, dx, dy, dw, dh) = Method $ DrawImage (img, [dx, dy, dw, dh])
+drawImageSize (img, dx, dy, dw, dh) = command . Method $ DrawImage (img, [dx, dy, dw, dh])
 
 -- | Acts like 'drawImageSize', but with four extra 'Double' arguments before the arguments
 --   of 'drawImageSize'. The first and second 'Double's specify the x- and y-coordinates at
@@ -89,11 +91,11 @@ drawImageSize (img, dx, dy, dw, dh) = Method $ DrawImage (img, [dx, dy, dw, dh])
 -- @
 drawImageCrop :: Image image => (image, Double, Double, Double, Double, Double, Double, Double, Double) -> Canvas ()
 drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
-  = Method $ DrawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
+  = command . Method $ DrawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
 
 -- | Writes 'ImageData' to the canvas at the given x- and y-coordinates.
 putImageDataAt :: (ImageData, Double, Double) -> Canvas ()
-putImageDataAt (imgData, dx, dy) = Method $ PutImageData (imgData, [dx, dy])
+putImageDataAt (imgData, dx, dy) = command . Method $ PutImageData (imgData, [dx, dy])
 
 -- | Acts like 'putImageDataAt', but with four extra 'Double' arguments that specify
 --   which region of the 'ImageData' (the dirty rectangle) should be drawn. The third
@@ -106,4 +108,4 @@ putImageDataAt (imgData, dx, dy) = Method $ PutImageData (imgData, [dx, dy])
 -- @
 putImageDataDirty :: (ImageData, Double, Double, Double, Double, Double, Double) -> Canvas ()
 putImageDataDirty (imgData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
-  = Method $ PutImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])
+  = command . Method $ PutImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])
