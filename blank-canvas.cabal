@@ -72,7 +72,7 @@ Library
   default-language:    Haskell2010
   build-depends:       aeson              >= 0.7     && < 0.12,
                        base64-bytestring  == 1.0.*,
-                       base               >= 4.6     && < 4.9,
+                       base               >= 4.6     && < 4.10,
                        base-compat        >= 0.8.1   && < 1,
                        bytestring         == 0.10.*,
                        colour             >= 2.2     && < 3.0,
@@ -86,7 +86,7 @@ Library
                        stm                >= 2.2     && < 2.5,
                        text               >= 1.1     && < 1.3,
                        text-show          >= 2       && < 4,
-                       transformers       >= 0.3     && < 0.5,
+                       transformers       >= 0.3     && < 0.6,
                        wai                == 3.*,
                        wai-extra          >= 3.0.1   && < 3.1,
                        warp               == 3.*,
@@ -101,15 +101,15 @@ Library
 
 
 test-suite wiki-suite
-    build-depends:    base              >= 4.6  && < 4.9,
+    build-depends:    base              >= 4.6  && < 4.10,
                       blank-canvas      == 0.6.*,
                       containers        == 0.5.*,
-                      process           == 1.2.*,
+                      process           >= 1.2  && < 1.5,
                       directory         >= 1.2,
                       shake             >= 0.13,
                       stm               >= 2.2  && < 2.5,
                       text              >= 1.1  && < 1.3,
-                      time              >= 1.4  && < 1.6,
+                      time              >= 1.4  && < 1.7,
                       unix              == 2.7.*,
                       vector            >= 0.10 && < 0.12
 
