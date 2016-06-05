@@ -209,8 +209,6 @@ import           Graphics.Blank.JavaScript hiding (width, height, durationAudio,
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
-import           Graphics.Blank.GenSym (GenSym)
-import qualified Graphics.Blank.GenSym as GenSym
 import           Graphics.Blank.Instr
 
 import qualified Network.HTTP.Types as H
@@ -357,9 +355,9 @@ generalSend :: forall m a . RunMonad m
 generalSend f cxt (Canvas c) = do
     -- XXX: Is it ok to hardcode 0 as the start value here?
     -- AJG: No, its not.
-   let m0 :: RemoteLocalMonad GenSym Cmd Proc a
-       m0 = runReaderT c (deviceCanvasContext cxt)
-   runLocalMonad (nat $ GenSym.runGenSym 0) (f cxt) N.# m0
+   let m0 :: RemoteMonad Cmd Proc a
+       m0 = evalStateT (runReaderT c (deviceCanvasContext cxt)) 0
+   runMonad (f cxt) N.# m0
 
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> nat (sendS' cxt))

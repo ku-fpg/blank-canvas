@@ -26,7 +26,6 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Cursor
 import           Graphics.Blank.Types.Font
 
-import           Graphics.Blank.GenSym
 import           Graphics.Blank.Instr
 import qualified Graphics.Blank.Instr as I
 
@@ -72,29 +71,30 @@ instance InstrShow a => InstrShow (Proc a) where
     showi (Query q _) = showi q
 
 newtype Canvas a = Canvas
-        (ReaderT CanvasContext      -- the context, for the graphic contexts
-        (RemoteLocalMonad
-                     GenSym        -- local number allocations
+        (ReaderT CanvasContext     -- the context, for the graphic contexts
+        (StateT Int                -- local number allocations
+        (RemoteMonad
                      Cmd Proc      -- commands and procedures
-          ) a)
+          )) a)
        deriving (Functor, Applicative, Monad)
 
 procedure :: (CanvasContext -> Proc a) -> Canvas a
 procedure f = Canvas $ do
   c <- ask
-  lift $ RM.procedure (f c)
+  lift . lift $ RM.procedure (f c)
 
 command :: (CanvasContext -> Cmd) -> Canvas ()
 command f = Canvas $ do
   c <- ask
-  lift $ RM.command (f c)
+  lift . lift $ RM.command (f c)
 
 function :: InstrShow a => (Int -> a) -> Function a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
-  u <- lift $ RM.local uniq
+  u <- get
+  modify (+1)
   let a = alloc u
-  lift $ RM.command (Function f a c)
+  lift . lift $ RM.command (Function f a c)
   return a
 
 -- data Canvas :: * -> * where
