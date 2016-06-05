@@ -1,3 +1,5 @@
+# blank-canvas [![Hackage version](https://img.shields.io/hackage/v/blank-canvas.svg?style=flat)](http://hackage.haskell.org/package/blank-canvas) [![Build Status](https://img.shields.io/travis/ku-fpg/blank-canvas.svg?style=flat)](https://travis-ci.org/ku-fpg/blank-canvas)
+
 ### Background
 
 **blank-canvas** is a Haskell binding to the complete HTML5 Canvas

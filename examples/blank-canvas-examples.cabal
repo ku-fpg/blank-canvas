@@ -21,7 +21,7 @@ data-files:
     music/sonata.ogg
     music/ballbounce_root.wav
     music/ballbounce_second.wav
-    music/ballbounce_third.wav    
+    music/ballbounce_third.wav
     music/ballbounce_fifth.wav
     music/ballbounce_sixth.wav
 
@@ -40,7 +40,7 @@ executable blank-canvas-example-trivial
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*
   hs-source-dirs:      trivial
   default-language:    Haskell2010
@@ -53,7 +53,7 @@ executable blank-canvas-example-html5canvastutorial
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base         >= 4.6   && < 4.9,
+  build-depends:       base         >= 4.7   && < 4.10,
                        base-compat  >= 0.8.1 && < 1,
                        blank-canvas == 0.6.*,
                        text         >= 1.1   && < 1.3
@@ -67,7 +67,7 @@ executable blank-canvas-example-keyread
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      keyread
@@ -80,7 +80,7 @@ executable blank-canvas-example-rotate-square
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*
   hs-source-dirs:      rotate-square
   default-language:    Haskell2010
@@ -92,7 +92,7 @@ executable blank-canvas-example-splat
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*
   hs-source-dirs:      splat
   default-language:    Haskell2010
@@ -104,7 +104,7 @@ executable blank-canvas-example-square
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*
   hs-source-dirs:      square
   default-language:    Haskell2010
@@ -116,7 +116,7 @@ executable blank-canvas-example-text
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      text
@@ -129,7 +129,7 @@ executable blank-canvas-example-tictactoe
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        containers   >= 0.5 && < 0.6,
                        text         >= 1.1 && < 1.3
@@ -144,7 +144,7 @@ executable blank-canvas-example-bounce
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      bounce
@@ -158,7 +158,7 @@ executable blank-canvas-example-audio
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      audio
@@ -171,7 +171,7 @@ executable blank-canvas-example-bounceAudio
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        text         >= 1.1 && < 1.3
   hs-source-dirs:      bounceAudio
@@ -185,7 +185,7 @@ executable blank-canvas-example-playbar
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        text         >= 1.1 && < 1.3,
                        stm          >= 2.2 && < 2.6
@@ -200,7 +200,7 @@ executable blank-canvas-example-cursor
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base         >= 4.6 && < 4.9,
+  build-depends:       base         >= 4.7 && < 4.10,
                        blank-canvas == 0.6.*,
                        keys         >= 3.10,
                        text         >= 1.1 && < 1.3
