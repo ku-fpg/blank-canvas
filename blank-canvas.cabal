@@ -96,7 +96,7 @@ Library
                        free
 
   GHC-options:         -Wall
-  GHC-prof-options:    -Wall -fsimpl-tick-factor=100000
+  GHC-prof-options:    -Wall -fsimpl-tick-factor=50000
 
 
 test-suite wiki-suite
