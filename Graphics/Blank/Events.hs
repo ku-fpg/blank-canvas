@@ -16,7 +16,7 @@ import TextShow.TH (deriveTextShow)
 -- Possible named events
 -- 
 -- * @keypress@, @keydown@, @keyup@
--- * @mouseDown@, @mouseenter@, @mousemove@, @mouseout@, @mouseover@, @mouseup@
+-- * @mousedown@, @mouseenter@, @mousemove@, @mouseout@, @mouseover@, @mouseup@
 type EventName = Text
 
 -- | 'EventQueue' is an STM channel ('TChan') of 'Event's.
