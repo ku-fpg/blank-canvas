@@ -161,10 +161,10 @@ main2 args = shakeArgs shakeOptions $ do
 
         need [ "blank-canvas.wiki/" ++ toMinus nm ++ ".md" ]
         let haskell_file = nm ++ ".hs"
-        need [ "wiki-suite/" ++ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]        
+        need [ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]        
         liftIO $ print nm
 
-        txt <- readFile' $ "wiki-suite/" ++ haskell_file
+        txt <- readFile' $ haskell_file
 
         let (w,h) = head $
               [ case words ln of
@@ -200,7 +200,7 @@ main2 args = shakeArgs shakeOptions $ do
         liftIO $ print out
         let haskell_file = takeFileName out
 
-        txt <- readFile' $ "./wiki-suite/" ++ haskell_file
+        txt <- readFile' $ haskell_file
 
         let new = reverse
                 $ dropWhile (all isSpace)

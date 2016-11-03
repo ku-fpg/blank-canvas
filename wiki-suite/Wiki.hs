@@ -119,5 +119,5 @@ counter p k = do
     if p n then k n else return ()
 
 
-ev :: DeviceContext -> Text -> Int -> IO ()
+ev :: DeviceContext -> EventName -> Int -> IO ()
 ev context t c = send context $ trigger $ Event { eMetaKey = False, ePageXY = Nothing, eType = t, eWhich = Just c }
