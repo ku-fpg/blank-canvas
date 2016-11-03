@@ -20,6 +20,21 @@ build the tests
     % cabal install --only-d
     % cabal build
 
-and run them
+and run them (on a mac)
 
     % cabal test
+
+you can compare output using github diff.
+
+
+
+### Other Notes
+
+There is a script, wiki-suite/hack.pl, that compares blank-canvas.wiki with ORIG, using image compare.
+
+
+
+
+
+
+
