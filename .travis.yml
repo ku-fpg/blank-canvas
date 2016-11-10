@@ -32,6 +32,7 @@ matrix:
 before_install:
  - unset CC
  - export PATH=$HOME/.cabal/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+ - git clone https://github.com/ku-fpg/remote-monad
 
 install:
  - cabal --version
@@ -43,6 +44,7 @@ install:
    fi
  - travis_retry cabal update -v
  - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
+ - cabal install remote-monad/
  - cabal install --only-dependencies --dry -v > installplan.txt
  - sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
