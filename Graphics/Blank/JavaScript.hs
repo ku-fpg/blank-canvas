@@ -15,7 +15,6 @@ import           Data.String
 import           Data.Text.Lazy (Text, fromStrict)
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text as ST
-import qualified Data.Text.Lazy.Builder as B (singleton)
 import qualified Data.Vector.Unboxed as V
 import           Data.Vector.Unboxed (Vector, toList)
 import           Data.Word (Word8)
@@ -31,8 +30,6 @@ import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), parens, readListPrecDefault)
 
 import           TextShow hiding (toLazyText)
--- import           TextShow.Data.Floating (showiFFloat)
--- import           TextShow.Data.Integral (showiHex)
 import           TextShow.TH (deriveTextShow)
 
 -------------------------------------------------------------

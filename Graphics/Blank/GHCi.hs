@@ -15,17 +15,12 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 
-import Graphics.Blank (Options(..),port,sendW, Canvas, blankCanvas)
+import Graphics.Blank (Options(..),port,sendW, blankCanvas)
 import Graphics.Blank.Canvas
 
-import Control.Natural as N
-import Control.Remote.Monad
 
 import System.IO.Unsafe (unsafePerformIO)
 
-import Control.Monad.Reader (runReaderT)
-import Control.Monad.State  (runStateT)
-import Graphics.Blank.DeviceContext
 
 -- | splitCanvas is the GHCi entry point into @blank-canvas@.
 -- A typical invocation would be

@@ -10,13 +10,11 @@
 
 module Graphics.Blank.Canvas where
 
-import           Control.Monad (ap, liftM2)
 
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
 import           Data.Semigroup (Semigroup(..))
 import           Data.Text.Lazy (Text, fromStrict, toStrict)
-import           Data.Text.Lazy.Builder hiding (singleton, fromText)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text as ST
 
@@ -31,15 +29,13 @@ import qualified Graphics.Blank.Instr as I
 
 import           Prelude.Compat
 
-import           TextShow hiding (singleton, fromText)
 import           TextShow.TH (deriveTextShow)
 
-import           Control.Remote.Monad hiding (Command, procedure, command, local)
+import           Control.Remote.Monad hiding (procedure, command)
 import qualified Control.Remote.Monad as RM
 import           Control.Monad.Reader
 import           Control.Monad.State
 
-import           Control.Monad.Trans.Free
 
 
 
@@ -56,12 +52,17 @@ instance InstrShow TextMetrics
 
 -----------------------------------------------------------------------------
 
+-- Method : context.f()
+-- Command: f()
+-- PseudoProcedure: var asdf_num = ctx.f()
+
+
 data Cmd :: * where
   Method      :: Method      -> CanvasContext -> Cmd
   Command     :: Command     -> CanvasContext -> Cmd -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
   MethodAudio :: MethodAudio -> CanvasContext -> Cmd
-  Function  :: InstrShow a => Function a -> a -> CanvasContext -> Cmd
+  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> a -> CanvasContext -> Cmd
 
 data Proc :: * -> * where
   Query     :: InstrShow a => Query a     -> CanvasContext -> Proc a
@@ -88,19 +89,19 @@ command f = Canvas $ do
   c <- ask
   lift . lift $ RM.command (f c)
 
-function :: InstrShow a => (Int -> a) -> Function a -> Canvas a
+function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
 function alloc f = Canvas $ do
   c <- ask
   u <- get
   modify (+1)
   let a = alloc u
-  lift . lift $ RM.command (Function f a c)
+  lift . lift $ RM.command (PseudoProcedure f a c)
   return a
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
 --         Command     :: Command                     -> Canvas ()     -- <command>
---         Function    :: TextShow a => Function a    -> Canvas a
+--         PseudoProcedure    :: TextShow a => PseudoProcedure a    -> Canvas a
 --         Query       :: TextShow a => Query a       -> Canvas a
 --         With        :: CanvasContext -> Canvas a   -> Canvas a
 --         MyContext   ::                                Canvas CanvasContext
@@ -243,16 +244,16 @@ eval = command . Command . Eval . fromStrict
 
 -----------------------------------------------------------------------------
 
-data Function :: * -> * where
-  CreateLinearGradient :: (Double,Double,Double,Double)               -> Function CanvasGradient
-  CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> Function CanvasGradient
-  CreatePattern        :: Image image => (image, RepeatDirection)     -> Function CanvasPattern
+data PseudoProcedure :: * -> * where
+  CreateLinearGradient :: (Double,Double,Double,Double)               -> PseudoProcedure CanvasGradient
+  CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> PseudoProcedure CanvasGradient
+  CreatePattern        :: Image image => (image, RepeatDirection)     -> PseudoProcedure CanvasPattern
 
 
-instance Show (Function a) where
+instance Show (PseudoProcedure a) where
   showsPrec p = showsPrec p . I.toString . showi
 
-instance InstrShow (Function a) where
+instance InstrShow (PseudoProcedure a) where
   showiPrec _ = showi
   showi (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
         <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','

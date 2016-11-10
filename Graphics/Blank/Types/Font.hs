@@ -27,7 +27,7 @@ import qualified Text.ParserCombinators.ReadPrec as ReadPrec
 import           Text.ParserCombinators.ReadPrec (ReadPrec, (<++), lift, pfail)
 import           Text.Read (Read(..), readListPrecDefault)
 
-import           TextShow (TextShow(..), Builder, FromTextShow(..), showbSpace)
+import           TextShow (TextShow(..), FromTextShow(..), showbSpace)
 
 -------------------------------------------------------------------------------
 

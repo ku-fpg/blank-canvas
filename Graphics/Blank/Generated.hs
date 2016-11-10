@@ -3,7 +3,7 @@
 module Graphics.Blank.Generated where
 
 import           Data.Monoid ((<>))
-import           Data.Text.Lazy (Text, fromStrict)
+import           Data.Text.Lazy (fromStrict)
 import qualified Data.Text as ST
 
 import           Graphics.Blank.Canvas
@@ -15,11 +15,10 @@ import           Graphics.Blank.Instr
 
 -- import           TextShow (TextShow(..), FromTextShow(..), singleton)
 
-import           Control.Remote.Monad hiding (procedure, command)
 
 instance InstrShow Cmd where
     showiPrec _ = showi
-    showi (Function f _ _) = showi f
+    showi (PseudoProcedure f _ _) = showi f
     showi (Method m _)      = showi m
     showi (Command c _)     = showi c
     showi (MethodAudio a _) = showi a

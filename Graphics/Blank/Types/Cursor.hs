@@ -19,7 +19,6 @@ import           Text.ParserCombinators.ReadPrec (lift)
 import           Text.Read (Read(..), readListPrecDefault)
 
 import           TextShow (TextShow(..), FromTextShow(..))
-import qualified TextShow as T
 
 -- | A data type that can represent a browser cursor.
 class CanvasCursor a where

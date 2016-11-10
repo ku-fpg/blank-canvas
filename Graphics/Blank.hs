@@ -183,14 +183,12 @@ module Graphics.Blank
 import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
-import           Control.Monad (forever)
 import           Control.Monad.IO.Class
 
 import           Data.Aeson
 import           Data.Aeson.Types (parse)
 import           Data.List as L
 import qualified Data.Map as M (lookup)
-import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text.Lazy as T
 import           Data.Text.Lazy (Text)
@@ -216,8 +214,6 @@ import           Network.Mime (defaultMimeMap, fileNameExtensions)
 import           Network.Wai (Middleware, responseLBS)
 import           Network.Wai.Middleware.Local as Local
 import           Network.Wai.Handler.Warp
--- import           Network.Wai.Middleware.RequestLogger -- Used when debugging
--- import           Network.Wai.Middleware.Static
 
 import           Paths_blank_canvas
 
@@ -225,9 +221,7 @@ import           Prelude.Compat hiding ((.), id)
 import           Control.Category
 
 import           System.IO.Unsafe (unsafePerformIO)
--- import           System.Mem.StableName
 
--- import           TextShow (Builder, showb, showt)
 
 import qualified Web.Scotty as Scotty
 import           Web.Scotty (scottyApp, get, file)
@@ -241,12 +235,10 @@ import qualified Control.Remote.Monad.Packet.Strong as SP
 
 
 import           Control.Monad.Reader hiding (local)
-import           Control.Monad.State  (StateT, modify, runStateT, evalStateT)
+import           Control.Monad.State  (StateT, modify, evalStateT)
 import qualified Control.Monad.State as State
 import           Control.Monad.Writer
 
-import           Control.Monad.Trans.Free
-import           Control.Monad.Identity
 
 import           Data.String
 
@@ -371,9 +363,9 @@ sendS' cxt sp = evalStateT (go sp) mempty
     go (SP.Command cmd rest) = do
       case cmd of
         Method m canvasCxt -> modify (<> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
-        Canvas.Command c _ -> modify (<> showi cmd <> singleton ';')
-        MethodAudio    a _ -> modify (<> showi cmd <> singleton ';')
-        Function f r c     -> sendFunc f r c
+        Canvas.Command _c _ -> modify (<> showi cmd <> singleton ';')
+        MethodAudio    _a _ -> modify (<> showi cmd <> singleton ';')
+        PseudoProcedure f r c     -> sendFunc f r c
       go rest
 
     go (SP.Procedure p) =
@@ -386,7 +378,7 @@ sendS' cxt sp = evalStateT (go sp) mempty
       State.put mempty
       return ()
 
-    sendFunc :: Function a -> a -> CanvasContext -> StateT Instr IO ()
+    sendFunc :: PseudoProcedure a -> a -> CanvasContext -> StateT Instr IO ()
     sendFunc q@(CreateLinearGradient _) r c = sendGradient q r c
     sendFunc q@(CreateRadialGradient _) r c = sendGradient q r c
     sendFunc q@(CreatePattern        _) r c = sendPattern  q r c
@@ -422,14 +414,14 @@ sendS' cxt sp = evalStateT (go sp) mempty
           Error msg -> fail msg
           Success a -> return a
 
-    sendGradient :: Function CanvasGradient -> CanvasGradient -> CanvasContext -> StateT Instr IO ()
-    sendGradient q r@(CanvasGradient gId) c = do
+    sendGradient :: PseudoProcedure CanvasGradient -> CanvasGradient -> CanvasContext -> StateT Instr IO ()
+    sendGradient q (CanvasGradient gId) c = do
       modify (<> "var gradient_"
           <> showi gId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';')
 
-    sendPattern :: Function CanvasPattern -> CanvasPattern -> CanvasContext -> StateT Instr IO ()
-    sendPattern q r@(CanvasPattern pId) c = do
+    sendPattern :: PseudoProcedure CanvasPattern -> CanvasPattern -> CanvasContext -> StateT Instr IO ()
+    sendPattern q (CanvasPattern pId) c = do
       modify (<> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';')
@@ -442,9 +434,9 @@ sendW' cxt = go mempty
     go cmds (WP.Command cmd) =
       case cmd of
         Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
-        Canvas.Command c _ -> send' (cmds <> showi cmd <> singleton ';')
-        MethodAudio a    _ -> send' (cmds <> showi cmd <> singleton ';')
-        Function f r c -> sendFunc cmds f r c
+        Canvas.Command _c _ -> send' (cmds <> showi cmd <> singleton ';')
+        MethodAudio _a    _ -> send' (cmds <> showi cmd <> singleton ';')
+        PseudoProcedure f r c -> sendFunc cmds f r c
 
     go cmds (WP.Procedure p) =
       case p of
@@ -453,7 +445,7 @@ sendW' cxt = go mempty
     send' :: Instr -> IO ()
     send' = sendToCanvas cxt
 
-    sendFunc :: Instr -> Function a -> a -> CanvasContext -> IO ()
+    sendFunc :: Instr -> PseudoProcedure a -> a -> CanvasContext -> IO ()
     sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
     sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
     sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
@@ -483,14 +475,14 @@ sendW' cxt = go mempty
         Error msg -> fail msg
         Success a -> return a
 
-    sendGradient :: Instr -> Function CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
-    sendGradient cmds q r@(CanvasGradient gId) c = do
+    sendGradient :: Instr -> PseudoProcedure CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
+    sendGradient cmds q (CanvasGradient gId) c = do
       send' $ cmds <> "var gradient_"
           <> showi gId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';'
 
-    sendPattern :: Instr -> Function CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
-    sendPattern cmds q r@(CanvasPattern pId) c = do
+    sendPattern :: Instr -> PseudoProcedure CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
+    sendPattern cmds q (CanvasPattern pId) c = do
       send' $ cmds <> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';'
