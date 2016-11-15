@@ -352,9 +352,9 @@ generalSend f cxt (Canvas c) = do
    runMonad (f cxt) N.# m0
 
 sendS, sendW :: DeviceContext -> Canvas a -> IO a
-sendS = generalSend (\cxt -> nat (sendS' cxt))
+sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
 
-sendW = generalSend (\cxt -> nat (sendW' cxt))
+sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
 sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
 sendS' cxt sp = evalStateT (go sp) mempty
