@@ -148,6 +148,8 @@ module Graphics.Blank
         , setPlaybackRateAudio
         , setAutoplayAudio
         , setVolumeAudio
+        , setDefaultMuted
+        , setDefaultPlaybackRate
         , newAudio
         , CanvasAudio
          -- ** 'DeviceContext' attributes
