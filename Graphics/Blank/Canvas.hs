@@ -181,6 +181,8 @@ data MethodAudio
         | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
         | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
         | forall audio . Audio audio => SetVolumeAudio       (audio, Double)
+        | forall audio . Audio audio => SetAutoplayAudio     (audio, Bool)
+
 
 data Command
   = Trigger Event

@@ -35,6 +35,7 @@ instance InstrShow MethodAudio where
   showi (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
   showi (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
   showi (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+  showi (SetAutoplayAudio     (audio, auto)) = jsAudio audio <> ".autoplay = " <> jsBool auto <> singleton ';'
 
   -- showi (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
   
@@ -370,6 +371,10 @@ setPlaybackRateAudio = command . MethodAudio . SetPlaybackRateAudio
 -- | Adjusts the volume.  Scaled from 0.0 - 1.0, any number outside of this range will result in an error
 setVolumeAudio :: Audio audio => (audio, Double) -> Canvas ()
 setVolumeAudio = command . MethodAudio . SetVolumeAudio
+
+-- | Sets the autooplay attribute. When True, the element will play as soon as possible, and won't wait for the file to finish downloading
+setAutoplayAudio :: Audio audio => (audio, Bool) -> Canvas ()
+setAutoplayAudio = command . MethodAudio . SetAutoplayAudio
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()

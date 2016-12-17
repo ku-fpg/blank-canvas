@@ -146,6 +146,7 @@ module Graphics.Blank
         , setLoopAudio
         , setMutedAudio
         , setPlaybackRateAudio
+        , setAutoplayAudio
         , setVolumeAudio
         , newAudio
         , CanvasAudio
