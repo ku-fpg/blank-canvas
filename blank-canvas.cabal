@@ -68,7 +68,7 @@ Library
                        Paths_blank_canvas
 
   default-language:    Haskell2010
-  build-depends:       aeson              >= 0.7     && < 1.1,
+  build-depends:       aeson              >= 0.7     && < 1.2,
                        base64-bytestring  == 1.0.*,
                        base               >= 4.7     && < 4.10,
                        base-compat        >= 0.8.1   && < 1,
