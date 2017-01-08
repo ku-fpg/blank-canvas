@@ -18,7 +18,7 @@ executable wiki-suite
                       text              >= 1.1  && < 1.3,
                       time              >= 1.4  && < 1.7,
                       unix              == 2.7.*,
-                      vector            >= 0.10 && < 0.12
+                      vector            >= 0.10 && < 0.13
 
     default-language: Haskell2010
 -- add -fhpc to do coverage
