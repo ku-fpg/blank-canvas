@@ -87,7 +87,7 @@ Library
                        wai                == 3.*,
                        wai-extra          >= 3.0.1   && < 3.1,
                        warp               == 3.*,
-                       vector             >= 0.10    && < 0.12
+                       vector             >= 0.10    && < 0.13
 
   GHC-options:         -Wall
   GHC-prof-options:    -Wall -fsimpl-tick-factor=100000
@@ -104,7 +104,7 @@ test-suite wiki-suite
                       text              >= 1.1  && < 1.3,
                       time              >= 1.4  && < 1.7,
                       unix              == 2.7.*,
-                      vector            >= 0.10 && < 0.12
+                      vector            >= 0.10 && < 0.13
 
     default-language: Haskell2010
     GHC-options:      -threaded -Wall
