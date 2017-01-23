@@ -138,15 +138,25 @@ module Graphics.Blank
         , CanvasImage -- abstract
           -- ** Audio functionality
         , currentTimeAudio
+        , currentSrcAudio
         , durationAudio -- subject to change
         , indexAudio
         , playAudio
         , pauseAudio
+        , endedAudio
+        , pausedAudio
+        , readyState
         , setCurrentTimeAudio
         , setLoopAudio
         , setMutedAudio
         , setPlaybackRateAudio
+        , setAutoplayAudio
         , setVolumeAudio
+        , getVolumeAudio
+        , setDefaultMutedAudio
+        , getDefaultMutedAudio
+        , setDefaultPlaybackRateAudio
+        , getDefaultPlaybackRateAudio
         , newAudio
         , CanvasAudio
          -- ** 'DeviceContext' attributes

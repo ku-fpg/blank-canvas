@@ -174,13 +174,17 @@ data Method
 
 -- Audio object methods: play(), pause(), setVolume()
 data MethodAudio
-        = forall audio . Audio audio => PlayAudio             audio
-        | forall audio . Audio audio => PauseAudio            audio
-        | forall audio . Audio audio => SetCurrentTimeAudio  (audio, Double)
-        | forall audio . Audio audio => SetLoopAudio         (audio, Bool)
-        | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
-        | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
-        | forall audio . Audio audio => SetVolumeAudio       (audio, Double)
+        = forall audio . Audio audio => PlayAudio                    audio
+        | forall audio . Audio audio => PauseAudio                   audio
+        | forall audio . Audio audio => SetCurrentTimeAudio         (audio, Double)
+        | forall audio . Audio audio => SetLoopAudio                (audio, Bool)
+        | forall audio . Audio audio => SetMutedAudio               (audio, Bool)
+        | forall audio . Audio audio => SetPlaybackRateAudio        (audio, Double)
+        | forall audio . Audio audio => SetVolumeAudio              (audio, Double)
+        | forall audio . Audio audio => SetAutoplayAudio            (audio, Bool)
+        | forall audio . Audio audio => SetDefaultMutedAudio        (audio, Bool)
+        | forall audio . Audio audio => SetDefaultPlaybackRateAudio (audio, Double)
+
 
 data Command
   = Trigger Event
@@ -267,62 +271,85 @@ instance InstrShow (PseudoProcedure a) where
 -----------------------------------------------------------------------------
 
 data Query :: * -> * where
-        Device               ::                                            Query DeviceAttributes
-        ToDataURL            ::                                            Query Text
-        MeasureText          :: Text                                    -> Query TextMetrics
-        IsPointInPath        :: (Double, Double)                        -> Query Bool
-        NewImage             :: Text                                    -> Query CanvasImage
-        NewAudio             :: Text                                    -> Query CanvasAudio
-        NewCanvas            :: (Int, Int)                              -> Query CanvasContext
-        GetImageData         :: (Double, Double, Double, Double)        -> Query ImageData
-        Cursor               :: CanvasCursor cursor => cursor           -> Query ()
-        Sync                 ::                                            Query ()
-        CurrentTimeAudio     :: CanvasAudio                             -> Query Double
-        -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
+        Device                      ::                                     Query DeviceAttributes
+        ToDataURL                   ::                                     Query Text
+        MeasureText                 :: Text                             -> Query TextMetrics
+        IsPointInPath               :: (Double, Double)                 -> Query Bool
+        NewImage                    :: Text                             -> Query CanvasImage
+        NewAudio                    :: Text                             -> Query CanvasAudio
+        NewCanvas                   :: (Int, Int)                       -> Query CanvasContext
+        GetImageData                :: (Double, Double, Double, Double) -> Query ImageData
+        Cursor                      :: CanvasCursor cursor => cursor    -> Query ()
+        Sync                        ::                                     Query ()
+        CurrentTimeAudio            :: CanvasAudio                      -> Query Double
+        CurrentSrcAudio             :: CanvasAudio                      -> Query Text
+        GetDefaultMutedAudio        :: CanvasAudio                      -> Query Bool
+        GetDefaultPlaybackRateAudio :: CanvasAudio                      -> Query Double
+        GetVolumeAudio              :: CanvasAudio                      -> Query Double        
+        EndedAudio                  :: CanvasAudio                      -> Query Bool
+        PausedAudio                 :: CanvasAudio                      -> Query Bool
+        ReadyState                  :: CanvasAudio                      -> Query Int
+
 
 instance Show (Query a) where
   showsPrec p = showsPrec p . I.toString . showi
 
 instance InstrShow (Query a) where
   showiPrec _ = showi
-  showi Device                       = "Device"
-  showi ToDataURL                    = "ToDataURL"
-  showi (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
-  showi (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
+  showi Device                            = "Device"
+  showi ToDataURL                         = "ToDataURL"
+  showi (MeasureText txt)                 = "MeasureText(" <> jsText txt <> singleton ')'
+  showi (IsPointInPath (x,y))             = "IsPointInPath(" <> jsDouble x <> singleton ','
                                                         <> jsDouble y <> singleton ')'
-  showi (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
-  showi (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
+  showi (NewImage url')                   = "NewImage(" <> jsText url' <> singleton ')'
+  showi (NewAudio txt)                    = "NewAudio(" <> jsText txt  <> singleton ')'
 
-  showi (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
+  showi (NewCanvas (x,y))                 = "NewCanvas(" <> jsInt x <> singleton ','
                                                     <> jsInt y <> singleton ')'
-  showi (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
+  showi (GetImageData (sx,sy,sw,sh))      = "GetImageData(" <> jsDouble sx <> singleton ','
                                                        <> jsDouble sy <> singleton ','
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
-  showi (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
-  showi Sync                         = "Sync"
-  showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (Cursor cur)                      = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
+  showi Sync                              = "Sync"
+  showi (CurrentTimeAudio aud)            = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (CurrentSrcAudio aud)             = "CurrentSrcAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (GetDefaultMutedAudio aud)        = "GetDefaultMutedAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (GetDefaultPlaybackRateAudio aud) = "GetDefaultPlaybackRateAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (GetVolumeAudio aud)              = "GetVolumeAudio(" <> jsIndexAudio aud <> singleton ')'
+  -- showi (DurationAudio aud)               = "DurationAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (EndedAudio aud)                  = "EndedAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (PausedAudio aud)                 = "PausedAudio(" <> jsIndexAudio aud <> singleton ')'
+  showi (ReadyState aud)                  = "ReadyState(" <> jsIndexAudio aud <> singleton ')'
     -- TODO: Find the correct way to implement this:
   -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
-parseQueryResult (Device {}) o                = uncurry3 DeviceAttributes <$> parseJSON o
-parseQueryResult (ToDataURL {}) o             = parseJSON o
-parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
-parseQueryResult (IsPointInPath {}) o         = parseJSON o
-parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
-parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
-parseQueryResult (GetImageData {}) (Object o) = ImageData
-                                           <$> (o .: "width")
-                                           <*> (o .: "height")
-                                           <*> (o .: "data")
-parseQueryResult (Cursor {}) _                = return ()
-parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
-parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
+parseQueryResult (Device {}) o                       = uncurry3 DeviceAttributes <$> parseJSON o
+parseQueryResult (ToDataURL {}) o                    = parseJSON o
+parseQueryResult (MeasureText {}) (Object v)         = TextMetrics <$> v .: "width"
+parseQueryResult (IsPointInPath {}) o                = parseJSON o
+parseQueryResult (NewImage {}) o                     = uncurry3 CanvasImage <$> parseJSON o
+parseQueryResult (NewAudio {}) o                     = uncurry CanvasAudio <$> parseJSON o
+parseQueryResult (NewCanvas {}) o                    = uncurry3 CanvasContext <$> parseJSON o
+parseQueryResult (GetImageData {}) (Object o)        = ImageData
+                                                       <$> (o .: "width")
+                                                       <*> (o .: "height")
+                                                       <*> (o .: "data")
+parseQueryResult (Cursor {}) _                       = return ()
+parseQueryResult (Sync {}) _                         = return () -- we just accept anything; empty list sent
+parseQueryResult (CurrentTimeAudio {}) o             = parseJSON o
+parseQueryResult (CurrentSrcAudio  {}) o             = parseJSON o
+parseQueryResult (GetDefaultMutedAudio  {}) o        = parseJSON o
+parseQueryResult (GetDefaultPlaybackRateAudio  {}) o = parseJSON o
+parseQueryResult (GetVolumeAudio {}) o               = parseJSON o
+-- parseQueryResult (DurationAudio {}) o                = parseJSON o
+parseQueryResult (EndedAudio {}) o                   = parseJSON o
+parseQueryResult (PausedAudio {}) o                  = parseJSON o
+parseQueryResult (ReadyState {}) o                   = parseJSON o
 -- parseQueryResult (GetVolumeAudio   {}) 
-parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
+parseQueryResult _ _                                 = fail "no parse in blank-canvas server (internal error)"
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
@@ -380,9 +407,36 @@ newAudio = procedure . Query . NewAudio . fromStrict
 -- 'playAudio' aud
 -- cur <- 'currentTimeAudio' aud
 -- @
-
 currentTimeAudio :: CanvasAudio -> Canvas Double
 currentTimeAudio = procedure . Query . CurrentTimeAudio
+
+-- | Returns the absolute path to the source file
+currentSrcAudio :: CanvasAudio -> Canvas Text
+currentSrcAudio = procedure . Query . CurrentSrcAudio
+
+-- | Get the value of the property that determines whether the element should be muted by default (`True` indicates it is muted)
+getDefaultMutedAudio :: CanvasAudio -> Canvas Bool
+getDefaultMutedAudio = procedure . Query . GetDefaultMutedAudio
+
+-- | Get the value of the element's default playback rate (2.0 is twice as fast, 0.5 is half speed, -2.0 is backwards, twice as fast)
+getDefaultPlaybackRateAudio :: CanvasAudio -> Canvas Double
+getDefaultPlaybackRateAudio = procedure . Query . GetDefaultPlaybackRateAudio
+
+-- | Get the current volume of the `CanvasAudio`
+getVolumeAudio :: CanvasAudio -> Canvas Double
+getVolumeAudio = procedure . Query . GetVolumeAudio
+
+-- | Will be `True` if the element has finished playing.
+endedAudio :: CanvasAudio -> Canvas Bool
+endedAudio = procedure . Query . EndedAudio
+
+-- | Will be `True` if the element is currently paused
+pausedAudio :: CanvasAudio -> Canvas Bool
+pausedAudio = procedure . Query . PausedAudio
+
+-- | Returns a 0 - 4 value indicating the readiness of the element. More information <https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState here>.
+readyState :: CanvasAudio -> Canvas Int
+readyState = procedure . Query . ReadyState
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.

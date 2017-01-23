@@ -233,12 +233,71 @@
             function CurrentTimeAudio(aud) {
                 return function (u,c) {
                     var currTime = sounds[aud].currentTime;
-
                     $.kc.reply(u,currTime);
                 }
             }
 
-            $(document).ready(function() {
+            function CurrentSrcAudio(aud) {
+                return function (u,c) {
+                    var currSrc = sounds[aud].currentSrc;
+                    $.kc.reply(u,currSrc);
+                }
+            }
+
+            function GetDefaultMutedAudio(aud) {
+                return function (u,c) {
+                    var defMuted = sounds[aud].defaultMuted;
+                    $.kc.reply(u,defMuted);
+                }
+            }
+
+            function GetDefaultPlaybackRateAudio(aud) {
+                return function (u,c) {
+                    var defPlayback = sounds[aud].defaultPlaybackRate;
+                    $.kc.reply(u,defPlayback);
+                }
+            }
+
+            function GetVolumeAudio(aud) {
+                return function (u,c) {
+                    var getVolume = sounds[aud].volume;
+                    $.kc.reply(u,getVolume);
+                }
+            }
+
+
+            <!-- function DurationAudio(aud) { -->
+            <!--     return function (u,c) { -->
+            <!--         var dur = sounds[aud].duration; -->
+            <!--         $.kc.reply(u,dur); -->
+            <!--     } -->
+            <!-- } -->
+
+
+            function EndedAudio(aud) {
+                return function (u,c) {
+                    var end = sounds[aud].ended;
+                    $.kc.reply(u,end);
+                }
+            }
+
+
+            function PausedAudio(aud) {
+                return function (u,c) {
+                    var pausedAud = sounds[aud].paused;
+                    $.kc.reply(u,pausedAud);
+                }
+            }
+
+
+            function ReadyState(aud) {
+                return function (u,c) {
+                    var rdy = sounds[aud].readyState;
+                    $.kc.reply(u,rdy);
+                }
+            }
+
+	    $(document).ready(function() {
                 // Make the canvas the size of the window
                 var w = $(window).width();
                 var h = $(window).height();

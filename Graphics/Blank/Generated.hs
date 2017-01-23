@@ -27,14 +27,18 @@ instance Show Method where
   showsPrec p = showsPrec p . toString . showi
 
 instance InstrShow MethodAudio where
-  showiPrec _ = showi
-  showi (PlayAudio audio)                    = jsAudio audio <> ".play()"
-  showi (PauseAudio audio)                   = jsAudio audio <> ".pause()"
-  showi (SetCurrentTimeAudio  (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
-  showi (SetLoopAudio         (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
-  showi (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
-  showi (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
-  showi (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+  showiPrec _                                       = showi
+  showi (PlayAudio audio)                           = jsAudio audio <> ".play()"
+  showi (PauseAudio audio)                          = jsAudio audio <> ".pause()"
+  showi (SetCurrentTimeAudio         (audio, time)) = jsAudio audio <> ".currentTime = " <> jsDouble time <> singleton ';'
+  showi (SetLoopAudio                (audio, loop)) = jsAudio audio <> ".loop = " <> jsBool loop <> singleton ';'
+  showi (SetMutedAudio               (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
+  showi (SetPlaybackRateAudio        (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'  
+  showi (SetVolumeAudio              (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
+  showi (SetAutoplayAudio            (audio, auto)) = jsAudio audio <> ".autoplay = " <> jsBool auto <> singleton ';'
+  showi (SetDefaultMutedAudio        (audio, mute)) = jsAudio audio <> ".defaultMuted = " <> jsBool mute <> singleton ';'
+  showi (SetDefaultPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".defaultPlaybackRate = " <> jsDouble rate <> singleton ';'
+
 
   -- showi (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
   
@@ -363,13 +367,25 @@ setLoopAudio = command . MethodAudio . SetLoopAudio
 setMutedAudio :: Audio audio => (audio, Bool) -> Canvas ()
 setMutedAudio = command . MethodAudio . SetMutedAudio
 
--- | Set the playback value, as a multiplier (2.0 is twice as fast, 0.5 is half speec, -2.0 is backwards, twice as fast)
+-- | Set the playback value, as a multiplier (2.0 is twice as fast, 0.5 is half speed, -2.0 is backwards, twice as fast)
 setPlaybackRateAudio :: Audio audio => (audio, Double) -> Canvas ()
 setPlaybackRateAudio = command . MethodAudio . SetPlaybackRateAudio
 
 -- | Adjusts the volume.  Scaled from 0.0 - 1.0, any number outside of this range will result in an error
 setVolumeAudio :: Audio audio => (audio, Double) -> Canvas ()
 setVolumeAudio = command . MethodAudio . SetVolumeAudio
+
+-- | Sets the autoplay attribute. When True, the element will play as soon as possible, and won't wait for the file to finish downloading
+setAutoplayAudio :: Audio audio => (audio, Bool) -> Canvas ()
+setAutoplayAudio = command . MethodAudio . SetAutoplayAudio
+
+-- | Set whether the audio element is muted by default (muted if True)
+setDefaultMutedAudio :: Audio audio => (audio, Bool) -> Canvas ()
+setDefaultMutedAudio = command . MethodAudio . SetDefaultMutedAudio
+
+-- | Set the default playback value, as a multiplier (2.0 is twice as fast, 0.5 is half speed, -2.0 is backwards, twice as fast)
+setDefaultPlaybackRateAudio :: Audio audio => (audio, Double) -> Canvas ()
+setDefaultPlaybackRateAudio = command . MethodAudio . SetDefaultPlaybackRateAudio
 
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()
