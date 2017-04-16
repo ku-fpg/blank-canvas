@@ -229,9 +229,9 @@ import qualified Web.Scotty.Comet as KC
 
 import           Control.Natural
 import qualified Control.Natural as N
-import           Control.Remote.Monad
-import qualified Control.Remote.Monad.Packet.Weak as WP
-import qualified Control.Remote.Monad.Packet.Strong as SP
+import           Control.Remote.WithAsync.Monad
+import qualified Control.Remote.WithAsync.Packet.Weak as WP
+import qualified Control.Remote.WithAsync.Packet.Strong as SP
 
 
 import           Control.Monad.Reader hiding (local)

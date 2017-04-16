@@ -31,8 +31,8 @@ import           Prelude.Compat
 
 import           TextShow.TH (deriveTextShow)
 
-import           Control.Remote.Monad hiding (procedure, command)
-import qualified Control.Remote.Monad as RM
+import           Control.Remote.WithAsync.Monad hiding (procedure, command)
+import qualified Control.Remote.WithAsync.Monad as RM
 import           Control.Monad.Reader
 import           Control.Monad.State
 
@@ -321,7 +321,7 @@ parseQueryResult (GetImageData {}) (Object o) = ImageData
 parseQueryResult (Cursor {}) _                = return ()
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
--- parseQueryResult (GetVolumeAudio   {}) 
+-- parseQueryResult (GetVolumeAudio   {})
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
