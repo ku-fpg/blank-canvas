@@ -25,3 +25,5 @@ tix/
 wiki-suite/dist
 bugs/
 .\#*
+.shake/
+.stack-work/
