@@ -170,7 +170,7 @@ import           Control.Exception
 import           Control.Monad (forever)
 import           Control.Monad.IO.Class
 
-import           Data.Aeson
+import           Data.Aeson (Result(..), fromJSON)
 import           Data.Aeson.Types (parse)
 import           Data.List as L
 import qualified Data.Map as M (lookup)
