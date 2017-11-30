@@ -32,7 +32,6 @@ matrix:
 before_install:
  - unset CC
  - export PATH=$HOME/.cabal/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
- - git clone https://github.com/ku-fpg/remote-monad
 
 install:
  - cabal --version
