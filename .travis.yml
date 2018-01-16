@@ -8,7 +8,7 @@ language: c
 sudo: false
 
 git:
-  submodules: false  # whether to recursively clone submodules
+  submodules: true  # whether to recursively clone submodules
 
 cache:
   directories:
@@ -69,6 +69,7 @@ install:
   - HADDOCK=${HADDOCK-true}
   - INSTALLED=${INSTALLED-true}
   - GHCHEAD=${GHCHEAD-false}
+  - TARGETS="blank-canvas blank-canvas:tests blank-canvas-examples"
   - travis_retry cabal update -v
   - "sed -i.bak 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config"
   - rm -fv cabal.project cabal.project.local
@@ -88,7 +89,7 @@ install:
       cabal new-update head.hackage -v
     fi
   - grep -Ev -- '^\s*--' ${HOME}/.cabal/config | grep -Ev '^\s*$'
-  - "printf 'packages: \".\" \"./examples\"\\n' > cabal.project"
+  - "printf 'packages: \".\" \"./examples\" \"./remote-monad\"\\n' > cabal.project"
   - cat cabal.project
   - if [ -f "./configure.ac" ]; then
       (cd "." && autoreconf -i);
@@ -96,9 +97,12 @@ install:
   - if [ -f "./examples/configure.ac" ]; then
       (cd "./examples" && autoreconf -i);
     fi
+  - if [ -f "./remote-monad/configure.ac" ]; then
+      (cd "./remote-monad" && autoreconf -i);
+    fi
   - rm -f cabal.project.freeze
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 all
-  - rm -rf "."/.ghc.environment.* "./examples"/.ghc.environment.* "."/dist "./examples"/dist
+  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 ${TARGETS}
+  - rm -rf "."/.ghc.environment.* "./examples"/.ghc.environment.* "./remote-monad"/.ghc.environment.* "."/dist "./examples"/dist "./remote-monad"/dist
   - DISTDIR=$(mktemp -d /tmp/dist-test.XXXX)
 
 # Here starts the actual work to be performed for the package under test;
@@ -107,24 +111,26 @@ script:
   # test that source-distributions can be generated
   - (cd "." && cabal sdist)
   - (cd "./examples" && cabal sdist)
-  - mv "."/dist/blank-canvas-*.tar.gz "./examples"/dist/blank-canvas-examples-*.tar.gz ${DISTDIR}/
+  - (cd "./remote-monad" && cabal sdist)
+  - mv "."/dist/blank-canvas-*.tar.gz "./examples"/dist/blank-canvas-examples-*.tar.gz "./remote-monad"/dist/remote-monad-*.tar.gz ${DISTDIR}/
   - cd ${DISTDIR} || false
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
-  - "printf 'packages: blank-canvas-*/*.cabal blank-canvas-examples-*/*.cabal\\n' > cabal.project"
+  - "printf 'packages: blank-canvas-*/*.cabal blank-canvas-examples-*/*.cabal remote-monad-*/*.cabal\\n' > cabal.project"
   - cat cabal.project
 
 
   # build & run tests, build benchmarks
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} all
-  # - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} all; fi
+  - cabal new-build -w ${HC} ${TEST} ${BENCH} ${TARGETS}
+  # - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} blank-canvas-tests; fi
 
   # cabal check
   - (cd blank-canvas-* && cabal check)
   - (cd blank-canvas-examples-* && cabal check)
+  # - (cd remote-monad-* && cabal check)
 
   # haddock
   - rm -rf ./dist-newstyle
-  - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} all; else echo "Skipping haddock generation";fi
+  - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} ${TARGETS}; else echo "Skipping haddock generation";fi
 
 # REGENDATA ["-o",".travis.yml","--no-no-tests-no-bench","--no-installed","cabal.project"]
 # EOF
