@@ -1,4 +1,4 @@
-### next
+### 0.6.2
 Additions
  * Add `Semigroup` instance for `Canvas`
 

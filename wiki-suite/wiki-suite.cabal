@@ -1,5 +1,5 @@
 Name:                wiki-suite
-Version:             0.6.1
+Version:             0.6.2
 Synopsis:            HTML5 Canvas Graphics Library wiki generator and test suite
 build-type:          Simple
 Cabal-version:       >= 1.10
