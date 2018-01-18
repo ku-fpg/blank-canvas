@@ -28,9 +28,6 @@ before_cache:
 
 matrix:
   include:
-    - compiler: "ghc-7.8.4"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.0,ghc-7.8.4], sources: [hvr-ghc]}}
     - compiler: "ghc-7.10.3"
     # env: TEST=--disable-tests BENCH=--disable-benchmarks
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.0,ghc-7.10.3], sources: [hvr-ghc]}}
@@ -121,7 +118,7 @@ script:
 
   # build & run tests, build benchmarks
   - cabal new-build -w ${HC} ${TEST} ${BENCH} ${TARGETS}
-  # - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} blank-canvas-tests; fi
+  # - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} blank-canvas:tests; fi
 
   # cabal check
   - (cd blank-canvas-* && cabal check)
