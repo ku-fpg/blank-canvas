@@ -8,7 +8,7 @@ data-files:          images/Haskell.jpg
                      images/House.jpg
 
 executable wiki-suite
-    build-depends:    base              >= 4.7  && < 4.11,
+    build-depends:    base              >= 4.7  && < 4.12,
                       blank-canvas      == 0.7.*,
                       containers        == 0.5.*,
                       directory         == 1.2.*,
