@@ -87,6 +87,8 @@ install:
     fi
   - grep -Ev -- '^\s*--' ${HOME}/.cabal/config | grep -Ev '^\s*$'
   - "printf 'packages: \".\" \"./examples\" \"./remote-monad\"\\n' > cabal.project"
+  - echo 'package blank-canvas-examples' >> cabal.project
+  - "echo '  flags: +examples' >> cabal.project"
   - cat cabal.project
   - if [ -f "./configure.ac" ]; then
       (cd "." && autoreconf -i);
@@ -113,6 +115,8 @@ script:
   - cd ${DISTDIR} || false
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
   - "printf 'packages: blank-canvas-*/*.cabal blank-canvas-examples-*/*.cabal remote-monad-*/*.cabal\\n' > cabal.project"
+  - echo 'package blank-canvas-examples' >> cabal.project
+  - "echo '  flags: +examples' >> cabal.project"
   - cat cabal.project
 
 
