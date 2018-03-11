@@ -14,7 +14,6 @@ import qualified Development.Shake           as Shake
 import           Development.Shake.FilePath
 
 import           System.Directory
-import           System.Environment
 import           System.IO
 import           System.Process
 
