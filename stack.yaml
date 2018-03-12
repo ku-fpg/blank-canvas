@@ -35,12 +35,12 @@ resolver: lts-8.13
 # A package marked 'extra-dep: true' will only be built if demanded by a
 # non-dependency (i.e. a user package), and its test suites and benchmarks
 # will not be run. This is useful for tweaking upstream packages.
-packages: 
+packages:
   - '.'
   - 'wiki-suite/'
   - location:
       git: 'git@github.com:ku-fpg/remote-monad'
-      commit: 'd39fa'
+      commit: '46479d1db2485d11d68b5c7ae27929a6babda978'
     extra-dep: true
 
 
@@ -51,13 +51,13 @@ packages:
 #- wiki-suite/blank-canvas.wiki/
 #- wiki-suite/
 
-# The following packages have been ignored due to package name conflict 
+# The following packages have been ignored due to package name conflict
 # with other packages.
 #- wiki-suite/ORIG/
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: 
+extra-deps:
   - open-browser-0.2.1.0
   - directory-1.2.7.1
 
