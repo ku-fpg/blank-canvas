@@ -31,8 +31,8 @@ import           Prelude.Compat
 
 import           TextShow.TH (deriveTextShow)
 
-import           Control.Remote.WithAsync.Monad hiding (procedure, command)
-import qualified Control.Remote.WithAsync.Monad as RM
+import           Control.Remote.Monad hiding (primitive)
+import qualified Control.Remote.Monad as RM
 import           Control.Monad.Reader
 import           Control.Monad.State
 
@@ -57,37 +57,37 @@ instance InstrShow TextMetrics
 -- PseudoProcedure: var asdf_num = ctx.f()
 
 
-data Cmd :: * where
-  Method      :: Method      -> CanvasContext -> Cmd
-  Command     :: Command     -> CanvasContext -> Cmd -- TODO: Remove this CanvasContext (it's never used)
+data Prim :: * -> * where
+  --Cmd
+  Method      :: Method      -> CanvasContext -> Prim ()
+  Command     :: Command     -> CanvasContext -> Prim () -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
-  MethodAudio :: MethodAudio -> CanvasContext -> Cmd
-  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> a -> CanvasContext -> Cmd
+  MethodAudio :: MethodAudio -> CanvasContext -> Prim ()
+  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> a -> CanvasContext -> Prim ()
+  --proc
+  Query     :: InstrShow a => Query a     -> CanvasContext -> Prim a
 
-data Proc :: * -> * where
-  Query     :: InstrShow a => Query a     -> CanvasContext -> Proc a
 
-instance InstrShow a => InstrShow (Proc a) where
-    showiPrec _ = showi
-    showi (Query q _) = showi q
+instance KnownResult Prim where
+  knownResult (Method {}           ) = Just ()
+  knownResult (Command {}         ) = Just ()
+  knownResult (MethodAudio {}     ) = Just ()
+  knownResult (PseudoProcedure {} ) = Just ()
+  knownResult (Query {}           ) = Nothing
+
 
 newtype Canvas a = Canvas
         (ReaderT CanvasContext     -- the context, for the graphic contexts
         (StateT Int                -- local number allocations
         (RemoteMonad
-                     Cmd Proc      -- commands and procedures
+                     Prim          -- commands and procedures
           )) a)
        deriving (Functor, Applicative, Monad)
 
-procedure :: (CanvasContext -> Proc a) -> Canvas a
-procedure f = Canvas $ do
+primitive :: (CanvasContext -> Prim a) -> Canvas a
+primitive f = Canvas $ do
   c <- ask
-  lift . lift $ RM.procedure (f c)
-
-command :: (CanvasContext -> Cmd) -> Canvas ()
-command f = Canvas $ do
-  c <- ask
-  lift . lift $ RM.command (f c)
+  lift . lift $ RM.primitive (f c)
 
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
 function alloc f = Canvas $ do
@@ -95,7 +95,7 @@ function alloc f = Canvas $ do
   u <- get
   modify (+1)
   let a = alloc u
-  lift . lift $ RM.command (PseudoProcedure f a c)
+  lift . lift $ RM.primitive (PseudoProcedure f a c)
   return a
 
 -- data Canvas :: * -> * where
@@ -219,7 +219,7 @@ myCanvasContext = Canvas ask
 
 -- | Triggers a specific named event.
 trigger :: Event -> Canvas ()
-trigger = command . Command . Trigger
+trigger = primitive . Command . Trigger
 
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
@@ -232,15 +232,15 @@ trigger = command . Command . Trigger
 -- grd # 'addColorStop'(0, 'red')
 -- @
 addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) = command . Command . AddColorStop (off,rep)
+addColorStop (off,rep) = primitive . Command . AddColorStop (off,rep)
 
 -- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
-console_log = command . Command . Log
+console_log = primitive . Command . Log
 
 -- | 'eval' executes the argument in JavaScript directly.
 eval :: ST.Text -> Canvas ()
-eval = command . Command . Eval . fromStrict
+eval = primitive . Command . Eval . fromStrict
 
 -----------------------------------------------------------------------------
 
@@ -328,14 +328,14 @@ uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
-device = procedure $ Query Device
+device = primitive $ Query Device
 
 -- | Turn the canvas into a PNG data stream / data URL.
 --
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
 toDataURL :: () -> Canvas ST.Text
-toDataURL () = fmap toStrict . procedure $ Query ToDataURL
+toDataURL () = fmap toStrict . primitive $ Query ToDataURL
 
 -- | Queries the measured width of the text argument.
 --
@@ -345,7 +345,7 @@ toDataURL () = fmap toStrict . procedure $ Query ToDataURL
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
 measureText :: ST.Text -> Canvas TextMetrics
-measureText = procedure . Query . MeasureText . fromStrict
+measureText = primitive . Query . MeasureText . fromStrict
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
 --
@@ -357,19 +357,19 @@ measureText = procedure . Query . MeasureText . fromStrict
 -- b <- 'isPointInPath'(10, 10) -- b == True
 -- @
 isPointInPath :: (Double, Double) -> Canvas Bool
-isPointInPath = procedure . Query . IsPointInPath
+isPointInPath = primitive . Query . IsPointInPath
 
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
 -- If you are using local images, loading should be near instant.
 newImage :: ST.Text -> Canvas CanvasImage
-newImage = procedure . Query . NewImage . fromStrict
+newImage = primitive . Query . NewImage . fromStrict
 
 -- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
 newAudio :: ST.Text -> Canvas CanvasAudio
-newAudio = procedure . Query . NewAudio . fromStrict
+newAudio = primitive . Query . NewAudio . fromStrict
 
 -- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
 -- the specified CanvasAudio.
@@ -382,7 +382,7 @@ newAudio = procedure . Query . NewAudio . fromStrict
 -- @
 
 currentTimeAudio :: CanvasAudio -> Canvas Double
-currentTimeAudio = procedure . Query . CurrentTimeAudio
+currentTimeAudio = primitive . Query . CurrentTimeAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.
@@ -447,12 +447,12 @@ createPattern = function CanvasPattern . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
-newCanvas = procedure . Query . NewCanvas
+newCanvas = primitive . Query . NewCanvas
 
 -- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
 -- upper-left corner @(x, y)@, width @w@, and height @h@.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
-getImageData = procedure . Query . GetImageData
+getImageData = primitive . Query . GetImageData
 
 -- | Change the canvas cursor to the specified URL or keyword.
 --
@@ -463,11 +463,11 @@ getImageData = procedure . Query . GetImageData
 -- cursor 'crosshair'
 -- @
 cursor :: CanvasCursor cursor => cursor -> Canvas ()
-cursor = procedure . Query . Cursor
+cursor = primitive . Query . Cursor
 
 -- | Send all commands to the browser, wait for the browser to act, then continue.
 sync :: Canvas ()
-sync = procedure $ Query Sync
+sync = primitive $ Query Sync
 
 frame :: Canvas ()
-frame = command $ Command Frame
+frame = primitive $ Command Frame

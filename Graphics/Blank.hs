@@ -1,9 +1,9 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE NoImplicitPrelude   #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeOperators       #-}
 
 {-|
 Module:      Graphics.Blank
@@ -29,7 +29,7 @@ module Graphics.Blank
         , DeviceContext       -- abstact
         , send
         , sendW
-        , sendS
+--        , sendS
           -- * HTML5 Canvas API
           -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
@@ -185,58 +185,61 @@ import           Control.Concurrent.STM
 import           Control.Exception
 import           Control.Monad.IO.Class
 
-import           Data.Aeson (Result(..), fromJSON)
-import           Data.Aeson.Types (parse)
-import           Data.List as L
-import qualified Data.Map as M (lookup)
-import qualified Data.Set as S
-import qualified Data.Text.Lazy as T
-import           Data.Text.Lazy (Text)
-import           Data.Text.Encoding (decodeUtf8)
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text as ST
+import           Data.Aeson                   (Result (..), fromJSON)
+import           Data.Aeson.Types             (parse)
+import           Data.List                    as L
+import qualified Data.Map                     as M (lookup)
+import qualified Data.Set                     as S
+import qualified Data.Text                    as ST
+import           Data.Text.Encoding           (decodeUtf8)
+import           Data.Text.Lazy               (Text)
+import qualified Data.Text.Lazy               as T
+import qualified Data.Text.Lazy               as LT
 
-import qualified Graphics.Blank.Canvas as Canvas
-import           Graphics.Blank.Canvas hiding (addColorStop, cursor)
+import           Graphics.Blank.Canvas        hiding (addColorStop, cursor)
+import qualified Graphics.Blank.Canvas        as Canvas
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
-import qualified Graphics.Blank.Generated as Generated
-import           Graphics.Blank.Generated hiding (fillStyle, font, strokeStyle, shadowColor)
-import qualified Graphics.Blank.JavaScript as JavaScript
-import           Graphics.Blank.JavaScript hiding (width, height, durationAudio, indexAudio)
+import           Graphics.Blank.Generated     hiding (fillStyle, font,
+                                               shadowColor, strokeStyle)
+import qualified Graphics.Blank.Generated     as Generated
+import           Graphics.Blank.JavaScript    hiding (durationAudio, height,
+                                               indexAudio, width)
+import qualified Graphics.Blank.JavaScript    as JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
 import           Graphics.Blank.Instr
 
-import qualified Network.HTTP.Types as H
-import           Network.Mime (defaultMimeMap, fileNameExtensions)
-import           Network.Wai (Middleware, responseLBS)
-import           Network.Wai.Middleware.Local as Local
+import qualified Network.HTTP.Types           as H
+import           Network.Mime                 (defaultMimeMap,
+                                               fileNameExtensions)
+import           Network.Wai                  (Middleware, responseLBS)
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.Local as Local
 
 import           Paths_blank_canvas
 
-import           Prelude.Compat hiding ((.), id)
 import           Control.Category
+import           Prelude.Compat               hiding (id, (.))
 
-import           System.IO.Unsafe (unsafePerformIO)
+import           System.IO.Unsafe             (unsafePerformIO)
 
 
-import qualified Web.Scotty as Scotty
-import           Web.Scotty (scottyApp, get, file)
-import qualified Web.Scotty.Comet as KC
+import           Web.Scotty                   (file, get, scottyApp)
+import qualified Web.Scotty                   as Scotty
+import qualified Web.Scotty.Comet             as KC
 
 import           Control.Natural
-import qualified Control.Natural as N
-import           Control.Remote.WithAsync.Monad
-import qualified Control.Remote.WithAsync.Packet.Weak as WP
-import qualified Control.Remote.WithAsync.Packet.Strong as SP
+import qualified Control.Natural              as N
+import           Control.Remote.Monad
+--import qualified Control.Remote.Packet.Strong as SP
+import qualified Control.Remote.Packet.Weak   as WP
 
 
-import           Control.Monad.Reader hiding (local)
-import           Control.Monad.State  (StateT, modify, evalStateT)
-import qualified Control.Monad.State as State
+import           Control.Monad.Reader         hiding (local)
+import           Control.Monad.State          (evalStateT)
+--import qualified Control.Monad.State          as State
 import           Control.Monad.Writer
 
 
@@ -343,19 +346,22 @@ blankCanvas opts actions = do
                ) app
 
 generalSend :: forall m a . RunMonad m
-            => (DeviceContext -> m Cmd Proc :~> IO) -> DeviceContext -> Canvas a -> IO a
+            => (DeviceContext -> m Prim :~> IO) -> DeviceContext -> Canvas a -> IO a
 generalSend f cxt (Canvas c) = do
     -- XXX: Is it ok to hardcode 0 as the start value here?
     -- AJG: No, its not.
-   let m0 :: RemoteMonad Cmd Proc a
+   let m0 :: RemoteMonad Prim a
        m0 = evalStateT (runReaderT c (deviceCanvasContext cxt)) 0
    runMonad (f cxt) N.# m0
-
-sendS, sendW :: DeviceContext -> Canvas a -> IO a
+{-
+sendS :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
+-}
 
+sendW :: DeviceContext -> Canvas a -> IO a
 sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
+{-
 sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
 sendS' cxt sp = evalStateT (go sp) mempty
   where
@@ -425,22 +431,25 @@ sendS' cxt sp = evalStateT (go sp) mempty
       modify (<> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';')
+-}
 
-
-sendW' :: DeviceContext -> WP.WeakPacket Cmd Proc a -> IO a
+sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
 sendW' cxt = go mempty
   where
-    go :: Instr -> WP.WeakPacket Cmd Proc a -> IO a
-    go cmds (WP.Command cmd) =
-      case cmd of
-        Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
-        Canvas.Command _c _ -> send' (cmds <> showi cmd <> singleton ';')
-        MethodAudio _a    _ -> send' (cmds <> showi cmd <> singleton ';')
-        PseudoProcedure f r c -> sendFunc cmds f r c
-
-    go cmds (WP.Procedure p) =
-      case p of
-        Query    q c -> sendQuery cmds q c
+    go :: Instr -> WP.WeakPacket Prim a -> IO a
+    go cmds (WP.Primitive p) =
+      case knownResult p of
+        Just _ ->
+          case p of
+            Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
+            Canvas.Command _c _ -> send' (cmds <> showi p <> singleton ';')
+            MethodAudio _a    _ -> send' (cmds <> showi p <> singleton ';')
+            PseudoProcedure f r c -> sendFunc cmds f r c
+            _                    -> error "sendW': unsupported Command or Procedure was treated as Command"
+        Nothing ->
+          case p of
+            Query q c -> sendQuery cmds q c
+            _         -> error "sendW': Unsupported Procedure or a Command was treated as a Procedure"
 
     send' :: Instr -> IO ()
     send' = sendToCanvas cxt
@@ -490,7 +499,7 @@ sendW' cxt = go mempty
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send = sendS
+send = sendW
 
 
 local_only :: Middleware
@@ -521,10 +530,10 @@ mimeType filePath = LT.fromStrict $ go $ fileNameExtensions $ LT.toStrict filePa
 -- 'Options' as a 'Num'. For example, @'blankCanvas' 3000@ uses the default 'Options'
 -- on port 3000.
 data Options = Options
-        { port   :: Int              -- ^ On which port do we issue @blank-canvas@?
-        , events :: [EventName]      -- ^ To which events does the canvas listen? Default: @[]@
-        , debug  :: Bool             -- ^ Turn on debugging. Default: @False@
-        , root   :: String           -- ^ Location of the static files. Default: @\".\"@
+        { port       :: Int              -- ^ On which port do we issue @blank-canvas@?
+        , events     :: [EventName]      -- ^ To which events does the canvas listen? Default: @[]@
+        , debug      :: Bool             -- ^ Turn on debugging. Default: @False@
+        , root       :: String           -- ^ Location of the static files. Default: @\".\"@
         , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
         , weak       :: Bool         -- ^ use a weak monad, which may help debugging (default False)
         }

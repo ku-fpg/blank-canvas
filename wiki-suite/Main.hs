@@ -2,21 +2,22 @@
 {-# LANGUAGE CPP #-}
 module Main where
 
-import           Prelude hiding ((*>))
+import           Prelude                     hiding ((*>))
 
 import           Control.Concurrent
 
 import           Data.Char
 import           Data.List
 
-import qualified Development.Shake as Shake
-import           Development.Shake hiding (doesFileExist)
+import           Development.Shake           hiding (doesFileExist)
+import qualified Development.Shake           as Shake
 import           Development.Shake.FilePath
 
 import           System.Directory
-import           System.Environment
 import           System.IO
 import           System.Process
+
+import           Web.Browser
 
 -- TO test: ghci wiki-suite/Draw_Canvas.hs -idist/build/autogen/:.:wiki-suite
 import qualified Arc
@@ -27,6 +28,7 @@ import qualified Clipping_Region
 import qualified Color_Fill
 import qualified Color_Square
 import qualified Custom_Shape
+import qualified Custom_Transform
 import qualified Draw_Canvas
 import qualified Draw_Device
 import qualified Draw_Image
@@ -56,8 +58,10 @@ import qualified Quadratic_Curve
 import qualified Radial_Gradient
 import qualified Rectangle
 import qualified Red_Line
+import qualified Rotate_Transform
 import qualified Rotating_Square
 import qualified Rounded_Corners
+import qualified Scale_Transform
 import qualified Semicircle
 import qualified Shadow
 import qualified Square
@@ -69,15 +73,12 @@ import qualified Text_Stroke
 import qualified Text_Wrap
 import qualified Tic_Tac_Toe
 import qualified Translate_Transform
-import qualified Scale_Transform
-import qualified Rotate_Transform
-import qualified Custom_Transform
 
-import System.Environment
+import           System.Environment
 
 main :: IO ()
-main = do 
-     args <- getArgs 
+main = do
+     args <- getArgs
      main2 args
 
 main2 :: [String] -> IO ()
@@ -135,10 +136,10 @@ main2 ["Scale_Transform"] = Scale_Transform.main
 main2 ["Rotate_Transform"] = Rotate_Transform.main
 main2 ["Custom_Transform"] = Custom_Transform.main
 
-main2 ["clean"] = do 
+main2 ["clean"] = do
         _ <- createProcess $ shell "rm blank-canvas.wiki/images/*.png blank-canvas.wiki/images/*.gif blank-canvas.wiki/examples/*.hs"
         return ()
-        
+
 main2 args = shakeArgs shakeOptions $ do
 
     if null args then do
@@ -161,7 +162,7 @@ main2 args = shakeArgs shakeOptions $ do
 
         need [ "blank-canvas.wiki/" ++ toMinus nm ++ ".md" ]
         let haskell_file = nm ++ ".hs"
-        need [ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]        
+        need [ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]
         liftIO $ print nm
 
         txt <- readFile' $ haskell_file
@@ -169,28 +170,19 @@ main2 args = shakeArgs shakeOptions $ do
         let (w,h) = head $
               [ case words ln of
                  [_,_,_,n] -> read n
-                 _ -> (512,384)
-              | ln <- lines txt 
+                 _         -> (512,384)
+              | ln <- lines txt
               , "import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln
               ] ++ [(512,384) :: (Int, Int)]
 
 
         sequence_ [
-             do (_,_,_,ghc) <- liftIO $ 
+             do (_,_,_,ghc) <- liftIO $
                               createProcess (proc "./dist/build/wiki-suite/wiki-suite" [nm])
 
                  -- wait a second, for things to start
                 liftIO $ threadDelay (1 * 1000 * 1000)
-                
-#if defined(darwin_HOST_OS)
-                command_ [] "/usr/bin/open" 
-                                       ["-a"
-                                       ,"/Applications/Google Chrome.app"
-                                       ,"http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd]
-#else
-                -- TODO: Figure out what Windows/MinTTY uses
-                command_ [] "/usr/bin/xdg-open" ["http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd]
-#endif
+                _ <-liftIO $ openBrowser $ "http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd
                  -- wait for haskell program to stop
                 liftIO $ waitForProcess ghc | hd <- [("")] ++ if nm == "Text_Wrap" then [("&hd")] else [] ]
         return ()
@@ -205,10 +197,10 @@ main2 args = shakeArgs shakeOptions $ do
         let new = reverse
                 $ dropWhile (all isSpace)
                 $ reverse
-                [ if "module" `isPrefixOf` ln 
+                [ if "module" `isPrefixOf` ln
 		  then "module Main where"
 		  else ln
-                | ln <- lines txt 
+                | ln <- lines txt
                 , not ("wiki $" `isInfixOf` ln)         -- remove the wiki stuff
                 , not ("import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln)
                 ]
@@ -221,31 +213,31 @@ main2 args = shakeArgs shakeOptions $ do
         txts <- liftIO $ if b then do
                         h <- openFile out ReadMode
                         let loop = do
-                       	     b' <- hIsEOF h 
+                       	     b' <- hIsEOF h
                 	     if b'
                 	     then return []
                 	     else do
                     	   	ln <- hGetLine h
                 		lns <- loop
                 		return (ln : lns)
-                        txts <- loop 
+                        txts <- loop
                         hClose h
                         return txts
-                else return []         
+                else return []
 --        liftIO $ print txts
 
         let p = not . (code_header `isPrefixOf`)
         let textToKeep = takeWhile p txts
 
-        let haskell_file = map (\ c -> if c == '-' then '_' else c) 
+        let haskell_file = map (\ c -> if c == '-' then '_' else c)
 	    		 $ replaceExtension (takeFileName out) ".hs"
 
 
         liftIO $ print haskell_file
-        txt <- readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file 
+        txt <- readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file
 
         let new = unlines $
-                       [ t | t <- textToKeep 
+                       [ t | t <- textToKeep
                        ] ++
                        [code_header] ++
                        lines txt ++
@@ -264,7 +256,7 @@ movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples :: [String]
 examples = ["Red_Line","Favicon"]
-        ++ ["Color_Square"] 
+        ++ ["Color_Square"]
 
 tutorial :: [String]
 tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
@@ -283,13 +275,13 @@ wiki_dir :: String
 wiki_dir = "."
 
 toMinus :: String -> String
-toMinus = map (\ c -> if c == '_' then '-' else c) 
+toMinus = map (\ c -> if c == '_' then '-' else c)
 
 
 untabify :: Int -> String -> String
 untabify _ [] = []
 untabify n (c:cs) | c == '\t' = let t = 8 - n `mod` 8 in take t (cycle " ") ++ untabify (n + t) cs
-                  | otherwise = c : untabify (n + 1) cs 
+                  | otherwise = c : untabify (n + 1) cs
 
 code_header :: String
 code_header = "````Haskell"
