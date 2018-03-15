@@ -3,6 +3,8 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
+import           Data.Aeson                (Result(..))
+import           Data.Aeson.Types          (parse)
 import           Data.Monoid               ((<>))
 import qualified Data.Text                 as ST
 import           Data.Text.Lazy            (fromStrict)
@@ -14,8 +16,7 @@ import           Graphics.Blank.Types.Font
 
 import           Graphics.Blank.Instr
 
--- import           TextShow (TextShow(..), FromTextShow(..), singleton)
-
+import qualified Network.JavaScript as JSB
 
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
@@ -565,3 +566,17 @@ transform = primitive . Method . Transform
 -- @
 translate :: (Double, Double) -> Canvas ()
 translate = primitive . Method . Translate
+
+------------------------------------------------------------------------------
+
+-- 'primToPacket' encodes a blank canvas primitive as a JavaScript bridge primitive.
+primToPacket :: Prim a -> JSB.Packet a
+primToPacket (Method m c) = JSB.command $ toLazyText $ jsCanvasContext c <> singleton '.' <> showi m
+primToPacket (Command c _) = JSB.command $ toLazyText $ showi c
+primToPacket (MethodAudio _ _) = error "NOT SUPPORT (YET)"
+primToPacket (PseudoProcedure f i c) =
+    JSB.command $ toLazyText $ showi i <> singleton '=' <> jsCanvasContext c <> singleton '.' <> showi f
+primToPacket (Query q _) = p <$> (JSB.procedure $ toLazyText $ showi q)
+  where p v = case parse (parseQueryResult q) v of
+                Error msg -> error msg
+                Success a -> a
