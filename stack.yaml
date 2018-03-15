@@ -38,6 +38,7 @@ resolver: lts-8.13
 packages:
   - '.'
   - 'wiki-suite/'
+  - 'examples/'
   - location:
       git: 'git@github.com:ku-fpg/remote-monad'
       commit: '46479d1db2485d11d68b5c7ae27929a6babda978'
