@@ -20,12 +20,11 @@ import qualified Network.JavaScript as JSB
 
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
-    showi (PseudoProcedure f _ _) = showi f
-    showi (Method m _)      = showi m
+    showi (PseudoProcedure f i c) = showi i <> singleton '=' <> jsCanvasContext c <> singleton '.' <> showi f
+    showi (Method m x)      = jsCanvasContext x <> singleton '.' <> showi m
     showi (Command c _)     = showi c
-    showi (MethodAudio a _) = showi a
-    showi (Query q _) = showi q
-
+    showi (MethodAudio a _) = showi a -- TODO
+    showi (Query q _)       = showi q
 
 instance Show Method where
   showsPrec p = showsPrec p . toString . showi
