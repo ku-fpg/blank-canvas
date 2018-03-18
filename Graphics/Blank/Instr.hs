@@ -16,6 +16,7 @@ module Graphics.Blank.Instr
   ,fromText
   ,toLazyText
   ,InstrShow(..)
+  ,ContextShow(..)
   ,tshowi
   ,tshowiPrec
   )
@@ -96,6 +97,9 @@ class InstrShow a where
 
     default showiPrec :: TextShow a => Int -> a -> Instr
     showiPrec p = fromBuilder . showbPrec p
+
+class ContextShow a where
+    showc :: a -> Instr -> Instr
 
 instance InstrShow Instr where
     showi = id
