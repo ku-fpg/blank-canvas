@@ -287,11 +287,11 @@ data Query :: * -> * where
         -- GetVolumeAudio       :: CanvasAudio                             -> Query Double
 
 instance Show (Query a) where
-  showsPrec p = showsPrec p . I.toString . showi
+  showsPrec p q = showsPrec p $ I.toString $ showc q "*"
 
-instance InstrShow (Query a) where
-  showiPrec _ = showi
-  showi Device                       = "Device"
+instance ContextShow (Query a) where
+  showc Device                       c = "Device(" <> c <> ")"
+{-
   showi ToDataURL                    = "ToDataURL"
   showi (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
   showi (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
@@ -310,7 +310,7 @@ instance InstrShow (Query a) where
   showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
     -- TODO: Find the correct way to implement this:
   -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
-
+-}
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
 parseQueryResult (Device {}) o                = uncurry3 DeviceAttributes <$> parseJSON o

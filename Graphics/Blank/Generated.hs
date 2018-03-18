@@ -24,7 +24,7 @@ instance InstrShow a => InstrShow (Prim a) where
     showi (Method m x)      = jsCanvasContext x <> singleton '.' <> showi m
     showi (Command c _)     = showi c
     showi (MethodAudio a _) = showi a -- TODO
-    showi (Query q _)       = showi q
+    showi (Query q c)       = showc q $ jsCanvasContext c
 
 instance Show Method where
   showsPrec p = showsPrec p . toString . showi
@@ -570,12 +570,12 @@ translate = primitive . Method . Translate
 
 -- 'primToPacket' encodes a blank canvas primitive as a JavaScript bridge primitive.
 primToPacket :: Prim a -> JSB.Packet a
-primToPacket (Method m c) = JSB.command $ toLazyText $ jsCanvasContext c <> singleton '.' <> showi m
+primToPacket m@Method{} = JSB.command $ toLazyText $ showi m
 primToPacket (Command c _) = JSB.command $ toLazyText $ showi c
 primToPacket (MethodAudio _ _) = error "NOT SUPPORT (YET)"
 primToPacket (PseudoProcedure f i c) =
     JSB.command $ toLazyText $ showi i <> singleton '=' <> jsCanvasContext c <> singleton '.' <> showi f
-primToPacket (Query q _) = p <$> (JSB.procedure $ toLazyText $ showi q)
-  where p v = case parse (parseQueryResult q) v of
+primToPacket p@(Query q _) = f <$> (JSB.procedure $ toLazyText $ showi p)
+  where f v = case parse (parseQueryResult q) v of
                 Error msg -> error msg
                 Success a -> a
