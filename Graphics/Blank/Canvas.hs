@@ -75,6 +75,12 @@ instance KnownResult Prim where
   knownResult (PseudoProcedure {} ) = Just ()
   knownResult (Query {}           ) = Nothing
 
+  unitResult Method {}          = UnitResult
+  unitResult Command {}         = UnitResult
+  unitResult MethodAudio {}     = UnitResult
+  unitResult PseudoProcedure {} = UnitResult
+  unitResult Query {}           = UnknownResult
+
 
 newtype Canvas a = Canvas
         (ReaderT CanvasContext     -- the context, for the graphic contexts
