@@ -29,7 +29,7 @@ module Graphics.Blank
         , DeviceContext       -- abstact
         , send
         , sendW
---        , sendS
+        , sendS
           -- * HTML5 Canvas API
           -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
@@ -233,13 +233,13 @@ import qualified Web.Scotty.Comet             as KC
 import           Control.Natural
 import qualified Control.Natural              as N
 import           Control.Remote.Monad
---import qualified Control.Remote.Packet.Strong as SP
+import qualified Control.Remote.Packet.Strong as SP
 import qualified Control.Remote.Packet.Weak   as WP
 
 
 import           Control.Monad.Reader         hiding (local)
-import           Control.Monad.State          (evalStateT)
---import qualified Control.Monad.State          as State
+import           Control.Monad.State          (StateT, evalStateT, modify)
+import qualified Control.Monad.State          as State
 import           Control.Monad.Writer
 
 
@@ -353,30 +353,32 @@ generalSend f cxt (Canvas c) = do
    let m0 :: RemoteMonad Prim a
        m0 = evalStateT (runReaderT c (deviceCanvasContext cxt)) 0
    runMonad (f cxt) N.# m0
-{-
+
 sendS :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
--}
+
 
 sendW :: DeviceContext -> Canvas a -> IO a
 sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
-{-
-sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
+
+sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
 sendS' cxt sp = evalStateT (go sp) mempty
   where
-    go :: SP.StrongPacket Cmd Proc a -> StateT Instr IO a
+    go :: SP.StrongPacket Prim a -> StateT Instr IO a
     go (SP.Command cmd rest) = do
       case cmd of
         Method m canvasCxt -> modify (<> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
         Canvas.Command _c _ -> modify (<> showi cmd <> singleton ';')
         MethodAudio    _a _ -> modify (<> showi cmd <> singleton ';')
         PseudoProcedure f r c     -> sendFunc f r c
+        _                    -> error "sendS': unsupported Command or Procedure was treated as Command"
       go rest
 
     go (SP.Procedure p) =
       case p of
         Query    q c -> sendQuery q c
+        _         -> error "sendS': Unsupported Procedure or a Command was treated as a Procedure"
 
     go SP.Done = do
       cmds <- State.get
@@ -431,7 +433,7 @@ sendS' cxt sp = evalStateT (go sp) mempty
       modify (<> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';')
--}
+
 
 sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
 sendW' cxt = go mempty
@@ -499,7 +501,7 @@ sendW' cxt = go mempty
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send = sendW
+send = sendS
 
 
 local_only :: Middleware
