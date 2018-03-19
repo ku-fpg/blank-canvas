@@ -47,7 +47,6 @@ instance InstrShow CanvasImage
 -- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
 newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasGradient)
-instance InstrShow CanvasGradient
 
 -- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
 newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, Show)
@@ -58,6 +57,9 @@ instance InstrShow CanvasPattern
 data CanvasAudio = CanvasAudio !Int !Double    deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasAudio)
 instance InstrShow CanvasAudio
+
+-- module local names as not in scope until after all the splices
+instance InstrShow CanvasGradient where showi = jsCanvasGradient
 
 -------------------------------------------------------------
 
