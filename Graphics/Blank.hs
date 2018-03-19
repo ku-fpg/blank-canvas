@@ -274,54 +274,8 @@ blankCanvas opts actions = do
 
    locals :: TVar (S.Set Text) <- atomically $ newTVar S.empty
 
---   print dataDir
-
-{-
--- use the comet
-   let kc_opts :: KC.Options
-       kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
-
-   connectApp <- KC.connect kc_opts $ \ kc_doc -> do
-       -- register the events we want to watch for
-       KC.send kc_doc $ fromString $ unlines $ map toString
-          [ "register(" <> showi nm <> ");"
-          | nm <- events opts
-          ]
-
-       let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
-
-       -- A bit of bootstrapping
-       DeviceAttributes w h dpr <- send cxt0 device
-       -- let Canvas rm0 = device
-       --     rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
-       -- (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW' cxt0))) rm1
-       -- print (DeviceAttributes w h dpr)
-
-       let cxt1 = cxt0
-                { ctx_width = w
-                , ctx_height = h
-                , ctx_devicePixelRatio = dpr
-                , weakRemoteMonad = weak opts
-                }
-
-       (actions $ cxt1) `catch` \ (e :: SomeException) -> do
-               print ("Exception in blank-canvas application:" :: String)
-               print e
-               throw e
--}
-
    app <- scottyApp $ do
         Scotty.middleware logStdoutDev
-{-
-
-          _ <- forkIO $ forever $ do
-                  val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
-                  case fromJSON val of
-                     Success (event :: Event) -> do
-                             atomically $ writeTChan queue event
-                     _ -> return ()
-
--}
         Scotty.middleware $ JSB.start $ \ engine -> do
           queue <- liftIO $ atomically newTChan
           JSB.addListener engine $ \ val -> case fromJSON val of
