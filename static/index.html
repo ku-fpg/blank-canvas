@@ -115,7 +115,6 @@
                 }
             }
             function NewImage(src) {
-	        console.log("NewImage",src);
                 var img = new Image();
                 var count = images.push(img);
 		return new Promise(function(resolve, reject) {
@@ -177,7 +176,6 @@
             }
 
             function Trigger(e) {
-	        console.log("Trigger",e);
                 var o = {};
                 o.metaKey = e.metaKey;
                 o.type    = e.type;
@@ -194,7 +192,6 @@
             }
 
             function register(name) {
-	    	        console.log("register",name)
                 $(document).bind(name,Trigger);
             }
 
@@ -244,12 +241,12 @@
                 canvasbuffers.push(c);
                 jsb = new WebSocket('ws://localhost:3000/'); // this will need to be parameter
                 jsb.onmessage = function(evt){
-           	  console.log('exec',evt.data);
                   var reply = function(n,obj) {
-                    console.log('reply',n,obj);
-                    jsb.send(JSON.stringify([n].concat(obj)));
+		    Promise.all(obj).then(function(obj){
+                      jsb.send(JSON.stringify([n].concat(obj)));
+		    });
                   };
-                  eval(evt.data);
+		  eval('(function(){' + evt.data + '})()');
                 };
 //                $.kc.connect("/blank");
             });
