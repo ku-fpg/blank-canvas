@@ -45,7 +45,7 @@ packages:
     extra-dep: true
   - location:
       git: 'git@github.com:ku-fpg/javascript-bridge'
-      commit: '308dc8f0e12aaf8b2bd82deb6344d8e4a71cf808'
+      commit: '11a145610d1c905ceb9934b138553855f53d96fb'                          
     extra-dep: true
 
 # The following packages have been ignored due to incompatibility with the

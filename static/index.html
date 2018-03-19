@@ -177,6 +177,7 @@
             }
 
             function Trigger(e) {
+	        console.log("Trigger",e);
                 var o = {};
                 o.metaKey = e.metaKey;
                 o.type    = e.type;
@@ -193,6 +194,7 @@
             }
 
             function register(name) {
+	    	        console.log("register",name)
                 $(document).bind(name,Trigger);
             }
 
