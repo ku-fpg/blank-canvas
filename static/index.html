@@ -16,7 +16,8 @@
             var canvasbuffers = [];
             var c = null;
             var myDevicePixelRatio = 1; // "my" because this would nameclass with the window.* version
-
+	    var jsb = null;  // the handle to the websocket
+	    
             var urlQuery = {};
             // From http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
             location.search.substr(1).split("&").forEach(function(item) {
@@ -189,7 +190,7 @@
                 if (e.which != undefined) {
                     o.which = e.which;
                 }
-                $.kc.event(o);
+                jsb.send(JSON.stringify(o));
             }
 
             function register(name) {
@@ -266,7 +267,7 @@
                 $("#canvas").css("height",h + "px");
                 c = getContext("2d");
                 canvasbuffers.push(c);
-                var jsb = new WebSocket('ws://localhost:3000/'); // this will need to be parameter
+                jsb = new WebSocket('ws://localhost:3000/'); // this will need to be parameter
                 jsb.onmessage = function(evt){
            	  console.log('exec',evt.data);
                   var reply = function(n,obj) {

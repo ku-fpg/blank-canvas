@@ -312,8 +312,6 @@ blankCanvas opts actions = do
 
    app <- scottyApp $ do
         Scotty.middleware logStdoutDev
-        let toEventQueue :: Value -> IO ()
-            toEventQueue = print
 {-
 
           _ <- forkIO $ forever $ do
@@ -326,8 +324,13 @@ blankCanvas opts actions = do
 -}
         Scotty.middleware $ JSB.start $ \ engine -> do
           queue <- liftIO $ atomically newTChan
+          JSB.addListener engine $ \ val -> case fromJSON val of
+            Success (event :: Event) -> do atomically $ writeTChan queue event
+            _ -> return ()
           let bootstrapContext = CanvasContext 0 300 300
-          DeviceAttributes w h dpr <- JSB.send engine $ Query Device $ bootstrapContext
+          sequence_ [ JSB.send engine $ Command (Register nm) bootstrapContext
+                    | nm <- events opts ]
+          DeviceAttributes w h dpr <- JSB.send engine $ Query Device bootstrapContext
           let cxt = DeviceContext engine queue w h dpr locals $ weak opts
 
           (actions $ cxt) `catch` \ (e :: SomeException) -> do

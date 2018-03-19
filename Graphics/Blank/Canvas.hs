@@ -193,6 +193,7 @@ data Command
   | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
   | forall msg . JSArg msg => Log msg
   | Eval Text
+  | Register Text
   | Frame
 
 instance Show Command where
@@ -207,6 +208,7 @@ instance InstrShow Command where
   showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
   showi (Eval cmd) = fromText cmd -- no escaping or interpretation
     -- TODO: Make sure all browsers are supported:
+  showi (Register txt) = "register(" <> showiJS txt <> ")"
   showi Frame                        = surround "nextFrame(function(){" "})"
 
 -----------------------------------------------------------------------------
