@@ -305,7 +305,7 @@ blankCanvas opts actions = do
         get (Scotty.regex "^/(.*)$") $ do
           fileName :: Text <- Scotty.param "1"
           db <- liftIO $ atomically $ readTVar $ locals
-          if fileName `S.member` db
+          if fileName `S.member` db || True
           then do
             let mime = mimeType fileName
             Scotty.setHeader "Content-Type" $ mime
