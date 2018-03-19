@@ -45,7 +45,7 @@ main = do
                  -- wait for a mouse press
                  wait canvas 
 
-            | (example,name) <- drop 15 $ cycle (map wrap examples ++ io_examples)
+            | (example,name) <- cycle (map wrap examples ++ io_examples)
             ]
     where wrap (example,name) = (send <*> example, name)
 
