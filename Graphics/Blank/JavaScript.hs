@@ -37,12 +37,10 @@ import           TextShow.TH (deriveTextShow)
 -- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
 data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasContext)
-instance InstrShow CanvasContext
 
 -- | A handle to a canvas image. 'CanvasImage's cannot be destroyed.
 data CanvasImage = CanvasImage Int Int Int     deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasImage)
-instance InstrShow CanvasImage
 
 -- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
 newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, Show)
@@ -51,15 +49,18 @@ $(deriveTextShow ''CanvasGradient)
 -- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
 newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasPattern)
-instance InstrShow CanvasPattern
+
 
 -- | A handle to a canvas audio. 'CanvasAudio's cannot be destroyed.
 data CanvasAudio = CanvasAudio !Int !Double    deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasAudio)
-instance InstrShow CanvasAudio
 
 -- module local names as not in scope until after all the splices
+instance InstrShow CanvasContext  where showi = jsCanvasContext
+instance InstrShow CanvasImage    where showi = jsCanvasImage
+instance InstrShow CanvasPattern  where showi = jsCanvasPattern
 instance InstrShow CanvasGradient where showi = jsCanvasGradient
+instance InstrShow CanvasAudio
 
 -------------------------------------------------------------
 
