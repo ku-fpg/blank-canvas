@@ -185,7 +185,7 @@ import           Control.Concurrent.STM
 import           Control.Exception
 import           Control.Monad.IO.Class
 
-import           Data.Aeson                   (Result (..), fromJSON)
+import           Data.Aeson                   (Result (..), fromJSON, Value)
 import           Data.Aeson.Types             (parse)
 import           Data.List                    as L
 import qualified Data.Map                     as M (lookup)
@@ -211,11 +211,15 @@ import           Graphics.Blank.Utils
 
 import           Graphics.Blank.Instr
 
+
+import qualified Network.JavaScript           as JSB
+import           Network.JavaScript           (Packetize(packetize))
 import qualified Network.HTTP.Types           as H
 import           Network.Mime                 (defaultMimeMap,
                                                fileNameExtensions)
 import           Network.Wai                  (Middleware, responseLBS)
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Local as Local
 
 import           Paths_blank_canvas
@@ -272,7 +276,8 @@ blankCanvas opts actions = do
 
 --   print dataDir
 
-   -- use the comet
+{-
+-- use the comet
    let kc_opts :: KC.Options
        kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
 
@@ -282,15 +287,6 @@ blankCanvas opts actions = do
           [ "register(" <> showi nm <> ");"
           | nm <- events opts
           ]
-
-       queue <- atomically newTChan
-       _ <- forkIO $ forever $ do
-               val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
-               case fromJSON val of
-                  Success (event :: Event) -> do
-                          atomically $ writeTChan queue event
-                  _ -> return ()
-
 
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
 
@@ -312,14 +308,36 @@ blankCanvas opts actions = do
                print ("Exception in blank-canvas application:" :: String)
                print e
                throw e
+-}
 
    app <- scottyApp $ do
---        middleware logStdoutDev
+        Scotty.middleware logStdoutDev
+        let toEventQueue :: Value -> IO ()
+            toEventQueue = print
+{-
+
+          _ <- forkIO $ forever $ do
+                  val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
+                  case fromJSON val of
+                     Success (event :: Event) -> do
+                             atomically $ writeTChan queue event
+                     _ -> return ()
+
+-}
+        Scotty.middleware $ JSB.start $ \ engine -> do
+          queue <- liftIO $ atomically newTChan
+          let bootstrapContext = CanvasContext 0 300 300
+          DeviceAttributes w h dpr <- JSB.send engine $ Query Device $ bootstrapContext
+          let cxt = DeviceContext engine queue w h dpr locals $ weak opts
+
+          (actions $ cxt) `catch` \ (e :: SomeException) -> do
+               print ("Exception in blank-canvas application:" :: String)
+               print e
+               throw e
+          
         sequence_ [ Scotty.middleware ware
                   | ware <- middleware opts
                   ]
-
-        connectApp
 
         get "/"                 $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
@@ -357,11 +375,17 @@ generalSend f cxt (Canvas c) = do
 sendS :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
 
-
 sendW :: DeviceContext -> Canvas a -> IO a
 sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
-
+instance Packetize prim => Packetize (SP.StrongPacket prim) where
+  packetize (SP.Command cmd rest) = packetize cmd *> packetize rest
+  packetize (SP.Procedure proc)   = packetize proc
+  packetize (SP.Done)             = pure ()
+    
+sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
+sendS' = sendToCanvas 
+{-
 sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
 sendS' cxt sp = evalStateT (go sp) mempty
   where
@@ -416,7 +440,7 @@ sendS' cxt sp = evalStateT (go sp) mempty
         -- send the com
         uq <- atomically getUniq
         -- The query function returns a function takes the unique port number of the reply.
-        sendToCanvas cxt $ prevCmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
+--        sendToCanvas cxt $ prevCmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
         v <- KC.getReply (theComet cxt) uq
         case parse (parseQueryResult query) v of
           Error msg -> fail msg
@@ -433,10 +457,17 @@ sendS' cxt sp = evalStateT (go sp) mempty
       modify (<> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';')
+-}
 
+instance Packetize prim => Packetize (WP.WeakPacket prim) where
+  packetize (WP.Primitive p) = packetize p
 
 sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
-sendW' cxt = go mempty
+sendW' = sendToCanvas
+
+
+{-
+go mempty
   where
     go :: Instr -> WP.WeakPacket Prim a -> IO a
     go cmds (WP.Primitive p) =
@@ -480,7 +511,7 @@ sendW' cxt = go mempty
       -- send the com
       uq <- atomically getUniq
       -- The query function returns a function takes the unique port number of the reply.
-      send' $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
+--      send' $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
       v <- KC.getReply (theComet cxt) uq
       case parse (parseQueryResult query) v of
         Error msg -> fail msg
@@ -497,6 +528,7 @@ sendW' cxt = go mempty
       send' $ cmds <> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';'
+-}
 
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
@@ -641,3 +673,6 @@ durationAudio = JavaScript.durationAudio
 -- | Returns the index of the given Audio in the array of Audio's in the javascript
 indexAudio :: Audio a => a -> Int
 indexAudio = JavaScript.indexAudio
+
+theComet :: a -> b
+theComet = error "theComet"

@@ -17,6 +17,7 @@ import           Graphics.Blank.Types.Font
 import           Graphics.Blank.Instr
 
 import qualified Network.JavaScript as JSB
+import           Network.JavaScript           (Packetize(packetize))
 
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
@@ -568,14 +569,15 @@ translate = primitive . Method . Translate
 
 ------------------------------------------------------------------------------
 
--- 'primToPacket' encodes a blank canvas primitive as a JavaScript bridge primitive.
-primToPacket :: Prim a -> JSB.Packet a
-primToPacket m@Method{} = JSB.command $ toLazyText $ showi m
-primToPacket (Command c _) = JSB.command $ toLazyText $ showi c
-primToPacket (MethodAudio _ _) = error "NOT SUPPORT (YET)"
-primToPacket (PseudoProcedure f i c) =
-    JSB.command $ toLazyText $ showi i <> singleton '=' <> jsCanvasContext c <> singleton '.' <> showi f
-primToPacket p@(Query q _) = f <$> (JSB.procedure $ toLazyText $ showi p)
-  where f v = case parse (parseQueryResult q) v of
-                Error msg -> error msg
-                Success a -> a
+-- Encodes a blank canvas primitive as a JavaScript bridge primitive.
+
+instance Packetize Prim where
+  packetize m@Method{} = JSB.command $ toLazyText $ showi m
+  packetize (Command c _) = JSB.command $ toLazyText $ showi c
+  packetize (MethodAudio _ _) = error "NOT SUPPORT (YET)"
+  packetize (PseudoProcedure f i c) =
+      JSB.command $ toLazyText $ showi i <> singleton '=' <> jsCanvasContext c <> singleton '.' <> showi f
+  packetize p@(Query q _) = f <$> (JSB.procedure $ toLazyText $ showi p)
+    where f v = case parse (parseQueryResult q) v of
+                  Error msg -> error msg
+                  Success a -> a

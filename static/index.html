@@ -24,6 +24,8 @@
             });
 
             function reply(e) {
+	        alert("wrong reply")
+	        alert(e);
                 return function(u) { return $.kc.reply(u,e); }
             }
             function getContext() {
@@ -103,8 +105,8 @@
             // ##############################################################
             // These are the Queries
 
-            function Device(u,c) {
-                $.kc.reply(u,[c.canvas.width, c.canvas.height,myDevicePixelRatio]);
+            function Device(c) {
+                return [c.canvas.width, c.canvas.height,myDevicePixelRatio];
             }
             function Size(u,c) {
                 $.kc.reply(u,[c.canvas.width, c.canvas.height]);
@@ -264,7 +266,16 @@
                 $("#canvas").css("height",h + "px");
                 c = getContext("2d");
                 canvasbuffers.push(c);
-                $.kc.connect("/blank");
+                var jsb = new WebSocket('ws://localhost:3000/'); // this will need to be parameter
+                jsb.onmessage = function(evt){
+           	  console.log('exec',evt.data);
+                  var reply = function(n,obj) {
+                    console.log('reply',n,obj);
+                    jsb.send(JSON.stringify([n].concat(obj)));
+                  };
+                  eval(evt.data);
+                };
+//                $.kc.connect("/blank");
             });
         </script>
     </body>
