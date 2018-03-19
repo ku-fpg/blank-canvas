@@ -293,26 +293,29 @@ instance Show (Query a) where
 
 instance ContextShow (Query a) where
   showc Device                       c = "Device(" <> c <> ")"
-{-
-  showi ToDataURL                    = "ToDataURL"
-  showi (MeasureText txt)            = "MeasureText(" <> jsText txt <> singleton ')'
-  showi (IsPointInPath (x,y))        = "IsPointInPath(" <> jsDouble x <> singleton ','
-                                                        <> jsDouble y <> singleton ')'
-  showi (NewImage url')              = "NewImage(" <> jsText url' <> singleton ')'
-  showi (NewAudio txt)               = "NewAudio(" <> jsText txt  <> singleton ')'
+  showc ToDataURL                    c = c <> ".toDataURL()"
+   -- If we try return the object directly, via json, we get different results
+   -- on different browsers. So we build an object explicity.
+  showc (MeasureText txt)            c = "{width:" <> c <> ".measureText(" <> jsText txt <> ").width}"
+  showc (IsPointInPath (x,y))        c = c <> ".isPointInPath("
+                                               <> jsDouble x <> singleton ','
+                                               <> jsDouble y <> singleton ')'
+  showc (NewImage url')              c = "NewImage(" <> jsText url' <> singleton ')'
+  showc (NewAudio txt)               c = "NewAudio(" <> jsText txt  <> singleton ')'
 
-  showi (NewCanvas (x,y))            = "NewCanvas(" <> jsInt x <> singleton ','
-                                                    <> jsInt y <> singleton ')'
-  showi (GetImageData (sx,sy,sw,sh)) = "GetImageData(" <> jsDouble sx <> singleton ','
+  showc (NewCanvas (x,y))            c = "NewCanvas(" <> c <> ","
+                                                      <> jsInt x <> singleton ','
+                                                      <> jsInt y <> singleton ')'
+  showc (GetImageData (sx,sy,sw,sh)) c = "GetImageData(" <> jsDouble sx <> singleton ','
                                                        <> jsDouble sy <> singleton ','
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
-  showi (Cursor cur)                 = "Cursor(" <> jsCanvasCursor cur <> singleton ')'
-  showi Sync                         = "Sync"
-  showi (CurrentTimeAudio aud)       = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  showc (Cursor cur)                 c = "Cursor(" <> c <> "," <> jsCanvasCursor cur <> singleton ')'
+  showc Sync                         c = "[]"
+  showc (CurrentTimeAudio aud)       c = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
     -- TODO: Find the correct way to implement this:
   -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
--}
+
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
 parseQueryResult (Device {}) o                = uncurry3 DeviceAttributes <$> parseJSON o

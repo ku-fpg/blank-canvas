@@ -104,77 +104,76 @@
             // as wrapper.
 
             // ##############################################################
-            // These are the Queries
+            // These are the Queries, in the same order as the constructor
 
             function Device(c) {
                 return [c.canvas.width, c.canvas.height,myDevicePixelRatio];
             }
-            function Size(u,c) {
-                $.kc.reply(u,[c.canvas.width, c.canvas.height]);
-            }
-            function ToDataURL(u,c) {
-                $.kc.reply(u,c.canvas.toDataURL());
-
-            }
-            function NewImage(src) {
-                return function (u,c) {
-                    var img = new Image();
-                    var count = images.push(img);
-                    img.onload = function() {
-                           $.kc.reply(u,[count - 1,img.width,img.height]);
-                    };
-                    img.onerror = function() { alert("Image " + src + " not found.\nAdd as a static file to fix this."); };
-                    img.src = src;
-                }
-            }
-
-            function MeasureText(txt) {
-                return function (u,c) {
-	            // If we try return the object directly, via json, we
-                    // get different results on different browsers.
-	            // So we build an object explicity.
-                    $.kc.reply(u,{ width: c.measureText(txt).width });
-                }
-            }
-            function IsPointInPath(x,y) {
+            function IsPointInPath(c,x,y) {
                 return function (u,c) {
                     $.kc.reply(u,c.isPointInPath(x,y));
                 }
             }
+            function NewImage(src) {
+	        console.log("NewImage",src);
+                var img = new Image();
+                var count = images.push(img);
+		return new Promise(function(resolve, reject) {
+                   img.src = src; // force load
+                   img.onload = function() { resolve([count - 1,img.width,img.height]);  };
+                   img.onerror = function() { alert("Image " + src + " not found.\nAdd as a static file to fix this."); };
+		});
+	    }
 
-            function NewCanvas(w,h) {
+            function NewAudio(src) {
+   	        alert("TODO: NewAudio");
+/*				   
                 return function (u,c) {
+                    var audio = new Audio();
+                    var count  = sounds.push(audio);
+                    // I commented this out because there's a chance that the browser won't
+                    // know the audio duration until it's "loaded" (i.e., it can be played
+                    // through). Further testing might be wise.
+
+                    // dur itself isn't used beyond sending the duration back through $.kc.reply, 
+                    // the current setup will probably be sufficient
+                    audio.oncanplaythrough = function () {
+                        $.kc.reply(u,[count - 1,audio.duration]);
+                    };
+                    audio.onerror = function() { alert("Audio " + src + " not found."); };
+                    audio.src = src;
+                } */
+	        return [];
+             }
+
+             function NewCanvas(c,w,h) {
                     var canvas = document.createElement('canvas');
                     canvas.width = w;
                     canvas.height = h;
                     var count = canvasbuffers.push(canvas.getContext("2d"));
-                    $.kc.reply(u,[count - 1,w,h]);
-                }
+                    return [count - 1,w,h];
             }
 
-            function GetImageData(sx,sy,sw,sh) {
-                return function (u,c) {
+            function GetImageData(c,sx,sy,sw,sh) {
                     var img = c.getImageData(sx,sy,sw,sh);
                     var arr = [];
                     for (var i = 0;i < img.data.length;i++) {
                         arr[i] = img.data[i];
                     }
-                    $.kc.reply(u,{ width: img.width
-                                 , height: img.height
-                                 , data: arr
-                                 });
-                }
+                    return { width: img.width
+                           , height: img.height
+                           , data: arr
+                           };
             }
 
-            function Cursor(cur) {
-                return function(u, c) {
-                    c.canvas.style.cursor = cur;
-                    $.kc.reply(u, []);
-                };
+            function Cursor(c,cur) {
+                c.canvas.style.cursor = cur;
+                return []
             }
 
-            function Sync(u,c) {
-                $.kc.reply(u,[]);
+            function CurrentTimeAudio(aud) {
+                var currTime = sounds[aud].currentTime;
+                return currTime;
             }
 
             function Trigger(e) {
@@ -214,32 +213,6 @@
                 }
                 return imgData;
              }
-
-            function NewAudio(src) {
-                return function (u,c) {
-                    var audio = new Audio();
-                    var count  = sounds.push(audio);
-                    // I commented this out because there's a chance that the browser won't
-                    // know the audio duration until it's "loaded" (i.e., it can be played
-                    // through). Further testing might be wise.
-
-                    // dur itself isn't used beyond sending the duration back through $.kc.reply, 
-                    // the current setup will probably be sufficient
-                    audio.oncanplaythrough = function () {
-                        $.kc.reply(u,[count - 1,audio.duration]);
-                    };
-                    audio.onerror = function() { alert("Audio " + src + " not found."); };
-                    audio.src = src;
-                }
-            }
-
-            function CurrentTimeAudio(aud) {
-                return function (u,c) {
-                    var currTime = sounds[aud].currentTime;
-
-                    $.kc.reply(u,currTime);
-                }
-            }
 
             $(document).ready(function() {
                 // Make the canvas the size of the window
