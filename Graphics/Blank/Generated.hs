@@ -573,10 +573,9 @@ translate = primitive . Method . Translate
 
 instance Packetize Prim where
   packetize m@Method{} = JSB.command $ toLazyText $ showi m
-  packetize (Command c _) = JSB.command $ toLazyText $ showi c
-  packetize (MethodAudio _ _) = error "NOT SUPPORT (YET)"
-  packetize (PseudoProcedure f i c) =
-      JSB.command $ toLazyText $ showi i <> singleton '=' <> jsCanvasContext c <> singleton '.' <> showi f
+  packetize c@Command{} = JSB.command $ toLazyText $ showi c
+  packetize MethodAudio{} = error "NOT SUPPORT (YET)"
+  packetize pp@PseudoProcedure{} = JSB.command $ toLazyText $ showi pp
   packetize p@(Query q _) = f <$> (JSB.procedure $ toLazyText $ showi p)
     where f v = case parse (parseQueryResult q) v of
                   Error msg -> error msg
