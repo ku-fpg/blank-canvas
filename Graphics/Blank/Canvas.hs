@@ -293,7 +293,7 @@ instance Show (Query a) where
 
 instance ContextShow (Query a) where
   showc Device                       c = "Device(" <> c <> ")"
-  showc ToDataURL                    c = c <> ".toDataURL()"
+  showc ToDataURL                    c = c <> ".canvas.toDataURL()"
    -- If we try return the object directly, via json, we get different results
    -- on different browsers. So we build an object explicity.
   showc (MeasureText txt)            c = "{width:" <> c <> ".measureText(" <> jsText txt <> ").width}"
