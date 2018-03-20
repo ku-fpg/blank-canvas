@@ -163,6 +163,7 @@ module Graphics.Blank
         , console_log
         , eval
         , JSArg(..)
+        , readPacketProfile
          -- ** Drawing Utilities
         , module Graphics.Blank.Utils
          -- ** Events
@@ -188,7 +189,7 @@ import           Control.Monad.IO.Class
 import           Data.Aeson                   (Result (..), fromJSON, Value)
 import           Data.Aeson.Types             (parse)
 import           Data.List                    as L
-import qualified Data.Map                     as M (lookup)
+import qualified Data.Map                     as M (lookup,empty)
 import qualified Data.Set                     as S
 import qualified Data.Text                    as ST
 import           Data.Text.Encoding           (decodeUtf8)
@@ -198,7 +199,8 @@ import qualified Data.Text.Lazy               as LT
 
 import           Graphics.Blank.Canvas        hiding (addColorStop, cursor)
 import qualified Graphics.Blank.Canvas        as Canvas
-import           Graphics.Blank.DeviceContext
+import           Graphics.Blank.DeviceContext hiding (profiling)
+import qualified Graphics.Blank.DeviceContext as DeviceContext
 import           Graphics.Blank.Events
 import           Graphics.Blank.Generated     hiding (fillStyle, font,
                                                shadowColor, strokeStyle)
@@ -278,6 +280,9 @@ blankCanvas opts actions = do
         Scotty.middleware logStdoutDev
         Scotty.middleware $ JSB.start $ \ engine -> do
           queue <- liftIO $ atomically newTChan
+          prof <- if profiling opts
+                  then atomically (Just <$> newTVar M.empty)
+                  else return Nothing
           JSB.addListener engine $ \ val -> case fromJSON val of
             Success (event :: Event) -> do atomically $ writeTChan queue event
             _ -> return ()
@@ -285,7 +290,7 @@ blankCanvas opts actions = do
           sequence_ [ JSB.send engine $ Command (Register nm) bootstrapContext
                     | nm <- events opts ]
           DeviceAttributes w h dpr <- JSB.send engine $ Query Device bootstrapContext
-          let cxt = DeviceContext engine queue w h dpr locals $ weak opts
+          let cxt = DeviceContext engine queue w h dpr locals (weak opts) prof
 
           (actions $ cxt) `catch` \ (e :: SomeException) -> do
                print ("Exception in blank-canvas application:" :: String)
@@ -340,6 +345,11 @@ instance Packetize prim => Packetize (SP.StrongPacket prim) where
   packetize (SP.Procedure proc)   = packetize proc
   packetize (SP.Done)             = pure ()
     
+instance Profile (SP.StrongPacket prim) where
+  profile (SP.Command _ rest) = commandProfile <> profile rest
+  profile (SP.Procedure proc) = procedureProfile
+  profile (SP.Done)           = mempty
+
 sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
 sendS' = sendToCanvas 
 {-
@@ -419,6 +429,11 @@ sendS' cxt sp = evalStateT (go sp) mempty
 instance Packetize prim => Packetize (WP.WeakPacket prim) where
   packetize (WP.Primitive p) = packetize p
 
+instance KnownResult prim => Profile (WP.WeakPacket prim) where
+  profile (WP.Primitive p) = case unitResult p of
+                               UnitResult    -> commandProfile
+                               UnknownResult -> procedureProfile
+    
 sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
 sendW' = sendToCanvas
 
@@ -527,6 +542,7 @@ data Options = Options
         , root       :: String           -- ^ Location of the static files. Default: @\".\"@
         , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
         , weak       :: Bool         -- ^ use a weak monad, which may help debugging (default False)
+        , profiling  :: Bool         -- ^ turn on profiling of packets. Default: @False@
         }
 
 instance Num Options where
@@ -541,6 +557,7 @@ instance Num Options where
                             , root = "."
                             , middleware = [local_only]
                             , weak = False
+                            , profiling = False
                             }
 
 -------------------------------------------------
