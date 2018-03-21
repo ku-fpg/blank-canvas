@@ -163,6 +163,7 @@ module Graphics.Blank
         , console_log
         , eval
         , JSArg(..)
+        , PacketProfile(..)
         , readPacketProfile
          -- ** Drawing Utilities
         , module Graphics.Blank.Utils
