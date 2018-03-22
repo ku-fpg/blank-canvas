@@ -9,6 +9,7 @@
     <body style="padding: 0px; margin: 0px; border:0px">
         <div id="canvas"></div>
         <script type="text/javascript">
+	    var debug = false;
             var session = 0; // global session number
             var images = [];
             var sounds = [];
@@ -243,9 +244,11 @@
                 jsb.onmessage = function(evt){
                   var reply = function(n,obj) {
 		    Promise.all(obj).then(function(obj){
+                      if (debug) { console.log("reply",n,obj); }
                       jsb.send(JSON.stringify([n].concat(obj)));
 		    });
                   };
+                  if (debug) { console.log("eval",evt.data); }
 		  eval('(function(){' + evt.data + '})()');
                 };
 //                $.kc.connect("/blank");
