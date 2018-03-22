@@ -3,21 +3,18 @@ module Graphics.Blank.DeviceContext where
 
 import           Control.Concurrent.STM
 
-import           Data.Set (Set)
-import           Data.Map (Map)
-import qualified Data.Map as M
-import           Data.Monoid ((<>))
-import           Data.Text.Lazy (Text, toStrict)
+import           Data.Map                  (Map)
+import           Data.Set                  (Set)
+import           Data.Text.Lazy            (Text)
 
-import           Graphics.Blank.Canvas
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
-import           Graphics.Blank.Instr
 
 -- import           TextShow (Builder, toText)
 
 -- import qualified Web.Scotty.Comet as KC
-import qualified Network.JavaScript as JSB
+import qualified Data.Map                  as M
+import qualified Network.JavaScript        as JSB
 
 -- | 'DeviceContext' is the abstract handle into a specific 2D context inside a browser.
 -- Note that the JavaScript API concepts of
@@ -33,9 +30,11 @@ data DeviceContext = DeviceContext
         , ctx_height           :: !Int
         , ctx_devicePixelRatio :: !Double
         , localFiles           :: TVar (Set Text) -- ^ approved local files
-        , weakRemoteMonad      :: Bool            -- ^ use a weak remote monad for debugging
+        , remoteBundling       :: BundlingStrategy -- ^ choose which bundling from Remote Monad
         , profiling            :: Maybe (TVar (Map PacketProfile Int))
         }
+
+data BundlingStrategy = Weak | Strong | Appl
 
 instance Image DeviceContext where
   jsImage = jsImage . deviceCanvasContext
@@ -81,18 +80,18 @@ flush cxt = atomically $ loop
 
 readPacketProfile :: DeviceContext -> IO (Map PacketProfile Int)
 readPacketProfile cxt =
-    case profiling cxt of  
+    case profiling cxt of
         Nothing  -> return M.empty
         Just ref -> atomically $ readTVar ref
 
 data PacketProfile = PacketProfile
-    { commands :: !Int
+    { commands   :: !Int
     , procedures :: !Int
     } deriving (Eq, Ord, Show)
 
 instance Monoid PacketProfile where
    mempty = PacketProfile 0 0
-   PacketProfile p1 c1 `mappend` PacketProfile p2 c2 = PacketProfile (p1+p2) (c1+c2)
+   PacketProfile c1 p1 `mappend` PacketProfile c2 p2 = PacketProfile (c1+c2) (p1+p2)
 
 commandProfile :: PacketProfile
 commandProfile = mempty { commands = 1 }
@@ -102,4 +101,3 @@ procedureProfile = mempty { procedures = 1 }
 
 class Profile p where
     profile :: p a -> PacketProfile
-

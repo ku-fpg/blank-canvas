@@ -25,6 +25,7 @@ module Graphics.Blank
          -- * Starting @blank-canvas@
           blankCanvas
         , Options(..)
+        , BundlingStrategy(..)
           -- ** 'send'ing to the Graphics 'DeviceContext'
         , DeviceContext       -- abstact
         , send
@@ -182,75 +183,71 @@ module Graphics.Blank
         , local_only
         ) where
 
-import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Exception
 import           Control.Monad.IO.Class
 
-import           Data.Aeson                   (Result (..), fromJSON, Value)
-import           Data.Aeson.Types             (parse)
-import           Data.List                    as L
-import qualified Data.Map                     as M (lookup,empty)
-import qualified Data.Set                     as S
-import qualified Data.Text                    as ST
-import           Data.Text.Encoding           (decodeUtf8)
-import           Data.Text.Lazy               (Text)
-import qualified Data.Text.Lazy               as T
-import qualified Data.Text.Lazy               as LT
+import           Data.Aeson                           (Result (..), fromJSON)
+import           Data.List                            as L
+import qualified Data.Map                             as M (empty, lookup)
+import qualified Data.Set                             as S
+import qualified Data.Text                            as ST
+import           Data.Text.Encoding                   (decodeUtf8)
+import           Data.Text.Lazy                       (Text)
+import qualified Data.Text.Lazy                       as T
+import qualified Data.Text.Lazy                       as LT
 
-import           Graphics.Blank.Canvas        hiding (addColorStop, cursor)
-import qualified Graphics.Blank.Canvas        as Canvas
-import           Graphics.Blank.DeviceContext hiding (profiling)
-import qualified Graphics.Blank.DeviceContext as DeviceContext
+import           Graphics.Blank.Canvas                hiding (addColorStop,
+                                                       cursor)
+import qualified Graphics.Blank.Canvas                as Canvas
+import           Graphics.Blank.DeviceContext         hiding (profiling)
 import           Graphics.Blank.Events
-import           Graphics.Blank.Generated     hiding (fillStyle, font,
-                                               shadowColor, strokeStyle)
-import qualified Graphics.Blank.Generated     as Generated
-import           Graphics.Blank.JavaScript    hiding (durationAudio, height,
-                                               indexAudio, width)
-import qualified Graphics.Blank.JavaScript    as JavaScript
+import           Graphics.Blank.Generated             hiding (fillStyle, font,
+                                                       shadowColor, strokeStyle)
+import qualified Graphics.Blank.Generated             as Generated
+import           Graphics.Blank.JavaScript            hiding (durationAudio,
+                                                       height, indexAudio,
+                                                       width)
+import qualified Graphics.Blank.JavaScript            as JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Utils
 
-import           Graphics.Blank.Instr
 
-
-import qualified Network.JavaScript           as JSB
-import           Network.JavaScript           (Packetize(packetize))
-import qualified Network.HTTP.Types           as H
-import           Network.Mime                 (defaultMimeMap,
-                                               fileNameExtensions)
-import           Network.Wai                  (Middleware, responseLBS)
+import qualified Network.HTTP.Types                   as H
+import           Network.JavaScript                   (Packetize (packetize))
+import qualified Network.JavaScript                   as JSB
+import           Network.Mime                         (defaultMimeMap,
+                                                       fileNameExtensions)
+import           Network.Wai                          (Middleware, responseLBS)
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.Local         as Local
 import           Network.Wai.Middleware.RequestLogger
-import           Network.Wai.Middleware.Local as Local
 
 import           Paths_blank_canvas
 
 import           Control.Category
-import           Prelude.Compat               hiding (id, (.))
+import           Prelude.Compat                       hiding (id, (.))
 
-import           System.IO.Unsafe             (unsafePerformIO)
+import           System.IO.Unsafe                     (unsafePerformIO)
 
 
-import           Web.Scotty                   (file, get, scottyApp)
-import qualified Web.Scotty                   as Scotty
-import qualified Web.Scotty.Comet             as KC
+import           Web.Scotty                           (file, get, scottyApp)
+import qualified Web.Scotty                           as Scotty
+import qualified Web.Scotty.Comet                     as KC
 
 import           Control.Natural
-import qualified Control.Natural              as N
+import qualified Control.Natural                      as N
 import           Control.Remote.Monad
-import qualified Control.Remote.Packet.Strong as SP
-import qualified Control.Remote.Packet.Weak   as WP
+import qualified Control.Remote.Packet.Applicative    as AP
+import qualified Control.Remote.Packet.Strong         as SP
+import qualified Control.Remote.Packet.Weak           as WP
 
 
-import           Control.Monad.Reader         hiding (local)
-import           Control.Monad.State          (StateT, evalStateT, modify)
-import qualified Control.Monad.State          as State
+import           Control.Monad.Reader                 hiding (local)
+import           Control.Monad.State                  (evalStateT)
 import           Control.Monad.Writer
 
 
-import           Data.String
 
 -- | 'blankCanvas' is the main entry point into @blank-canvas@.
 -- A typical invocation would be
@@ -285,19 +282,19 @@ blankCanvas opts actions = do
                   then atomically (Just <$> newTVar M.empty)
                   else return Nothing
           JSB.addListener engine $ \ val -> case fromJSON val of
-            Success (event :: Event) -> do atomically $ writeTChan queue event
-            _ -> return ()
+            Success (event :: Event) -> atomically $ writeTChan queue event
+            _                        -> return ()
           let bootstrapContext = CanvasContext 0 300 300
           sequence_ [ JSB.send engine $ Command (Register nm) bootstrapContext
                     | nm <- events opts ]
           DeviceAttributes w h dpr <- JSB.send engine $ Query Device bootstrapContext
-          let cxt = DeviceContext engine queue w h dpr locals (weak opts) prof
+          let cxt = DeviceContext engine queue w h dpr locals (bundling opts) prof
 
-          (actions $ cxt) `catch` \ (e :: SomeException) -> do
+          actions cxt `catch` \ (e :: SomeException) -> do
                print ("Exception in blank-canvas application:" :: String)
                print e
                throw e
-          
+
         sequence_ [ Scotty.middleware ware
                   | ware <- middleware opts
                   ]
@@ -305,25 +302,25 @@ blankCanvas opts actions = do
         get "/"                 $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js"   $ file $ dataDir ++ "/static/jquery-json.js"
-        get "/kansas-comet.js"  $ file $ kComet
+        get "/kansas-comet.js"  $ file  kComet
 
         -- There has to be a better way of doing this, using function, perhaps?
         get (Scotty.regex "^/(.*)$") $ do
           fileName :: Text <- Scotty.param "1"
-          db <- liftIO $ atomically $ readTVar $ locals
+          db <- liftIO $ atomically $ readTVar locals
           if fileName `S.member` db || True
           then do
             let mime = mimeType fileName
-            Scotty.setHeader "Content-Type" $ mime
-            file $ (root opts ++ "/" ++ T.unpack fileName)
-          else do
+            Scotty.setHeader "Content-Type" mime
+            file (root opts ++ "/" ++ T.unpack fileName)
+          else
             Scotty.next
 
         return ()
 
    runSettings (setPort (port opts)
                $ setTimeout 5
-               $ defaultSettings
+                 defaultSettings
                ) app
 
 generalSend :: forall m a . RunMonad m
@@ -335,24 +332,43 @@ generalSend f cxt (Canvas c) = do
        m0 = evalStateT (runReaderT c (deviceCanvasContext cxt)) 0
    runMonad (f cxt) N.# m0
 
+sendA :: DeviceContext -> Canvas a -> IO a
+sendA = generalSend (\cxt -> wrapNT (sendA' cxt))
+
 sendS :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
 
 sendW :: DeviceContext -> Canvas a -> IO a
 sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
+instance Packetize prim => Packetize (AP.ApplicativePacket prim) where
+  packetize (AP.Pure a)      = pure a
+  packetize (AP.Primitive p) = packetize p
+  packetize (AP.Zip f g h)   = f <$> packetize g <*> packetize h
+
+instance KnownResult prim => Profile (AP.ApplicativePacket prim) where
+  profile (AP.Pure _)  = mempty
+  profile (AP.Primitive proc) = case unitResult proc of
+                                  UnitResult    -> commandProfile
+                                  UnknownResult -> procedureProfile
+  profile (AP.Zip _ g h) = profile g <> profile h
+
 instance Packetize prim => Packetize (SP.StrongPacket prim) where
   packetize (SP.Command cmd rest) = packetize cmd *> packetize rest
   packetize (SP.Procedure proc)   = packetize proc
-  packetize (SP.Done)             = pure ()
-    
+  packetize  SP.Done              = pure ()
+
 instance Profile (SP.StrongPacket prim) where
-  profile (SP.Command _ rest) = commandProfile <> profile rest
-  profile (SP.Procedure proc) = procedureProfile
-  profile (SP.Done)           = mempty
+  profile (SP.Command _ rest)  = commandProfile <> profile rest
+  profile (SP.Procedure _proc) = procedureProfile
+  profile  SP.Done             = mempty
+
+
+sendA' :: DeviceContext -> AP.ApplicativePacket Prim a -> IO a
+sendA' = sendToCanvas
 
 sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
-sendS' = sendToCanvas 
+sendS' = sendToCanvas
 {-
 sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
 sendS' cxt sp = evalStateT (go sp) mempty
@@ -434,7 +450,7 @@ instance KnownResult prim => Profile (WP.WeakPacket prim) where
   profile (WP.Primitive p) = case unitResult p of
                                UnitResult    -> commandProfile
                                UnknownResult -> procedureProfile
-    
+
 sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
 sendW' = sendToCanvas
 
@@ -506,8 +522,16 @@ go mempty
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send = sendS
-
+send dc c = case remoteBundling dc of
+            Weak   ->do
+                        putStrLn "Running Weak"
+                        sendW dc c
+            Strong -> do
+                        putStrLn "Running Strong"
+                        sendS dc c
+            Appl   -> do
+                        putStrLn "Running Applicative"
+                        sendA dc c
 
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
@@ -542,7 +566,7 @@ data Options = Options
         , debug      :: Bool             -- ^ Turn on debugging. Default: @False@
         , root       :: String           -- ^ Location of the static files. Default: @\".\"@
         , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
-        , weak       :: Bool         -- ^ use a weak monad, which may help debugging (default False)
+        , bundling   :: BundlingStrategy -- ^ select remote monad bundling (default Strong)
         , profiling  :: Bool         -- ^ turn on profiling of packets. Default: @False@
         }
 
@@ -557,7 +581,7 @@ instance Num Options where
                             , debug = False
                             , root = "."
                             , middleware = [local_only]
-                            , weak = False
+                            , bundling = Strong
                             , profiling = False
                             }
 

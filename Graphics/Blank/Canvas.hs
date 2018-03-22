@@ -45,7 +45,7 @@ $(deriveTextShow ''DeviceAttributes)
 instance InstrShow DeviceAttributes
 
 -- | The 'width' argument of 'TextMetrics' can trivially be projected out.
-data TextMetrics = TextMetrics Double deriving Show
+newtype TextMetrics = TextMetrics Double deriving Show
 $(deriveTextShow ''TextMetrics)
 
 instance InstrShow TextMetrics
@@ -69,11 +69,11 @@ data Prim :: * -> * where
 
 
 instance KnownResult Prim where
-  knownResult (Method {}           ) = Just ()
-  knownResult (Command {}         ) = Just ()
-  knownResult (MethodAudio {}     ) = Just ()
-  knownResult (PseudoProcedure {} ) = Just ()
-  knownResult (Query {}           ) = Nothing
+  knownResult Method {}           = Just ()
+  knownResult Command {}          = Just ()
+  knownResult MethodAudio {}      = Just ()
+  knownResult PseudoProcedure {}  = Just ()
+  knownResult Query {}            = Nothing
 
   unitResult Method {}          = UnitResult
   unitResult Command {}         = UnitResult
@@ -216,8 +216,7 @@ instance InstrShow Command where
 -- | 'with' runs a set of canvas commands in the context
 -- of a specific canvas buffer.
 with :: CanvasContext -> Canvas a -> Canvas a
-with context (Canvas m) = Canvas $ do
-  local (const context) m
+with context (Canvas m) = Canvas $ local (const context) m
 
 -- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
@@ -292,46 +291,46 @@ instance Show (Query a) where
   showsPrec p q = showsPrec p $ I.toString $ showc q "*"
 
 instance ContextShow (Query a) where
-  showc Device                       c = "Device(" <> c <> ")"
-  showc ToDataURL                    c = c <> ".canvas.toDataURL()"
+  showc Device                        c = "Device(" <> c <> ")"
+  showc ToDataURL                     c = c <> ".canvas.toDataURL()"
    -- If we try return the object directly, via json, we get different results
    -- on different browsers. So we build an object explicity.
-  showc (MeasureText txt)            c = "{width:" <> c <> ".measureText(" <> jsText txt <> ").width}"
-  showc (IsPointInPath (x,y))        c = c <> ".isPointInPath("
+  showc (MeasureText txt)             c = "{width:" <> c <> ".measureText(" <> jsText txt <> ").width}"
+  showc (IsPointInPath (x,y))         c = c <> ".isPointInPath("
                                                <> jsDouble x <> singleton ','
                                                <> jsDouble y <> singleton ')'
-  showc (NewImage url')              c = "NewImage(" <> jsText url' <> singleton ')'
-  showc (NewAudio txt)               c = "NewAudio(" <> jsText txt  <> singleton ')'
+  showc (NewImage url')              _c = "NewImage(" <> jsText url' <> singleton ')'
+  showc (NewAudio txt)               _c = "NewAudio(" <> jsText txt  <> singleton ')'
 
-  showc (NewCanvas (x,y))            c = "NewCanvas(" <> c <> ","
+  showc (NewCanvas (x,y))             c = "NewCanvas(" <> c <> ","
                                                       <> jsInt x <> singleton ','
                                                       <> jsInt y <> singleton ')'
-  showc (GetImageData (sx,sy,sw,sh)) c = "GetImageData(" <> jsDouble sx <> singleton ','
+  showc (GetImageData (sx,sy,sw,sh)) _c = "GetImageData(" <> jsDouble sx <> singleton ','
                                                        <> jsDouble sy <> singleton ','
                                                        <> jsDouble sw <> singleton ','
                                                        <> jsDouble sh <> singleton ')'
-  showc (Cursor cur)                 c = "Cursor(" <> c <> "," <> jsCanvasCursor cur <> singleton ')'
-  showc Sync                         c = "[]"
-  showc (CurrentTimeAudio aud)       c = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
+  showc (Cursor cur)                  c = "Cursor(" <> c <> "," <> jsCanvasCursor cur <> singleton ')'
+  showc Sync                         _c = "[]"
+  showc (CurrentTimeAudio aud)       _c = "CurrentTimeAudio(" <> jsIndexAudio aud <> singleton ')'
     -- TODO: Find the correct way to implement this:
   -- showi (GetVolumeAudio   aud)       = "GetVolumeAudio("   <> jsIndexAudio aud <> singleton ')'
 
 -- This is how we take our value to bits
 parseQueryResult :: Query a -> Value -> Parser a
-parseQueryResult (Device {}) o                = uncurry3 DeviceAttributes <$> parseJSON o
-parseQueryResult (ToDataURL {}) o             = parseJSON o
-parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
-parseQueryResult (IsPointInPath {}) o         = parseJSON o
-parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
-parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
-parseQueryResult (GetImageData {}) (Object o) = ImageData
+parseQueryResult Device{} o                = uncurry3 DeviceAttributes <$> parseJSON o
+parseQueryResult ToDataURL{} o             = parseJSON o
+parseQueryResult MeasureText{} (Object v)  = TextMetrics <$> v .: "width"
+parseQueryResult IsPointInPath{} o         = parseJSON o
+parseQueryResult NewImage{} o              = uncurry3 CanvasImage <$> parseJSON o
+parseQueryResult NewAudio{} o              = uncurry CanvasAudio <$> parseJSON o
+parseQueryResult NewCanvas{} o             = uncurry3 CanvasContext <$> parseJSON o
+parseQueryResult GetImageData{} (Object o) = ImageData
                                            <$> (o .: "width")
                                            <*> (o .: "height")
                                            <*> (o .: "data")
-parseQueryResult (Cursor {}) _                = return ()
-parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
-parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
+parseQueryResult Cursor{} _                = return ()
+parseQueryResult Sync{} _                  = return () -- we just accept anything; empty list sent
+parseQueryResult CurrentTimeAudio{} o      = parseJSON o
 -- parseQueryResult (GetVolumeAudio   {})
 parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
 
