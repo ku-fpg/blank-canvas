@@ -34,7 +34,7 @@ import           TextShow.TH (deriveTextShow)
 import           Control.Remote.Monad hiding (primitive)
 import qualified Control.Remote.Monad as RM
 import           Control.Monad.Reader
-import           Control.Monad.State
+--import           Control.Monad.State
 
 
 
@@ -81,7 +81,7 @@ instance KnownResult Prim where
   unitResult PseudoProcedure {} = UnitResult
   unitResult Query {}           = UnknownResult
 
-
+{-
 newtype Canvas a = Canvas
         (ReaderT CanvasContext     -- the context, for the graphic contexts
         (StateT Int                -- local number allocations
@@ -103,7 +103,76 @@ function alloc f = Canvas $ do
   let a = alloc u
   lift . lift $ RM.primitive (PseudoProcedure f a c)
   return a
+-}
 
+data Canvas a where
+  Primitive :: (CanvasContext -> Prim a) -> Canvas a
+  Function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
+  With     :: CanvasContext -> Canvas a -> Canvas a
+  Ask      :: Canvas CanvasContext 
+  Pure     :: a -> Canvas a
+  Ap       :: Canvas (a -> b) -> Canvas a -> Canvas b
+  Bind     :: Canvas a -> (a -> Canvas b) -> Canvas b
+
+instance Functor Canvas where
+  fmap f m = pure f <*> m
+  
+instance Applicative Canvas where
+  pure = Pure
+  (<*>) = Ap
+
+instance Monad Canvas where
+  return = pure
+  (>>=) = Bind
+
+primitive :: (CanvasContext -> Prim a) -> Canvas a
+primitive = Primitive
+
+function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
+function = Function
+
+-- | 'with' runs a set of canvas commands in the context
+-- of a specific canvas buffer.
+with :: CanvasContext -> Canvas a -> Canvas a
+with context m = With context m
+
+-- | 'myCanvasContext' returns the current 'CanvasContext'.
+myCanvasContext :: Canvas CanvasContext
+myCanvasContext = Ask
+
+data P a where
+  P1 :: (RemoteMonad Prim a, Int) -> P a
+  P2 :: RemoteMonad Prim (a,Int) -> P a
+
+runCanvas :: CanvasContext -> Int -> Canvas a -> RemoteMonad Prim (a,Int)
+runCanvas c i m = case runCanvas' c i m of
+  P1 (f,i') -> (\ x -> (x,i')) <$> f
+  P2 f      -> f
+
+runCanvas' :: CanvasContext -> Int -> Canvas a -> P a
+runCanvas' c i (Primitive p) = P1 (RM.primitive $ p c,i)
+runCanvas' c i (Function alloc f) = P1 (RM.primitive (PseudoProcedure f a c) *> pure a,i+1)
+  where a = alloc i
+runCanvas' _ i (With c m) = runCanvas' c i m
+runCanvas' c i Ask = P1 (pure c,i)
+runCanvas' _ i (Pure a) = P1 (pure a,i)
+runCanvas' c i0 (f `Ap` g) = case runCanvas' c i0 f of
+  P1 (f',i1) -> case runCanvas' c i1 g of
+                  P1 (g',i2) ->  P1 (f' <*> g',i2)
+                  P2 m       ->  P2 $ (\ h (a,b) -> (h a,b)) <$> f' <*> m
+  P2 m -> P2 (m >>= \ (h,i1) -> case runCanvas' c i1 g of
+                  P1 (g',i2) -> (\ a -> (h a,i2)) <$> g'
+                  P2 m'      -> (\ (a,i) -> (h a,i)) <$> m')
+                    
+runCanvas' c i0 (m `Bind` k) = case runCanvas' c i0 m of
+    P1 (p,i1) -> P2 (p >>= \ a -> case runCanvas' c i1 (k a) of
+                                    P1 (q,i2) -> (\ x -> (x,i2)) <$> q
+                                    P2 k -> k)
+    P2 m -> P2 (m >>= \ (a,i1) -> case runCanvas' c i1 (k a) of
+                                    P1 (q,i2) -> (\ x -> (x,i2)) <$> q
+                                    P2 k -> k)
+
+-----------------------------------------------------------------------------
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
 --         Command     :: Command                     -> Canvas ()     -- <command>
@@ -210,17 +279,6 @@ instance InstrShow Command where
     -- TODO: Make sure all browsers are supported:
   showi (Register txt) = "register(" <> showiJS txt <> ")"
   showi Frame                        = surround "nextFrame(function(){" "})"
-
------------------------------------------------------------------------------
-
--- | 'with' runs a set of canvas commands in the context
--- of a specific canvas buffer.
-with :: CanvasContext -> Canvas a -> Canvas a
-with context (Canvas m) = Canvas $ local (const context) m
-
--- | 'myCanvasContext' returns the current 'CanvasContext'.
-myCanvasContext :: Canvas CanvasContext
-myCanvasContext = Canvas ask
 
 -----------------------------------------------------------------------------
 

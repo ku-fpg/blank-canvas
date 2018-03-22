@@ -325,12 +325,13 @@ blankCanvas opts actions = do
 
 generalSend :: forall m a . RunMonad m
             => (DeviceContext -> m Prim :~> IO) -> DeviceContext -> Canvas a -> IO a
-generalSend f cxt (Canvas c) = do
+generalSend f cxt c = do
     -- XXX: Is it ok to hardcode 0 as the start value here?
     -- AJG: No, its not.
-   let m0 :: RemoteMonad Prim a
-       m0 = evalStateT (runReaderT c (deviceCanvasContext cxt)) 0
-   runMonad (f cxt) N.# m0
+   let m0 :: RemoteMonad Prim (a,Int)
+       m0 = runCanvas (deviceCanvasContext cxt) 0 c
+   (a,_) <- runMonad (f cxt) N.# m0
+   return a
 
 sendA :: DeviceContext -> Canvas a -> IO a
 sendA = generalSend (\cxt -> wrapNT (sendA' cxt))
