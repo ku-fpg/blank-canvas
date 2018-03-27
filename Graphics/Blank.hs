@@ -524,15 +524,9 @@ go mempty
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
 send dc c = case remoteBundling dc of
-            Weak   ->do
-                        putStrLn "Running Weak"
-                        sendW dc c
-            Strong -> do
-                        putStrLn "Running Strong"
-                        sendS dc c
-            Appl   -> do
-                        putStrLn "Running Applicative"
-                        sendA dc c
+            Weak   -> sendW dc c
+            Strong -> sendS dc c
+            Appl   -> sendA dc c
 
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
@@ -567,7 +561,7 @@ data Options = Options
         , debug      :: Bool             -- ^ Turn on debugging. Default: @False@
         , root       :: String           -- ^ Location of the static files. Default: @\".\"@
         , middleware :: [Middleware] -- ^ Extra middleware(s) to be executed. Default: @['local_only']@
-        , bundling   :: BundlingStrategy -- ^ select remote monad bundling (default Strong)
+        , bundling   :: BundlingStrategy -- ^ select remote monad bundling (default Appl)
         , profiling  :: Bool         -- ^ turn on profiling of packets. Default: @False@
         }
 
@@ -582,7 +576,7 @@ instance Num Options where
                             , debug = False
                             , root = "."
                             , middleware = [local_only]
-                            , bundling = Strong
+                            , bundling = Appl
                             , profiling = False
                             }
 

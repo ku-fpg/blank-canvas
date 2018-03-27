@@ -35,6 +35,7 @@ data DeviceContext = DeviceContext
         }
 
 data BundlingStrategy = Weak | Strong | Appl
+  deriving (Read,Show)
 
 instance Image DeviceContext where
   jsImage = jsImage . deviceCanvasContext
