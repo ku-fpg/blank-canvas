@@ -251,6 +251,11 @@
                   if (debug) { console.log("eval",evt.data); }
 		  eval('(function(){' + evt.data + '})()');
                 };
+		  function heartbeat() {
+		    jsb.send({});
+		    setTimeout(heartbeat,1000);
+		  }
+		  jsb.onopen = heartbeat;
 //                $.kc.connect("/blank");
             });
         </script>
