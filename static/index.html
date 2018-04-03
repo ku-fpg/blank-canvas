@@ -252,7 +252,7 @@
 		  eval('(function(){' + evt.data + '})()');
                 };
 		  function heartbeat() {
-		    jsb.send({});
+		    jsb.send('{}');
 		    setTimeout(heartbeat,1000);
 		  }
 		  jsb.onopen = heartbeat;
