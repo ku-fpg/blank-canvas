@@ -2,6 +2,10 @@
 Additions
  * Add `Semigroup` instance for `Canvas`
 
+### 0.6.2
+Additions
+* Add `Semigroup` instance for `Canvas`
+
 ### 0.6.1
 * Fix building with `aeson-1.2.2.0`.
 
