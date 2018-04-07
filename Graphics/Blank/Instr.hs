@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DefaultSignatures #-}
 
@@ -28,11 +29,11 @@ import qualified Data.Text.Lazy.Builder as T
 import           TextShow hiding (fromString, singleton, fromText, toLazyText, toString)
 import qualified TextShow as TS
 
-import           Data.Semigroup
 import           Data.String
 
 import           GHC.Show (appPrec, appPrec1)
 import           Numeric (showHex)
+import           Prelude.Compat
 
 import           Data.Word
 

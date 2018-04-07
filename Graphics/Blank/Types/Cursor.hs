@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Types.Cursor where
 
-import           Data.Monoid
 import           Data.String (IsString(..))
 import qualified Data.Text.Lazy as TL (Text)
 import           Data.Text.Lazy (pack)
@@ -32,7 +31,7 @@ instance CanvasCursor Cursor where
     jsCanvasCursor = jsCursor
 
 -- | Specified the mouse cursor's appearance in a web browser.
--- 
+--
 -- Images by the Mozilla Developer Network are licensed under
 -- <http://creativecommons.org/licenses/by-sa/2.5/ CC-BY-SA 2.5>.
 data Cursor = Auto         -- ^ The browser determines the cursor to display based on the
@@ -135,7 +134,7 @@ instance Read Cursor where
                _ <- char ','
                URL url' <$> unlift readPrec
           ]
-    
+
     readListPrec = readListPrecDefault
 
 readURL :: Maybe Char -> ReadP TL.Text

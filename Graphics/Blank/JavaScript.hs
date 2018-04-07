@@ -9,7 +9,6 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
 import           Data.Text.Lazy (Text, fromStrict)
@@ -102,10 +101,10 @@ instance Image CanvasContext where
 class Audio a where
     jsAudio       :: a -> Instr
     durationAudio :: Fractional b => a -> b
-    indexAudio    :: a -> Int -- the index to access the audio in the sounds array 
+    indexAudio    :: a -> Int -- the index to access the audio in the sounds array
 
 
-instance Audio CanvasAudio where         
+instance Audio CanvasAudio where
   jsAudio                         = jsCanvasAudio
   durationAudio (CanvasAudio _ d) = realToFrac d
   indexAudio    (CanvasAudio n _) = n

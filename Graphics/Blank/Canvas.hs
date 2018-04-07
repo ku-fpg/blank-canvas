@@ -13,7 +13,6 @@ module Graphics.Blank.Canvas where
 
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
-import           Data.Semigroup (Semigroup(..))
 import           Data.Text.Lazy (Text, fromStrict, toStrict)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text as ST

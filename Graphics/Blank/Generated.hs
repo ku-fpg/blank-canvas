@@ -1,9 +1,9 @@
 {-# LANGUAGE GADTs             #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
-import           Data.Monoid               ((<>))
 import qualified Data.Text                 as ST
 import           Data.Text.Lazy            (fromStrict)
 
@@ -13,6 +13,8 @@ import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
 
 import           Graphics.Blank.Instr
+
+import           Prelude.Compat
 
 -- import           TextShow (TextShow(..), FromTextShow(..), singleton)
 

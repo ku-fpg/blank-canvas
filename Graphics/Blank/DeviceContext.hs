@@ -1,16 +1,18 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.DeviceContext where
 
 import           Control.Concurrent.STM
 
 import           Data.Set (Set)
-import           Data.Monoid ((<>))
 import           Data.Text.Lazy (Text, toStrict)
 
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
 
 import           Graphics.Blank.Instr
+
+import           Prelude.Compat
 
 -- import           TextShow (Builder, toText)
 

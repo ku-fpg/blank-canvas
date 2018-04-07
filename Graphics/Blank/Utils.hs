@@ -1,9 +1,9 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Utils where
 
 import qualified Data.ByteString           as B
 import           Data.ByteString.Base64
-import           Data.Monoid
 import           Data.Text                 (Text)
 import qualified Data.Text                 as Text
 import           Data.Text.Encoding        (decodeUtf8, encodeUtf8)
@@ -12,6 +12,7 @@ import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
 
+import           Prelude.Compat
 
 -- | Clear the screen. Restores the default transformation matrix.
 clearCanvas :: Canvas ()

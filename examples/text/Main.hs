@@ -1,10 +1,11 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import           Data.Monoid
 import qualified Data.Text as T
 import           Data.Text (Text)
 import           Graphics.Blank
+import           Prelude.Compat
 
 imgPath :: Text
 imgPath = "/images/fan.jpg"
@@ -15,8 +16,8 @@ main = blankCanvas 3000 $ \ ctx -> send ctx $ do
      console_log . T.pack . show $ (w, h)
 
      fillStyle "black"
-     textAlign "center"   
-     sequence_ [ 
+     textAlign "center"
+     sequence_ [
           do save()
              translate (x * w/4,(y+1) * h/16)
              let p' = round (p * 1/z) :: Int
