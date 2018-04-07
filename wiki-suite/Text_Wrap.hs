@@ -1,9 +1,10 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Text_Wrap where
 
-import           Data.Monoid
 import qualified Data.Text as Text
 import           Graphics.Blank
+import           Prelude.Compat
 import           Wiki -- (578,200)
 
 main :: IO ()

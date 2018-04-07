@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO
@@ -41,9 +40,9 @@ main = do
 
                  -- draw the watermark in corner
                  send canvas $ message canvas name
-                 
+
                  -- wait for a mouse press
-                 wait canvas 
+                 wait canvas
 
             | (example,name) <- drop 15 $ cycle (map wrap examples ++ io_examples)
             ]
@@ -85,7 +84,7 @@ examples =
         , (example_1_8_3,"1.8.3 Text Stroke")
         , (example_1_8_4,"1.8.4 Text Align")
         , (example_1_8_5,"1.8.5 Text Baseline")
-        , (example_1_8_6,"1.8.6 Text Metrics") 
+        , (example_1_8_6,"1.8.6 Text Metrics")
         , (example_1_8_7,"1.8.7 Text Wrap")
         -- Transformations 2.1
         , (example_2_1_1,"2.1.1 Translate Transform")
@@ -232,7 +231,7 @@ example_1_4_2 _ = do
         lineTo(479, 150);
         lineJoin "bevel";
         stroke();
- 
+
 example_1_4_3 _ = do
         lineWidth 25;
 
@@ -273,7 +272,7 @@ example_1_5_2 _ = do
         lineWidth 7;
         strokeStyle "black";
         stroke();
-      
+
 example_1_5_3 canvas = do
         let (w,h) = size canvas
         let centerX = w / 2
@@ -519,13 +518,13 @@ example_2_2_4 canvas = do
         console_log $ Text.pack $ show $ (w',h')
 
         sync
-        
+
         let squareWidth = 55;
         let circleRadius = 35;
         let shapeOffset = 50;
         -- let operationOffset = 150;
 
-        let compss = 
+        let compss =
              [["source-atop", "source-in", "source-out", "source-over"]
              ,["destination-atop","destination-in","destination-out","destination-over"]
              ,["lighter","darker","xor","copy"]

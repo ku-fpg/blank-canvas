@@ -1,14 +1,16 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
-import           Data.Monoid ((<>))
 import           Data.Text (Text)
 
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
+
+import           Prelude.Compat
 
 import           TextShow (TextShow(..), FromTextShow(..), showb, singleton)
 
@@ -85,17 +87,17 @@ instance TextShow Method where
 -- DSL
 
 -- | @'arc'(x, y, r, sAngle, eAngle, cc)@ creates a circular arc, where
--- 
+--
 -- * @x@ is the x-coordinate of the center of the circle
--- 
+--
 -- * @y@ is the y-coordinate of the center of the circle
--- 
+--
 -- * @r@ is the radius of the circle on which the arc is drawn
--- 
+--
 -- * @sAngle@ is the starting angle (where @0@ at the 3 o'clock position of the circle)
--- 
+--
 -- * @eAngle@ is the ending angle
--- 
+--
 -- * @cc@ is the arc direction, where @True@ indicates counterclockwise and
 --   @False@ indicates clockwise.
 arc :: (Double, Double, Double, Radians, Radians, Bool) -> Canvas ()
@@ -103,15 +105,15 @@ arc = Method . Arc
 
 -- | @'arcTo'(x1, y1, x2, y2, r)@ creates an arc between two tangents,
 -- specified by two control points and a radius.
--- 
+--
 -- * @x1@ is the x-coordinate of the first control point
--- 
+--
 -- * @y1@ is the y-coordinate of the first control point
--- 
+--
 -- * @x2@ is the x-coordinate of the second control point
--- 
+--
 -- * @y2@ is the y-coordinate of the second control point
--- 
+--
 -- * @r@ is the arc's radius
 arcTo :: (Double, Double, Double, Double, Double) -> Canvas ()
 arcTo = Method . ArcTo
@@ -119,7 +121,7 @@ arcTo = Method . ArcTo
 -- | Begins drawing a new path. This will empty the current list of subpaths.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'beginPath'()
 -- 'moveTo'(20, 20)
@@ -131,17 +133,17 @@ beginPath () = Method BeginPath
 
 -- | @'bezierCurveTo'(cp1x, cp1y, cp2x, cp2y x, y)@ adds a cubic Bézier curve to the path
 -- (whereas 'quadraticCurveTo' adds a quadratic Bézier curve).
--- 
+--
 -- * @cp1x@ is the x-coordinate of the first control point
--- 
+--
 -- * @cp1y@ is the y-coordinate of the first control point
--- 
+--
 -- * @cp2x@ is the x-coordinate of the second control point
--- 
+--
 -- * @cp2y@ is the y-coordinate of the second control point
--- 
+--
 -- * @x@ is the x-coordinate of the end point
--- 
+--
 -- * @y@ is the y-coordinate of the end point
 bezierCurveTo :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
 bezierCurveTo = Method . BezierCurveTo
@@ -150,7 +152,7 @@ bezierCurveTo = Method . BezierCurveTo
 -- corner @(x, y)@, width @w@, and height @h@ (i.e., sets the pixels to transparent black).
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'fillStyle' \"red\"
 -- 'fillRect'(0, 0, 300, 150)
@@ -161,10 +163,10 @@ clearRect = Method . ClearRect
 
 -- | Turns the path currently being built into the current clipping path.
 -- Anything drawn after 'clip' is called will only be visible if inside the new
--- clipping path. 
+-- clipping path.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'rect'(50, 20, 200, 120)
 -- 'stroke'()
@@ -178,7 +180,7 @@ clip () = Method Clip
 -- | Creates a path from the current point back to the start, to close it.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'beginPath'()
 -- 'moveTo'(20, 20)
@@ -197,7 +199,7 @@ drawImage = Method . DrawImage
 -- | Fills the current path with the current 'fillStyle'.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'rect'(10, 10, 100, 100)
 -- 'fill'()
@@ -209,7 +211,7 @@ fill () = Method Fill
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'fillStyle'.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'fillStyle' \"red\"
 -- 'fillRect'(0, 0, 300, 150)
@@ -220,13 +222,13 @@ fillRect = Method . FillRect
 -- | Sets the color, gradient, or pattern used to fill a drawing ('black' by default).
 --
 -- ==== __Examples__
--- 
+--
 -- @
 -- 'fillStyle' 'red'
--- 
+--
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- 'fillStyle' grd
--- 
+--
 -- img <- 'newImage' \"/myImage.jpg\"
 -- pat <- 'createPattern'(img, 'Repeat')
 -- 'fillStyle' pat
@@ -238,7 +240,7 @@ fillStyle = Method . FillStyle
 -- using the current 'fillStyle'.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'font' \"48px serif\"
 -- 'fillText'(\"Hello, World!\", 50, 100)
@@ -249,7 +251,7 @@ fillText = Method . FillText
 -- | Sets the text context's font properties.
 --
 -- ==== __Examples__
--- 
+--
 -- @
 -- 'font' ('defFont' "Gill Sans Extrabold") { 'fontSize' = 40 # 'pt' }
 -- 'font' ('defFont' 'sansSerif') { 'fontSize' = 80 # 'percent' }
@@ -269,7 +271,7 @@ globalAlpha = Method . GlobalAlpha
 -- | Sets how new shapes should be drawn over existing shapes.
 --
 -- ==== __Examples__
--- 
+--
 -- @
 -- 'globalCompositeOperation' \"source-over\"
 -- 'globalCompositeOperation' \"destination-atop\"
@@ -289,7 +291,7 @@ lineJoin = Method . LineJoin
 -- coordinates (without actually drawing it).
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'beginPath'()
 -- 'moveTo'(50, 50)
@@ -311,7 +313,7 @@ miterLimit = Method . MiterLimit
 -- | @'moveTo'(x, y)@ moves the starting point of a new subpath to the given @(x, y)@ coordinates.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'beginPath'()
 -- 'moveTo'(50, 50)
@@ -327,13 +329,13 @@ putImageData = Method . PutImageData
 
 -- | @'quadraticCurveTo'(cpx, cpy, x, y)@ adds a quadratic Bézier curve to the path
 -- (whereas 'bezierCurveTo' adds a cubic Bézier curve).
--- 
+--
 -- * @cpx@ is the x-coordinate of the control point
--- 
+--
 -- * @cpy@ is the y-coordinate of the control point
--- 
+--
 -- * @x@ is the x-coordinate of the end point
--- 
+--
 -- * @y@ is the y-coordinate of the end point
 quadraticCurveTo :: (Double, Double, Double, Double) -> Canvas ()
 quadraticCurveTo = Method . QuadraticCurveTo
@@ -342,7 +344,7 @@ quadraticCurveTo = Method . QuadraticCurveTo
 -- @(x, y)@, width @w@, and height @h@ (where width and height are in pixels).
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'rect'(10, 10, 100, 100)
 -- 'fill'()
@@ -360,7 +362,7 @@ restore () = Method Restore
 -- the angle given to 'rotate' (in radians).
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'rotate' ('pi'/2)        -- Rotate the canvas 90°
 -- 'fillRect'(0, 0, 20, 10) -- Draw a 10x20 rectangle
@@ -377,7 +379,7 @@ save () = Method Save
 -- scale vertically. By default, one canvas unit is one pixel.
 --
 -- ==== __Examples__
--- 
+--
 -- @
 -- 'scale'(0.5, 0.5)        -- Halve the canvas units
 -- 'fillRect'(0, 0, 20, 20) -- Draw a 10x10 square
@@ -398,7 +400,7 @@ shadowBlur = Method . ShadowBlur
 -- | Sets the color used for shadows.
 --
 -- ==== __Examples__
--- 
+--
 -- @
 -- 'shadowColor' 'red'
 -- 'shadowColor' $ 'rgb' 0 255 0
@@ -417,7 +419,7 @@ shadowOffsetY = Method . ShadowOffsetY
 -- | Draws the current path's strokes with the current 'strokeStyle' ('black' by default).
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'rect'(10, 10, 100, 100)
 -- 'stroke'()
@@ -429,7 +431,7 @@ stroke () = Method Stroke
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'strokeStyle'.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'strokeStyle' \"red\"
 -- 'strokeRect'(0, 0, 300, 150)
@@ -440,13 +442,13 @@ strokeRect = Method . StrokeRect
 -- | Sets the color, gradient, or pattern used for strokes.
 --
 -- ==== __Examples__
--- 
+--
 -- @
 -- 'strokeStyle' 'red'
--- 
+--
 -- grd <- 'createLinearGradient'(0, 0, 10, 10)
 -- 'strokeStyle' grd
--- 
+--
 -- img <- 'newImage' \"/myImage.jpg\"
 -- pat <- 'createPattern'(img, 'Repeat')
 -- 'strokeStyle' pat
@@ -458,7 +460,7 @@ strokeStyle = Method . StrokeStyle
 -- using the current 'strokeStyle'.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'font' \"48px serif\"
 -- 'strokeText'(\"Hello, World!\", 50, 100)
@@ -476,25 +478,25 @@ textBaseline = Method . TextBaseline
 
 -- | Applies a transformation by multiplying a matrix to the canvas's
 -- current transformation. If @'transform'(a, b, c, d, e, f)@ is called, the matrix
--- 
+--
 -- @
 -- ( a c e )
 -- ( b d f )
 -- ( 0 0 1 )
 -- @
--- 
+--
 -- is multiplied by the current transformation. The parameters are:
--- 
+--
 -- * @a@ is the horizontal scaling
--- 
+--
 -- * @b@ is the horizontal skewing
--- 
+--
 -- * @c@ is the vertical skewing
--- 
+--
 -- * @d@ is the vertical scaling
--- 
+--
 -- * @e@ is the horizontal movement
--- 
+--
 -- * @f@ is the vertical movement
 transform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
 transform = Method . Transform
@@ -502,10 +504,10 @@ transform = Method . Transform
 -- | Applies a translation transformation by remapping the origin (i.e., the (0,0)
 -- position) on the canvas. When you call functions such as 'fillRect' after
 -- 'translate', the values passed to 'translate' are added to the x- and
--- y-coordinate values. 
+-- y-coordinate values.
 --
 -- ==== __Example__
--- 
+--
 -- @
 -- 'translate'(20, 20)
 -- 'fillRect'(0, 0, 40, 40) -- Draw a 40x40 square, starting in position (20, 20)

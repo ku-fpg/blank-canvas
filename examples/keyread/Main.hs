@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
@@ -5,9 +6,10 @@ module Main where
 
 import           Data.List (nub)
 import qualified Data.Text as Text
-import           Data.Monoid((<>))
 
 import           Graphics.Blank
+
+import           Prelude.Compat
 
 data State = State
              { keys :: [Int]    -- key *codes* for pressed keys

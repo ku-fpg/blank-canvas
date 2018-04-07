@@ -9,7 +9,6 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.Monoid ((<>))
 import           Data.List
 import           Data.String
 import           Data.Text (Text)

@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blank.Types.Font where
 
@@ -9,7 +10,6 @@ import           Data.Char
 import           Data.Default.Class
 import           Data.Ix (Ix)
 import           Data.Maybe
-import           Data.Monoid
 import           Data.String
 import qualified Data.Text as TS
 import           Data.Text (Text)
@@ -19,6 +19,8 @@ import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Parser
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.CSS
+
+import           Prelude.Compat
 
 import qualified Text.ParserCombinators.ReadP as ReadP
 import           Text.ParserCombinators.ReadP hiding ((<++), choice, pfail)
@@ -65,7 +67,7 @@ data Font = FontProperties
 -- for the other five longhand properties. If you only wish to change certain
 -- properties and leave the others alone, this provides a convenient mechanism
 -- for doing so:
--- 
+--
 -- @
 -- ('defFont' ["Gill Sans Extrabold", 'sansSerif']) {
 --     'fontStyle'  = 'italic'
@@ -136,7 +138,7 @@ data OneOfThree a b c = One a | Two b | Three c
 -- make it easier to catch bad input. The three Maybe arguments each represent whether its
 -- respective property has not (Nothing) or has (Just) been read. If it has been read, then
 -- readFontProperties will not attempt to parse it again.
--- 
+--
 -- readFontProperties will proceed to parse the remaining Font longhand properties once
 -- either all three of the first properties have been parsed, or when it is unsuccessful at
 -- parsing any of the first three properties.
@@ -149,12 +151,12 @@ readFontProperties style variant weight =
                -- If the property has already been parsed, do not parse it again.
            let parseCheck :: Maybe a -> ReadPrec a -> ReadPrec a
                parseCheck mb parser = if isJust mb then pfail else parser
-               
+
                readStyle, readVariant, readWeight :: ReadPrec (OneOfThree FontStyle FontVariant FontWeight)
                readStyle   = One   <$> parseCheck style readPrec
                readVariant = Two   <$> parseCheck variant readPrec
                readWeight  = Three <$> parseCheck weight readPrec
-           
+
            -- First attempt to parse font-style, then font-variant, then font-weight (unless one
            -- of them has already been parsed, in which case skip to the next property parser.
            prop <- maybeReadPrec $ readStyle <++ readVariant <++ readWeight
@@ -286,11 +288,11 @@ instance TextShow FontVariant where
 -- |
 -- Specifies the boldness of a 'Font'. Note that 'FontWeight' is an instance of
 -- 'Num' so that the nine numeric weights can be used directly. For example:
--- 
+--
 -- @
 -- ('defFont' ['sansSerif']) { 'fontWeight' = 900 }
 -- @
--- 
+--
 -- Attempting to use a numeric weight other than the nine given will result in
 -- a runtime error.
 data FontWeight = NormalWeight -- ^ Default.
@@ -566,16 +568,16 @@ instance TextShow LineHeight where
 -- The name of a 'Font' family. Note that both 'FontFamily' and @['FontFamily']@
 -- are instances of 'IsString', so it is possible to produce 'FontFamily' values
 -- in several different ways. For example, these are all of type 'FontFamily':
--- 
+--
 -- @
 -- 'FontFamilyName' "Gill Sans Extrabold"
 -- "Gill Sans Extrabold" :: 'FontFamily'
 -- 'serif'
 -- "serif" :: 'FontFamily'
 -- @
--- 
+--
 -- These are all of type @['FontFamily']@:
--- 
+--
 -- @
 -- ['FontFamilyName' \"Helvetica\", 'serif']
 -- [\"Helvetica\", "serif"] :: ['FontFamily']
@@ -636,7 +638,7 @@ instance Read FontFamily where
                   <|> quoted '\'' (readFontFamily $ Just '\'')
                   <|> readFontFamily Nothing
           ]
-    
+
     -- readListPrec is overloaded so that it will read in a comma-separated list of
     -- family names not delimited by square brackets, as per the CSS syntax.
     readListPrec = lift . sepBy1 (unlift readPrec) $ skipSpaces *> char ','
@@ -659,7 +661,7 @@ instance TextShow FontFamily where
     showb MonospaceFamily       = "monospace"
     showb CursiveFamily         = "cursive"
     showb FantasyFamily         = "fantasy"
-    
+
     -- Omit the square brackets when showing a list of font families so that
     -- it matches the CSS syntax.
     showbList = jsList showb
@@ -671,7 +673,7 @@ instance TextShow FontFamily where
 class Default a => NormalProperty a where
     -- | The default value for a CSS property. For example, it can be used
     -- like this:
-    -- 
+    --
     -- @
     -- ('defFont' ['sansSerif']) { 'lineHeight' = 'normal' }
     -- @

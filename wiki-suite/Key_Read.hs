@@ -1,11 +1,12 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Key_Read where
 
 import           Data.List (nub)
-import           Data.Monoid ((<>))
 import qualified Data.Text as Text
 -- import           Debug.Trace
 import           Graphics.Blank
+import           Prelude.Compat
 import           Wiki -- (512,200)
 
 data State = State

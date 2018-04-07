@@ -3,7 +3,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module Graphics.Blank.Types.CSS where
 
-import           Data.Monoid ((<>))
 import           Data.String
 
 import           Graphics.Blank.JavaScript

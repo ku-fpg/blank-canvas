@@ -174,7 +174,6 @@ import           Data.Aeson (Result(..), fromJSON)
 import           Data.Aeson.Types (parse)
 import           Data.List as L
 import qualified Data.Map as M (lookup)
-import           Data.Monoid ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Text (Text)
@@ -250,7 +249,7 @@ blankCanvas opts actions = do
           [ "register(" <> showt nm <> ");"
           | nm <- events opts
           ]
-       
+
        queue <- atomically newTChan
        _ <- forkIO $ forever $ do
                val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
@@ -258,21 +257,21 @@ blankCanvas opts actions = do
                   Success (event :: Event) -> do
                           atomically $ writeTChan queue event
                   _ -> return ()
-       
-       
+
+
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
-       
+
        -- A bit of bootstrapping
        DeviceAttributes w h dpr <- send cxt0 device
        -- print (DeviceAttributes w h dpr)
-       
+
        let cxt1 = cxt0
                 { ctx_width = w
                 , ctx_height = h
                 , ctx_devicePixelRatio = dpr
                 , weakRemoteMonad = weak opts
                 }
-       
+
        (actions $ cxt1) `catch` \ (e :: SomeException) -> do
                print ("Exception in blank-canvas application:" :: String)
                print e

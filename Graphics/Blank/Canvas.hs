@@ -12,7 +12,6 @@ import           Control.Monad (ap, liftM2)
 
 import           Data.Aeson (FromJSON(..),Value(..),encode)
 import           Data.Aeson.Types (Parser, (.:))
-import           Data.Semigroup (Semigroup(..))
 import           Data.Text (Text)
 import           Data.Text.Lazy.Builder
 import           Data.Text.Lazy.Encoding (decodeUtf8)
