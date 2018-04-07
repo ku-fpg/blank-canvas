@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                blank-canvas-examples
-version:             0.6.2
+version:             0.6.3
 synopsis:            examples of using blank canvas
 description:         examples of using blank canvas.
 license:             BSD3
