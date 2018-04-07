@@ -1,3 +1,6 @@
+#### 0.6.3
+* Use `base-compat-batteries`.
+
 ### 0.6.2
 Additions
  * Add `Semigroup` instance for `Canvas`
