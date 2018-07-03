@@ -31,6 +31,7 @@ module Graphics.Blank
         , send
         , sendW
         , sendS
+        , sendA
           -- * HTML5 Canvas API
           -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
@@ -201,6 +202,7 @@ import           Graphics.Blank.Canvas                hiding (addColorStop,
                                                        cursor)
 import qualified Graphics.Blank.Canvas                as Canvas
 import           Graphics.Blank.DeviceContext         hiding (profiling)
+import           Graphics.Blank.DeviceContext         (Packetize (packetize))
 import           Graphics.Blank.Events
 import           Graphics.Blank.Generated             hiding (fillStyle, font,
                                                        shadowColor, strokeStyle)
@@ -214,7 +216,6 @@ import           Graphics.Blank.Utils
 
 
 import qualified Network.HTTP.Types                   as H
-import           Network.JavaScript                   (Packetize (packetize))
 import qualified Network.JavaScript                   as JSB
 import           Network.Mime                         (defaultMimeMap,
                                                        fileNameExtensions)
@@ -228,9 +229,6 @@ import           Paths_blank_canvas
 import           Control.Category
 import           Prelude.Compat                       hiding (id, (.))
 
-import           System.IO.Unsafe                     (unsafePerformIO)
-
-
 import           Web.Scotty                           (file, get, scottyApp)
 import qualified Web.Scotty                           as Scotty
 import qualified Web.Scotty.Comet                     as KC
@@ -242,10 +240,6 @@ import qualified Control.Remote.Packet.Applicative    as AP
 import qualified Control.Remote.Packet.Strong         as SP
 import qualified Control.Remote.Packet.Weak           as WP
 
-
-import           Control.Monad.Reader                 hiding (local)
-import           Control.Monad.State                  (evalStateT)
-import           Control.Monad.Writer
 
 
 
@@ -285,9 +279,9 @@ blankCanvas opts actions = do
             Success (event :: Event) -> atomically $ writeTChan queue event
             _                        -> return ()
           let bootstrapContext = CanvasContext 0 300 300
-          sequence_ [ JSB.send engine $ Command (Register nm) bootstrapContext
+          sequence_ [ JSB.send engine $ packetize $ Command (Register nm) bootstrapContext
                     | nm <- events opts ]
-          DeviceAttributes w h dpr <- JSB.send engine $ Query Device bootstrapContext
+          DeviceAttributes w h dpr <- JSB.send engine $ packetize $ Query Device bootstrapContext
           let cxt = DeviceContext engine queue w h dpr locals (bundling opts) prof
 
           actions cxt `catch` \ (e :: SomeException) -> do
@@ -342,183 +336,15 @@ sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
 sendW :: DeviceContext -> Canvas a -> IO a
 sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
-instance Packetize prim => Packetize (AP.ApplicativePacket prim) where
-  packetize (AP.Pure a)      = pure a
-  packetize (AP.Primitive p) = packetize p
-  packetize (AP.Zip f g h)   = f <$> packetize g <*> packetize h
-
-instance KnownResult prim => Profile (AP.ApplicativePacket prim) where
-  profile (AP.Pure _)  = mempty
-  profile (AP.Primitive proc) = case unitResult proc of
-                                  UnitResult    -> commandProfile
-                                  UnknownResult -> procedureProfile
-  profile (AP.Zip _ g h) = profile g <> profile h
-
-instance Packetize prim => Packetize (SP.StrongPacket prim) where
-  packetize (SP.Command cmd rest) = packetize cmd *> packetize rest
-  packetize (SP.Procedure proc)   = packetize proc
-  packetize  SP.Done              = pure ()
-
-instance Profile (SP.StrongPacket prim) where
-  profile (SP.Command _ rest)  = commandProfile <> profile rest
-  profile (SP.Procedure _proc) = procedureProfile
-  profile  SP.Done             = mempty
-
 
 sendA' :: DeviceContext -> AP.ApplicativePacket Prim a -> IO a
 sendA' = sendToCanvas
 
 sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
 sendS' = sendToCanvas
-{-
-sendS' :: DeviceContext -> SP.StrongPacket Prim a -> IO a
-sendS' cxt sp = evalStateT (go sp) mempty
-  where
-    go :: SP.StrongPacket Prim a -> StateT Instr IO a
-    go (SP.Command cmd rest) = do
-      case cmd of
-        Method m canvasCxt -> modify (<> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
-        Canvas.Command _c _ -> modify (<> showi cmd <> singleton ';')
-        MethodAudio    _a _ -> modify (<> showi cmd <> singleton ';')
-        PseudoProcedure f r c     -> sendFunc f r c
-        _                    -> error "sendS': unsupported Command or Procedure was treated as Command"
-      go rest
-
-    go (SP.Procedure p) =
-      case p of
-        Query    q c -> sendQuery q c
-        _         -> error "sendS': Unsupported Procedure or a Command was treated as a Procedure"
-
-    go SP.Done = do
-      cmds <- State.get
-      liftIO $ sendToCanvas cxt cmds
-      State.put mempty
-      return ()
-
-    sendFunc :: PseudoProcedure a -> a -> CanvasContext -> StateT Instr IO ()
-    sendFunc q@(CreateLinearGradient _) r c = sendGradient q r c
-    sendFunc q@(CreateRadialGradient _) r c = sendGradient q r c
-    sendFunc q@(CreatePattern        _) r c = sendPattern  q r c
-
-    fileQuery :: Text -> IO ()
-    fileQuery url = do
-        let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-        atomically $ do
-            db <- readTVar (localFiles cxt)
-            writeTVar (localFiles cxt) $ S.insert url' $ db
-
-    -- TODO: See if the query should be added to the end and then
-    -- everything sent over in one transmission.
-    sendQuery :: Query a -> CanvasContext -> StateT Instr IO a
-    sendQuery query c = do
-        -- Grab waiting commands and clear the command queue
-      prevCmds <- State.get
-      State.put mempty
-
-        -- Send actual query
-      liftIO $ do
-        case query of
-          NewImage url -> fileQuery url
-          NewAudio url -> fileQuery url
-          _            -> return ()
-
-        -- send the com
-        uq <- atomically getUniq
-        -- The query function returns a function takes the unique port number of the reply.
---        sendToCanvas cxt $ prevCmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
-        v <- KC.getReply (theComet cxt) uq
-        case parse (parseQueryResult query) v of
-          Error msg -> fail msg
-          Success a -> return a
-
-    sendGradient :: PseudoProcedure CanvasGradient -> CanvasGradient -> CanvasContext -> StateT Instr IO ()
-    sendGradient q (CanvasGradient gId) c = do
-      modify (<> "var gradient_"
-          <> showi gId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showi q <> singleton ';')
-
-    sendPattern :: PseudoProcedure CanvasPattern -> CanvasPattern -> CanvasContext -> StateT Instr IO ()
-    sendPattern q (CanvasPattern pId) c = do
-      modify (<> "var pattern_"
-          <> showi pId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showi q <> singleton ';')
--}
-
-instance Packetize prim => Packetize (WP.WeakPacket prim) where
-  packetize (WP.Primitive p) = packetize p
-
-instance KnownResult prim => Profile (WP.WeakPacket prim) where
-  profile (WP.Primitive p) = case unitResult p of
-                               UnitResult    -> commandProfile
-                               UnknownResult -> procedureProfile
 
 sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
 sendW' = sendToCanvas
-
-
-{-
-go mempty
-  where
-    go :: Instr -> WP.WeakPacket Prim a -> IO a
-    go cmds (WP.Primitive p) =
-      case knownResult p of
-        Just _ ->
-          case p of
-            Method m canvasCxt -> send' (cmds <> jsCanvasContext canvasCxt <> singleton '.' <> showi m <> singleton ';')
-            Canvas.Command _c _ -> send' (cmds <> showi p <> singleton ';')
-            MethodAudio _a    _ -> send' (cmds <> showi p <> singleton ';')
-            PseudoProcedure f r c -> sendFunc cmds f r c
-            _                    -> error "sendW': unsupported Command or Procedure was treated as Command"
-        Nothing ->
-          case p of
-            Query q c -> sendQuery cmds q c
-            _         -> error "sendW': Unsupported Procedure or a Command was treated as a Procedure"
-
-    send' :: Instr -> IO ()
-    send' = sendToCanvas cxt
-
-    sendFunc :: Instr -> PseudoProcedure a -> a -> CanvasContext -> IO ()
-    sendFunc cmds q@(CreateLinearGradient _) r c = sendGradient cmds q r c
-    sendFunc cmds q@(CreateRadialGradient _) r c = sendGradient cmds q r c
-    sendFunc cmds q@(CreatePattern        _) r c = sendPattern  cmds q r c
-
-    fileQuery :: Text -> IO ()
-    fileQuery url = do
-        let url' = if "/" `T.isPrefixOf` url then T.tail url else url
-        atomically $ do
-            db <- readTVar (localFiles cxt)
-            writeTVar (localFiles cxt) $ S.insert url' $ db
-
-    sendQuery :: Instr -> Query a -> CanvasContext -> IO a
-    sendQuery cmds query c = do
-      case query of
-        NewImage url -> fileQuery url
-        NewAudio url -> fileQuery url
-        -- TODO: See if this is possible:
-        -- Frame        -> error "Frame not yet implemented for weak send"
-        _            -> return ()
-
-      -- send the com
-      uq <- atomically getUniq
-      -- The query function returns a function takes the unique port number of the reply.
---      send' $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
-      v <- KC.getReply (theComet cxt) uq
-      case parse (parseQueryResult query) v of
-        Error msg -> fail msg
-        Success a -> return a
-
-    sendGradient :: Instr -> PseudoProcedure CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()
-    sendGradient cmds q (CanvasGradient gId) c = do
-      send' $ cmds <> "var gradient_"
-          <> showi gId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showi q <> singleton ';'
-
-    sendPattern :: Instr -> PseudoProcedure CanvasPattern -> CanvasPattern -> CanvasContext -> IO ()
-    sendPattern cmds q (CanvasPattern pId) c = do
-      send' $ cmds <> "var pattern_"
-          <> showi pId     <> " = "   <> jsCanvasContext c
-          <> singleton '.' <> showi q <> singleton ';'
--}
 
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
@@ -530,17 +356,6 @@ send dc c = case remoteBundling dc of
 
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
-
-
-{-# NOINLINE uniqVar #-}
-uniqVar :: TVar Int
-uniqVar = unsafePerformIO $ newTVarIO 0
-
-getUniq :: STM Int
-getUniq = do
-    u <- readTVar uniqVar
-    writeTVar uniqVar (u + 1)
-    return u
 
 mimeType :: Text -> Text
 mimeType filePath = LT.fromStrict $ go $ fileNameExtensions $ LT.toStrict filePath
@@ -667,6 +482,3 @@ durationAudio = JavaScript.durationAudio
 -- | Returns the index of the given Audio in the array of Audio's in the javascript
 indexAudio :: Audio a => a -> Int
 indexAudio = JavaScript.indexAudio
-
-theComet :: a -> b
-theComet = error "theComet"

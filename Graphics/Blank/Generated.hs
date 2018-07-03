@@ -3,21 +3,20 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Graphics.Blank.Generated where
 
-import           Data.Aeson                (Result(..))
-import           Data.Aeson.Types          (parse)
-import           Data.Monoid               ((<>))
-import qualified Data.Text                 as ST
-import           Data.Text.Lazy            (fromStrict)
+import           Data.Aeson                   (Result (..))
+import           Data.Aeson.Types             (parse)
+import           Data.Monoid                  ((<>))
+import qualified Data.Text                    as ST
+import           Data.Text.Lazy               (fromStrict)
 
 import           Graphics.Blank.Canvas
+import           Graphics.Blank.DeviceContext (Packetize (packetize))
+import           Graphics.Blank.Instr
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 import           Graphics.Blank.Types.Font
 
-import           Graphics.Blank.Instr
-
-import qualified Network.JavaScript as JSB
-import           Network.JavaScript           (Packetize(packetize))
+import qualified Network.JavaScript           as JSB
 
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
@@ -570,7 +569,6 @@ translate = primitive . Method . Translate
 ------------------------------------------------------------------------------
 
 -- Encodes a blank canvas primitive as a JavaScript bridge primitive.
-
 instance Packetize Prim where
   packetize m@Method{} = JSB.command $ toLazyText $ showi m
   packetize c@Command{} = JSB.command $ toLazyText $ showi c

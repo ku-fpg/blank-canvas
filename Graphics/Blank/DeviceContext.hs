@@ -1,20 +1,27 @@
+{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 module Graphics.Blank.DeviceContext where
 
 import           Control.Concurrent.STM
 
-import           Data.Map                  (Map)
-import           Data.Set                  (Set)
-import           Data.Text.Lazy            (Text)
-
+import           Data.Map                          (Map)
+import           Data.Monoid                       ((<>))
+import           Data.Set                          (Set)
+import           Data.Text.Lazy                    (Text)
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
 
 -- import           TextShow (Builder, toText)
 
 -- import qualified Web.Scotty.Comet as KC
-import qualified Data.Map                  as M
-import qualified Network.JavaScript        as JSB
+import           Control.Remote.Monad              (KnownResult (..),
+                                                    Result (..))
+import qualified Control.Remote.Packet.Applicative as AP
+import qualified Control.Remote.Packet.Strong      as SP
+import qualified Control.Remote.Packet.Weak        as WP
+import qualified Data.Map                          as M
+import qualified Network.JavaScript                as JSB
 
 -- | 'DeviceContext' is the abstract handle into a specific 2D context inside a browser.
 -- Note that the JavaScript API concepts of
@@ -56,12 +63,12 @@ devicePixelRatio = ctx_devicePixelRatio
 
 -- | Internal command to send a message to the canvas. If profiling is enabled,
 --   'sendToCanvas' will also record information about the packets.
-sendToCanvas :: (Profile p, JSB.Packetize p) => DeviceContext -> p a -> IO a
+sendToCanvas :: (Profile p, Packetize p) => DeviceContext -> p a -> IO a
 sendToCanvas cxt p = do
    case profiling cxt of
        Nothing -> return ()
        Just ref -> atomically $ modifyTVar ref $ M.insertWith (+) (profile p) 1
-   JSB.send (theJSB cxt) p
+   JSB.send (theJSB cxt) (packetize p)
 
 -- | Wait for any event. Blocks.
 wait :: DeviceContext -> IO Event
@@ -78,6 +85,28 @@ flush cxt = atomically $ loop
                  return (e : es)
 
 ------------------------------------------------------------------------------
+
+
+class Packetize p where
+  packetize :: p a -> JSB.Packet a
+
+instance Packetize JSB.Packet where
+  packetize = id
+
+instance Packetize prim => Packetize (WP.WeakPacket prim) where
+  packetize (WP.Primitive p) = packetize p
+
+instance Packetize prim => Packetize (SP.StrongPacket prim) where
+  packetize (SP.Command cmd rest) = packetize cmd *> packetize rest
+  packetize (SP.Procedure proc)   = packetize proc
+  packetize  SP.Done              = pure ()
+
+instance Packetize prim => Packetize (AP.ApplicativePacket prim) where
+  packetize (AP.Pure a)      = pure a
+  packetize (AP.Primitive p) = packetize p
+  packetize (AP.Zip f g h)   = f <$> packetize g <*> packetize h
+
+
 
 readPacketProfile :: DeviceContext -> IO (Map PacketProfile Int)
 readPacketProfile cxt =
@@ -102,3 +131,21 @@ procedureProfile = mempty { procedures = 1 }
 
 class Profile p where
     profile :: p a -> PacketProfile
+
+
+instance KnownResult prim => Profile (WP.WeakPacket prim) where
+  profile (WP.Primitive p) = case unitResult p of
+                               UnitResult    -> commandProfile
+                               UnknownResult -> procedureProfile
+
+instance Profile (SP.StrongPacket prim) where
+  profile (SP.Command _ rest)  = commandProfile <> profile rest
+  profile (SP.Procedure _proc) = procedureProfile
+  profile  SP.Done             = mempty
+
+instance KnownResult prim => Profile (AP.ApplicativePacket prim) where
+  profile (AP.Pure _)  = mempty
+  profile (AP.Primitive proc) = case unitResult proc of
+                                  UnitResult    -> commandProfile
+                                  UnknownResult -> procedureProfile
+  profile (AP.Zip _ g h) = profile g <> profile h
