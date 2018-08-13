@@ -18,7 +18,7 @@ executable wiki-suite
                       shake             == 0.15.*,
                       text              >= 1.1  && < 1.3,
                       time              >= 1.4  && < 1.9,
-                      unix              >= 2.7  && < 2.9,
+                      unix              >= 2.7  && < 2.8,
                       vector            >= 0.10 && < 0.13
 
     default-language: Haskell2010
