@@ -94,6 +94,10 @@ install:
   - "printf 'packages: \".\" \"./examples\"\\n' > cabal.project"
   - echo 'package blank-canvas-examples' >> cabal.project
   - "echo '  flags: +examples' >> cabal.project"
+  - "echo 'source-repository-package' >> cabal.project"
+  - "echo '  type: git' >> cabal.project"
+  - "echo '  location: https://github.com/ku-fpg/remote-monad' >> cabal.project"
+  - "echo '  tag: 3761a8ad889e9bd06a562d36cafb182513dbb6e1' >> cabal.project"
   - touch cabal.project.local
   - "if ! $NOINSTALLEDCONSTRAINTS; then for pkg in $($HCPKG list --simple-output); do echo $pkg  | grep -vw -- blank-canvas | grep -vw -- blank-canvas-examples | sed 's/^/constraints: /' | sed 's/-[^-]*$/ installed/' >> cabal.project.local; done; fi"
   - cat cabal.project || true
@@ -120,6 +124,10 @@ script:
   - "printf 'packages: blank-canvas-*/*.cabal blank-canvas-examples-*/*.cabal\\n' > cabal.project"
   - echo 'package blank-canvas-examples' >> cabal.project
   - "echo '  flags: +examples' >> cabal.project"
+  - "echo 'source-repository-package' >> cabal.project"
+  - "echo '  type: git' >> cabal.project"
+  - "echo '  location: https://github.com/ku-fpg/remote-monad' >> cabal.project"
+  - "echo '  tag: 3761a8ad889e9bd06a562d36cafb182513dbb6e1' >> cabal.project"
   - touch cabal.project.local
   - "if ! $NOINSTALLEDCONSTRAINTS; then for pkg in $($HCPKG list --simple-output); do echo $pkg  | grep -vw -- blank-canvas | grep -vw -- blank-canvas-examples | sed 's/^/constraints: /' | sed 's/-[^-]*$/ installed/' >> cabal.project.local; done; fi"
   - cat cabal.project || true
