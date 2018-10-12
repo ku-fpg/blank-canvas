@@ -1,3 +1,7 @@
 packages: .
           ./examples
-          ./remote-monad
+
+source-repository-package
+  type: git
+  location: https://github.com/ku-fpg/remote-monad
+  tag: 3761a8ad889e9bd06a562d36cafb182513dbb6e1
