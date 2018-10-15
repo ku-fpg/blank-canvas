@@ -149,12 +149,12 @@ main2 args = shakeArgs shakeOptions $ do
             want ["blank-canvas.wiki/" ++ toMinus nm ++ ".md" | nm <- movies ++ examples ++ tutorial]
     else return ()
 
-    ["blank-canvas.wiki/images/*.png", "blank-canvas.wiki/images/*.gif"] |*> \out -> do
+    ["blank-canvas.wiki/images/*.png", "blank-canvas.wiki/images/*.gif"] |%> \out -> do
         let nm = takeBaseName out
 
-	liftIO $ print (out,nm)
+        liftIO $ print (out,nm)
 
-	let tmp = "tmp"
+        let tmp = "tmp"
 
         liftIO $ createDirectoryIfMissing False tmp
         liftIO $ removeFiles tmp [nm ++ "*.png"]
@@ -188,7 +188,7 @@ main2 args = shakeArgs shakeOptions $ do
         return ()
 
 
-    "blank-canvas.wiki/examples/*.hs" *> \ out -> do
+    "blank-canvas.wiki/examples/*.hs" %> \ out -> do
         liftIO $ print out
         let haskell_file = takeFileName out
 
@@ -198,8 +198,8 @@ main2 args = shakeArgs shakeOptions $ do
                 $ dropWhile (all isSpace)
                 $ reverse
                 [ if "module" `isPrefixOf` ln
-		  then "module Main where"
-		  else ln
+                  then "module Main where"
+                  else ln
                 | ln <- lines txt
                 , not ("wiki $" `isInfixOf` ln)         -- remove the wiki stuff
                 , not ("import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln)
@@ -207,19 +207,19 @@ main2 args = shakeArgs shakeOptions $ do
 
         writeFileChanged out (unlines $ map (untabify 0) new)
 
-    "blank-canvas.wiki/*.md" *> \ out -> do
+    "blank-canvas.wiki/*.md" %> \ out -> do
         b <- Shake.doesFileExist out
 --        liftIO $ print b
         txts <- liftIO $ if b then do
                         h <- openFile out ReadMode
                         let loop = do
-                       	     b' <- hIsEOF h
-                	     if b'
-                	     then return []
-                	     else do
-                    	   	ln <- hGetLine h
-                		lns <- loop
-                		return (ln : lns)
+                             b' <- hIsEOF h
+                             if b'
+                             then return []
+                             else do
+                                ln <- hGetLine h
+                                lns <- loop
+                                return (ln : lns)
                         txts <- loop
                         hClose h
                         return txts
@@ -230,7 +230,7 @@ main2 args = shakeArgs shakeOptions $ do
         let textToKeep = takeWhile p txts
 
         let haskell_file = map (\ c -> if c == '-' then '_' else c)
-	    		 $ replaceExtension (takeFileName out) ".hs"
+                         $ replaceExtension (takeFileName out) ".hs"
 
 
         liftIO $ print haskell_file
