@@ -76,8 +76,8 @@ import qualified Custom_Transform
 import System.Environment
 
 main :: IO ()
-main = do 
-     args <- getArgs 
+main = do
+     args <- getArgs
      main2 args
 
 main2 :: [String] -> IO ()
@@ -135,10 +135,10 @@ main2 ["Scale_Transform"] = Scale_Transform.main
 main2 ["Rotate_Transform"] = Rotate_Transform.main
 main2 ["Custom_Transform"] = Custom_Transform.main
 
-main2 ["clean"] = do 
+main2 ["clean"] = do
         _ <- createProcess $ shell "rm blank-canvas.wiki/images/*.png blank-canvas.wiki/images/*.gif blank-canvas.wiki/examples/*.hs"
         return ()
-        
+
 main2 args = shakeArgs shakeOptions $ do
 
     if null args then do
@@ -148,12 +148,12 @@ main2 args = shakeArgs shakeOptions $ do
             want ["blank-canvas.wiki/" ++ toMinus nm ++ ".md" | nm <- movies ++ examples ++ tutorial]
     else return ()
 
-    ["blank-canvas.wiki/images/*.png", "blank-canvas.wiki/images/*.gif"] |*> \out -> do
+    ["blank-canvas.wiki/images/*.png", "blank-canvas.wiki/images/*.gif"] |%> \out -> do
         let nm = takeBaseName out
 
-	liftIO $ print (out,nm)
+        liftIO $ print (out,nm)
 
-	let tmp = "tmp"
+        let tmp = "tmp"
 
         liftIO $ createDirectoryIfMissing False tmp
         liftIO $ removeFiles tmp [nm ++ "*.png"]
@@ -161,7 +161,7 @@ main2 args = shakeArgs shakeOptions $ do
 
         need [ "blank-canvas.wiki/" ++ toMinus nm ++ ".md" ]
         let haskell_file = nm ++ ".hs"
-        need [ "wiki-suite/" ++ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]        
+        need [ "wiki-suite/" ++ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]
         liftIO $ print nm
 
         txt <- readFile' $ "wiki-suite/" ++ haskell_file
@@ -170,20 +170,20 @@ main2 args = shakeArgs shakeOptions $ do
               [ case words ln of
                  [_,_,_,n] -> read n
                  _ -> (512,384)
-              | ln <- lines txt 
+              | ln <- lines txt
               , "import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln
               ] ++ [(512,384) :: (Int, Int)]
 
 
         sequence_ [
-             do (_,_,_,ghc) <- liftIO $ 
+             do (_,_,_,ghc) <- liftIO $
                               createProcess (proc "./dist/build/wiki-suite/wiki-suite" [nm])
 
                  -- wait a second, for things to start
                 liftIO $ threadDelay (1 * 1000 * 1000)
-                
+
 #if defined(darwin_HOST_OS)
-                command_ [] "/usr/bin/open" 
+                command_ [] "/usr/bin/open"
                                        ["-a"
                                        ,"/Applications/Google Chrome.app"
                                        ,"http://localhost:3000/?height=" ++ show (h) ++ "&width=" ++ show (w) ++ hd]
@@ -196,7 +196,7 @@ main2 args = shakeArgs shakeOptions $ do
         return ()
 
 
-    "blank-canvas.wiki/examples/*.hs" *> \ out -> do
+    "blank-canvas.wiki/examples/*.hs" %> \ out -> do
         liftIO $ print out
         let haskell_file = takeFileName out
 
@@ -205,47 +205,47 @@ main2 args = shakeArgs shakeOptions $ do
         let new = reverse
                 $ dropWhile (all isSpace)
                 $ reverse
-                [ if "module" `isPrefixOf` ln 
-		  then "module Main where"
-		  else ln
-                | ln <- lines txt 
+                [ if "module" `isPrefixOf` ln
+                  then "module Main where"
+                  else ln
+                | ln <- lines txt
                 , not ("wiki $" `isInfixOf` ln)         -- remove the wiki stuff
                 , not ("import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln)
                 ]
 
         writeFileChanged out (unlines $ map (untabify 0) new)
 
-    "blank-canvas.wiki/*.md" *> \ out -> do
+    "blank-canvas.wiki/*.md" %> \ out -> do
         b <- Shake.doesFileExist out
 --        liftIO $ print b
         txts <- liftIO $ if b then do
                         h <- openFile out ReadMode
                         let loop = do
-                       	     b' <- hIsEOF h 
-                	     if b'
-                	     then return []
-                	     else do
-                    	   	ln <- hGetLine h
-                		lns <- loop
-                		return (ln : lns)
-                        txts <- loop 
+                             b' <- hIsEOF h
+                             if b'
+                             then return []
+                             else do
+                                ln <- hGetLine h
+                                lns <- loop
+                                return (ln : lns)
+                        txts <- loop
                         hClose h
                         return txts
-                else return []         
+                else return []
 --        liftIO $ print txts
 
         let p = not . (code_header `isPrefixOf`)
         let textToKeep = takeWhile p txts
 
-        let haskell_file = map (\ c -> if c == '-' then '_' else c) 
-	    		 $ replaceExtension (takeFileName out) ".hs"
+        let haskell_file = map (\ c -> if c == '-' then '_' else c)
+                         $ replaceExtension (takeFileName out) ".hs"
 
 
         liftIO $ print haskell_file
-        txt <- readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file 
+        txt <- readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file
 
         let new = unlines $
-                       [ t | t <- textToKeep 
+                       [ t | t <- textToKeep
                        ] ++
                        [code_header] ++
                        lines txt ++
@@ -264,7 +264,7 @@ movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples :: [String]
 examples = ["Red_Line","Favicon"]
-        ++ ["Color_Square"] 
+        ++ ["Color_Square"]
 
 tutorial :: [String]
 tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
@@ -283,13 +283,13 @@ wiki_dir :: String
 wiki_dir = "."
 
 toMinus :: String -> String
-toMinus = map (\ c -> if c == '_' then '-' else c) 
+toMinus = map (\ c -> if c == '_' then '-' else c)
 
 
 untabify :: Int -> String -> String
 untabify _ [] = []
 untabify n (c:cs) | c == '\t' = let t = 8 - n `mod` 8 in take t (cycle " ") ++ untabify (n + t) cs
-                  | otherwise = c : untabify (n + 1) cs 
+                  | otherwise = c : untabify (n + 1) cs
 
 code_header :: String
 code_header = "````Haskell"
