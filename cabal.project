@@ -1,2 +1,5 @@
 packages: .
           ./examples
+
+package blank-canvas-examples
+  flags: +examples
