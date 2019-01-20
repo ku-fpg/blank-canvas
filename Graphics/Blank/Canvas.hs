@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
@@ -61,7 +62,9 @@ instance Semigroup a => Semigroup (Canvas a) where
   (<>) = liftM2 (<>)
 
 instance Monoid a => Monoid (Canvas a) where
+#if !(MIN_VERSION_base(4,11,0))
   mappend = liftM2 mappend
+#endif
   mempty  = return mempty
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
