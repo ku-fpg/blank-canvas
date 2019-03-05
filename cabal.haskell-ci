@@ -1,0 +1,10 @@
+ghc-head:               True
+no-tests-no-benchmarks: False
+unconstrained:          False
+copy-fields:            all
+
+raw-project
+  -- Work around https://github.com/haskell/cabal/issues/5586
+  package remote-monad
+    tests:      False
+    benchmarks: False
