@@ -4,7 +4,7 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.2
+# version: 0.3
 #
 language: c
 dist: xenial
@@ -30,8 +30,8 @@ before_cache:
 
 matrix:
   include:
-    - compiler: "ghc-8.6.3"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.6.3], sources: [hvr-ghc]}}
+    - compiler: "ghc-8.6.4"
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.6.4], sources: [hvr-ghc]}}
     - compiler: "ghc-8.4.4"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.4.4], sources: [hvr-ghc]}}
     - compiler: "ghc-8.2.2"
@@ -131,7 +131,6 @@ script:
 
   # build & run tests, build benchmarks
   - ${CABAL} new-build -w ${HC} ${TEST} ${BENCH} all
-  # - if [ "x$TEST" = "x--enable-tests" ]; then ${CABAL} new-test -w ${HC} ${TEST} ${BENCH} all; fi
 
   # cabal check
   - (cd blank-canvas-* && ${CABAL} check)
