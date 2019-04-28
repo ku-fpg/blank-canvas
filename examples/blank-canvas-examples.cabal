@@ -18,6 +18,7 @@ tested-with:         GHC == 7.10.3
                    , GHC == 8.2.2
                    , GHC == 8.4.4
                    , GHC == 8.6.4
+                   , GHC == 8.8.1
 data-files:
     static/data/dataURL.txt
     images/cursor.png
