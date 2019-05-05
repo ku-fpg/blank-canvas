@@ -9,7 +9,7 @@ data-files:          images/Haskell.jpg
 
 executable wiki-suite
     build-depends:    base              >= 4.7  && < 4.14,
-                      blank-canvas      == 0.7.*,
+                      blank-canvas,
                       containers        >= 0.5  && < 0.7,
                       directory         == 1.2.*,
                       open-browser      >= 0.2.1,
