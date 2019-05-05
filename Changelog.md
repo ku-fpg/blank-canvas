@@ -2,6 +2,9 @@
 Additions
  * Add `Semigroup` instance for `Canvas`
 
+## 0.7
+* Strengthen the `Monad` constraint on `readColourName` to `MonadFail`.
+
 #### 0.6.3
 * Use `base-compat-batteries`.
 
