@@ -1,5 +1,5 @@
 Name:                blank-canvas
-Version:             0.7
+Version:             0.8
 Synopsis:            HTML5 Canvas Graphics Library
 
 Description:      @blank-canvas@ is a Haskell binding to the complete
