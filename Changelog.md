@@ -1,6 +1,9 @@
 ## next
 TODO
 
+## 0.7.1
+* Allow building with `base-compat-batteries-0.11`.
+
 ## 0.7
 * Strengthen the `Monad` constraint on `readColourName` to `MonadFail`.
 

@@ -33,6 +33,7 @@ import           TextShow.TH (deriveTextShow)
 
 import           Control.Remote.Monad hiding (primitive)
 import qualified Control.Remote.Monad as RM
+import qualified Control.Monad.Fail as Fail
 import           Control.Monad.Reader
 import           Control.Monad.State
 
@@ -324,7 +325,7 @@ parseQueryResult (Cursor {}) _                = return ()
 parseQueryResult (Sync {}) _                  = return () -- we just accept anything; empty list sent
 parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
 -- parseQueryResult (GetVolumeAudio   {})
-parseQueryResult _ _                          = fail "no parse in blank-canvas server (internal error)"
+parseQueryResult _ _                          = Fail.fail "no parse in blank-canvas server (internal error)"
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
