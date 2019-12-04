@@ -28,8 +28,6 @@ module Graphics.Blank
           -- ** 'send'ing to the Graphics 'DeviceContext'
         , DeviceContext       -- abstact
         , send
-        , sendW
---        , sendS
           -- * HTML5 Canvas API
           -- | See <https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API> for the JavaScript
           --   version of this API.
@@ -217,6 +215,7 @@ import           Network.Mime                 (defaultMimeMap,
 import           Network.Wai                  (Middleware, responseLBS)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Middleware.Local as Local
+import qualified Network.JavaScript as JS
 
 import           Paths_blank_canvas
 
@@ -228,13 +227,13 @@ import           System.IO.Unsafe             (unsafePerformIO)
 
 import           Web.Scotty                   (file, get, scottyApp)
 import qualified Web.Scotty                   as Scotty
-import qualified Web.Scotty.Comet             as KC
+--import qualified Web.Scotty.Comet             as KC
 
 import           Control.Natural
 import qualified Control.Natural              as N
-import           Control.Remote.Monad
+--import           Control.Remote.Monad
 --import qualified Control.Remote.Packet.Strong as SP
-import qualified Control.Remote.Packet.Weak   as WP
+--import qualified Control.Remote.Packet.Weak   as WP
 
 import qualified Control.Monad.Fail           as Fail
 import           Control.Monad.Reader         hiding (local)
@@ -266,32 +265,34 @@ blankCanvas :: Options -> (DeviceContext -> IO ()) -> IO ()
 blankCanvas opts actions = do
    dataDir <- getDataDir
 
-   kComet <- KC.kCometPlugin
+--   kComet <- KC.kCometPlugin
 
    locals :: TVar (S.Set Text) <- atomically $ newTVar S.empty
 
 --   print dataDir
 
    -- use the comet
-   let kc_opts :: KC.Options
-       kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
+--   let kc_opts :: KC.Options
+--       kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
 
-   connectApp <- KC.connect kc_opts $ \ kc_doc -> do
-       -- register the events we want to watch for
+{-
+{-
        KC.send kc_doc $ fromString $ unlines $ map toString
           [ "register(" <> showi nm <> ");"
           | nm <- events opts
           ]
+-}
 
        queue <- atomically newTChan
+{-
+	-- TODO
        _ <- forkIO $ forever $ do
                val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
                case fromJSON val of
                   Success (event :: Event) -> do
                           atomically $ writeTChan queue event
                   _ -> return ()
-
-
+-}
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
 
        -- A bit of bootstrapping
@@ -312,6 +313,7 @@ blankCanvas opts actions = do
                print ("Exception in blank-canvas application:" :: String)
                print e
                throw e
+-}
 
    app <- scottyApp $ do
 --        middleware logStdoutDev
@@ -319,12 +321,12 @@ blankCanvas opts actions = do
                   | ware <- middleware opts
                   ]
 
-        connectApp
+        Scotty.middleware $ JS.start $ \ eng -> do
+	  return ()
 
         get "/"                 $ file $ dataDir ++ "/static/index.html"
         get "/jquery.js"        $ file $ dataDir ++ "/static/jquery.js"
         get "/jquery-json.js"   $ file $ dataDir ++ "/static/jquery-json.js"
-        get "/kansas-comet.js"  $ file $ kComet
 
         -- There has to be a better way of doing this, using function, perhaps?
         get (Scotty.regex "^/(.*)$") $ do
@@ -345,21 +347,25 @@ blankCanvas opts actions = do
                $ defaultSettings
                ) app
 
+{-
 generalSend :: forall m a . RunMonad m
             => (DeviceContext -> m Prim :~> IO) -> DeviceContext -> Canvas a -> IO a
 generalSend f cxt (Canvas c) = do
+   error "generalSend"
     -- XXX: Is it ok to hardcode 0 as the start value here?
     -- AJG: No, its not.
    let m0 :: RemoteMonad Prim a
        m0 = evalStateT (runReaderT c (deviceCanvasContext cxt)) 0
    runMonad (f cxt) N.# m0
+-}
+
 {-
 sendS :: DeviceContext -> Canvas a -> IO a
 sendS = generalSend (\cxt -> wrapNT (sendS' cxt))
 -}
 
-sendW :: DeviceContext -> Canvas a -> IO a
-sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
+--sendW :: DeviceContext -> Canvas a -> IO a
+--sendW = generalSend (\cxt -> wrapNT (sendW' cxt))
 
 {-
 sendS' :: DeviceContext -> SP.StrongPacket Cmd Proc a -> IO a
@@ -432,7 +438,7 @@ sendS' cxt sp = evalStateT (go sp) mempty
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';')
 -}
-
+{-
 sendW' :: DeviceContext -> WP.WeakPacket Prim a -> IO a
 sendW' cxt = go mempty
   where
@@ -495,12 +501,12 @@ sendW' cxt = go mempty
       send' $ cmds <> "var pattern_"
           <> showi pId     <> " = "   <> jsCanvasContext c
           <> singleton '.' <> showi q <> singleton ';'
+-}
 
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
 send :: DeviceContext -> Canvas a -> IO a
-send = sendW
-
+send = error "send"
 
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"

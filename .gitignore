@@ -39,3 +39,5 @@ bugs/
 .\#*
 .shake/
 .stack-work/
+KEEP/
+stack.yaml.lock

@@ -16,7 +16,8 @@ import           Prelude.Compat
 
 -- import           TextShow (Builder, toText)
 
-import qualified Web.Scotty.Comet as KC
+--import qualified Web.Scotty.Comet as KC
+import Network.JavaScript as JS
 
 -- | 'DeviceContext' is the abstract handle into a specific 2D context inside a browser.
 -- Note that the JavaScript API concepts of
@@ -26,7 +27,7 @@ import qualified Web.Scotty.Comet as KC
 -- @<https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext getContext()>@ method;
 -- rather, @getContext()@ is implied (when using 'send').
 data DeviceContext = DeviceContext
-        { theComet             :: KC.Document     -- ^ The mechanisms for sending commands
+        { theComet             :: JS.Engine       -- ^ The mechanisms for sending commands
         , eventQueue           :: EventQueue      -- ^ A single (typed) event queue
         , ctx_width            :: !Int
         , ctx_height           :: !Int
@@ -55,7 +56,8 @@ devicePixelRatio = ctx_devicePixelRatio
 -- | Internal command to send a message to the canvas.
 sendToCanvas :: DeviceContext -> Instr -> IO ()
 sendToCanvas cxt cmds = do
-    KC.send (theComet cxt) . toStrict . toLazyText $ surround "syncToFrame(function(){"  "});" <> cmds
+    print "sendToCanvas"	    
+--    KC.send (theComet cxt) . toStrict . toLazyText $ surround "syncToFrame(function(){"  "});" <> cmds
 
 -- | Wait for any event. Blocks.
 wait :: DeviceContext -> IO Event

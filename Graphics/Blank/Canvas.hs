@@ -31,13 +31,13 @@ import           Prelude.Compat
 
 import           TextShow.TH (deriveTextShow)
 
-import           Control.Remote.Monad hiding (primitive)
-import qualified Control.Remote.Monad as RM
+--import           Control.Remote.Monad hiding (primitive)
+--import qualified Control.Remote.Monad as RM
 import qualified Control.Monad.Fail as Fail
 import           Control.Monad.Reader
 import           Control.Monad.State
 
-
+import qualified Network.JavaScript as JS
 
 
 data DeviceAttributes = DeviceAttributes Int Int Double deriving Show
@@ -68,27 +68,28 @@ data Prim :: * -> * where
   --proc
   Query     :: InstrShow a => Query a     -> CanvasContext -> Prim a
 
-
+{-
 instance KnownResult Prim where
   knownResult (Method {}           ) = Just ()
   knownResult (Command {}         ) = Just ()
   knownResult (MethodAudio {}     ) = Just ()
   knownResult (PseudoProcedure {} ) = Just ()
   knownResult (Query {}           ) = Nothing
-
+-}
 
 newtype Canvas a = Canvas
         (ReaderT CanvasContext     -- the context, for the graphic contexts
         (StateT Int                -- local number allocations
-        (RemoteMonad
-                     Prim          -- commands and procedures
+        (JS.RemoteMonad
+--                     Prim          -- commands and procedures
           )) a)
        deriving (Functor, Applicative, Monad)
 
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ do
   c <- ask
-  lift . lift $ RM.primitive (f c)
+  error "primitive"
+--  lift . lift $ RM.primitive (f c)
 
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
 function alloc f = Canvas $ do
@@ -96,7 +97,8 @@ function alloc f = Canvas $ do
   u <- get
   modify (+1)
   let a = alloc u
-  lift . lift $ RM.primitive (PseudoProcedure f a c)
+  error "function"
+--  lift . lift $ RM.primitive (PseudoProcedure f a c)
   return a
 
 -- data Canvas :: * -> * where

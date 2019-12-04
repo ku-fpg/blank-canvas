@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-8.13
+resolver: lts-13.6
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -37,11 +37,6 @@ resolver: lts-8.13
 # will not be run. This is useful for tweaking upstream packages.
 packages:
   - '.'
-  - 'wiki-suite/'
-  - location:
-      git: 'git@github.com:ku-fpg/remote-monad'
-      commit: 'ef38e1b4bc201d6628324d5ad60163908ba7ebee'
-    extra-dep: true
 
 
 # The following packages have been ignored due to incompatibility with the
@@ -58,8 +53,9 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-  - open-browser-0.2.1.0
-  - directory-1.2.7.1
+   - javascript-bridge-0.2.0
+#  - open-browser-0.2.1.0
+#  - directory-1.2.7.1
 
 
 # Override default flag values for local packages and extra-deps
