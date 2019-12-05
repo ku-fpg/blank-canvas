@@ -37,7 +37,7 @@ resolver: lts-13.6
 # will not be run. This is useful for tweaking upstream packages.
 packages:
   - '.'
-
+  - 'wiki-suite'
 
 # The following packages have been ignored due to incompatibility with the
 # resolver compiler, dependency conflicts with other packages
