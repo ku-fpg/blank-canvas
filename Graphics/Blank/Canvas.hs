@@ -110,8 +110,10 @@ primitive' :: Prim a -> Canvas a
 primitive' (Method m cc) = Canvas $
   lift $ lift $ JS.command $ JS.JavaScript $ toLazyText
     (jsCanvasContext cc <> singleton '.' <> showi m)
---    Command cm cc -> error "Command"
---    PseudoProcedure pp a cc -> error "PseudoProcedure"
+primitive' (Command cm _cc) = Canvas $
+  lift $ lift $ JS.command $ JS.JavaScript $ toLazyText
+    (showi cm)
+primitive' (PseudoProcedure pp a cc) = error "PseudoProcedure"
 primitive' (Query q cc) = Canvas $ do
   v <- lift $ lift $ JS.procedure $ JS.JavaScript $ toLazyText 
   	     (showi q <> "(" <> jsCanvasContext cc <> ")")

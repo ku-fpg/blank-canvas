@@ -108,8 +108,8 @@
             function Size(u,c) {
                 $.kc.reply(u,[c.canvas.width, c.canvas.height]);
             }
-            function ToDataURL(u,c) {
-                $.kc.reply(u,c.canvas.toDataURL());
+            function ToDataURL(c) {
+                return c.canvas.toDataURL();
 
             }
             function NewImage(src) {
@@ -139,12 +139,12 @@
             }
 
             function NewCanvas(w,h) {
-                return function (u,c) {
+                return function (c) {
                     var canvas = document.createElement('canvas');
                     canvas.width = w;
                     canvas.height = h;
                     var count = canvasbuffers.push(canvas.getContext("2d"));
-                    $.kc.reply(u,[count - 1,w,h]);
+                    return [count - 1,w,h];
                 }
             }
 
