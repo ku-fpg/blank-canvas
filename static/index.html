@@ -102,8 +102,8 @@
             // ##############################################################
             // These are the Queries
 
-            function Device(u,c) {
-                $.kc.reply(u,[c.canvas.width, c.canvas.height,myDevicePixelRatio]);
+            function Device(c) {
+                return [c.canvas.width, c.canvas.height,myDevicePixelRatio];
             }
             function Size(u,c) {
                 $.kc.reply(u,[c.canvas.width, c.canvas.height]);
@@ -265,7 +265,7 @@
                 canvasbuffers.push(c);
 		// bootstrap the web socket connection
 		window.jsb = {ws: new WebSocket('ws://' + location.host)};		
-		jsb.ws.onmessage = (evt) => eval(evt.data);
+		jsb.ws.onmessage = (evt) => { console.log(evt,evt.data) ; eval(evt.data); }
 		jsb.debug = true;
             });
         </script>

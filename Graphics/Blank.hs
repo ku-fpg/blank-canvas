@@ -276,14 +276,7 @@ blankCanvas opts actions = do
 --       kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
 
 {-
-{-
-       KC.send kc_doc $ fromString $ unlines $ map toString
-          [ "register(" <> showi nm <> ");"
-          | nm <- events opts
-          ]
--}
 
-       queue <- atomically newTChan
 {-
 	-- TODO
        _ <- forkIO $ forever $ do
@@ -295,13 +288,10 @@ blankCanvas opts actions = do
 -}
        let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
 
-       -- A bit of bootstrapping
+       -- A bit of bootstrapping, with the fake context
        DeviceAttributes w h dpr <- send cxt0 device
-       -- let Canvas rm0 = device
-       --     rm1 = runReaderT (runStateT rm0 0) (deviceCanvasContext cxt0)
-       -- (DeviceAttributes w h dpr, n) <- N.run (runMonad (nat (sendW' cxt0))) rm1
-       -- print (DeviceAttributes w h dpr)
 
+       -- Build the actual context
        let cxt1 = cxt0
                 { ctx_width = w
                 , ctx_height = h
@@ -322,6 +312,36 @@ blankCanvas opts actions = do
                   ]
 
         Scotty.middleware $ JS.start $ \ eng -> do
+
+	  print "Got here"
+
+	  JS.send eng $ sequenceA
+	    [ JS.command $ JS.call "register" [ JS.string nm ]
+            | nm <- events opts
+            ]
+
+	  print "Sent"
+
+          queue <- atomically newTChan
+
+	  -- use fake context to get values for real context
+	  let cxt0 = DeviceContext eng queue 300 300 1 locals False
+	  DeviceAttributes w h dpr <- send cxt0 device
+
+	  -- Build the actual context
+	  let cxt1 = cxt0
+                { ctx_width = w
+                , ctx_height = h
+                , ctx_devicePixelRatio = dpr
+                , weakRemoteMonad = weak opts
+                }
+
+          (actions $ cxt1) `catch` \ (e :: SomeException) -> do
+               print ("Exception in blank-canvas application:" :: String)
+               print e
+               throw e
+
+	  -- and we're done
 	  return ()
 
         get "/"                 $ file $ dataDir ++ "/static/index.html"
@@ -505,8 +525,11 @@ sendW' cxt = go mempty
 
 -- | Sends a set of canvas commands to the 'Canvas'. Attempts
 -- to common up as many commands as possible. Should not crash.
-send :: DeviceContext -> Canvas a -> IO a
-send = error "send"
+send :: forall a . DeviceContext -> Canvas a -> IO a
+send cxt (Canvas cm) = do
+  let m0 :: JS.RemoteMonad a
+      m0 = evalStateT (runReaderT cm (deviceCanvasContext cxt)) 0
+  JS.send (theComet cxt) m0
 
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"

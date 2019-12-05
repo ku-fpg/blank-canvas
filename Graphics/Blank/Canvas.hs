@@ -2,6 +2,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -12,8 +14,8 @@
 module Graphics.Blank.Canvas where
 
 
-import           Data.Aeson (FromJSON(..),Value(..),encode)
-import           Data.Aeson.Types (Parser, (.:))
+import           Data.Aeson (FromJSON(..),Value(..), Result(..), encode)
+import           Data.Aeson.Types (Parser, parse, (.:))
 import           Data.Text.Lazy (Text, fromStrict, toStrict)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text as ST
@@ -60,7 +62,7 @@ instance InstrShow TextMetrics
 
 data Prim :: * -> * where
   --Cmd
-  Method      :: Method      -> CanvasContext -> Prim ()
+  Method      :: Method     -> CanvasContext -> Prim ()
   Command     :: Command     -> CanvasContext -> Prim () -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
   MethodAudio :: MethodAudio -> CanvasContext -> Prim ()
@@ -77,19 +79,46 @@ instance KnownResult Prim where
   knownResult (Query {}           ) = Nothing
 -}
 
-newtype Canvas a = Canvas
-        (ReaderT CanvasContext     -- the context, for the graphic contexts
+-- TODO: newtype, after removing InstrShow
+data Canvas a = Canvas 
+        (InstrShow Method =>
+	 ReaderT CanvasContext     -- the context, for the graphic contexts
         (StateT Int                -- local number allocations
         (JS.RemoteMonad
---                     Prim          -- commands and procedures
           )) a)
-       deriving (Functor, Applicative, Monad)
+
+instance Functor Canvas where
+  fmap f (Canvas g) = Canvas (fmap f g)
+
+instance Applicative Canvas where
+  pure = return
+  Canvas f <*> Canvas g = Canvas (f <*> g)
+
+instance Monad Canvas where
+  return = Canvas . return
+  Canvas m >>= k = Canvas $ do
+   r <- m
+   case k r of
+     Canvas m' -> m'
 
 primitive :: (CanvasContext -> Prim a) -> Canvas a
-primitive f = Canvas $ do
-  c <- ask
-  error "primitive"
---  lift . lift $ RM.primitive (f c)
+primitive f = do
+  c <- Canvas $ ask
+  primitive' (f c)
+
+primitive' :: Prim a -> Canvas a
+primitive' (Method m cc) = Canvas $
+  lift $ lift $ JS.command $ JS.JavaScript $ toLazyText
+    (jsCanvasContext cc <> singleton '.' <> showi m)
+--    Command cm cc -> error "Command"
+--    PseudoProcedure pp a cc -> error "PseudoProcedure"
+primitive' (Query q cc) = Canvas $ do
+  v <- lift $ lift $ JS.procedure $ JS.JavaScript $ toLazyText 
+  	     (showi q <> "(" <> jsCanvasContext cc <> ")")
+  case parse (parseQueryResult q) v of
+    Error msg -> fail msg -- TODO: revisit this fail
+    Success a -> return a
+
 
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
 function alloc f = Canvas $ do
