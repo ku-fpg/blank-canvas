@@ -15,7 +15,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 
-import Graphics.Blank (Options(..),port,sendW, blankCanvas)
+import Graphics.Blank (Options(..),port,send, blankCanvas)
 import Graphics.Blank.Canvas
 
 
@@ -51,7 +51,7 @@ splatCanvas opts cmds = do
                            cmd0 <- atomically $ takeTMVar ch
                            -- let cmd1 = runReaderT (runStateT cmd0 0) (deviceCanvasContext cxt)
                            -- N.run (runMonad (nat (sendW cxt))) cmd1    -- run the command
-                           sendW cxt cmd0    -- run the command
+                           send cxt cmd0    -- run the command
                     return ()
 
 -- common TVar for all ports in use.
