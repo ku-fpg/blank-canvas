@@ -154,18 +154,19 @@ main2 args = shakeArgs shakeOptions $ do
 
         liftIO $ print (out,nm)
 
-        let tmp = "tmp"
+--        let tmp = "tmp"
 
-        liftIO $ createDirectoryIfMissing False tmp
-        liftIO $ removeFiles tmp [nm ++ "*.png"]
-        liftIO $ createDirectoryIfMissing False tmp
+--        liftIO $ createDirectoryIfMissing False tmp
+--        liftIO $ removeFiles tmp [wiki_suit nm ++ "*.png"]
+--        liftIO $ createDirectoryIfMissing False tmp
 
         need [ "blank-canvas.wiki/" ++ toMinus nm ++ ".md" ]
         let haskell_file = nm ++ ".hs"
-        need [ haskell_file, "blank-canvas.wiki/examples/" ++ haskell_file ]
+	let haskell_path = wiki_suite ++ "/" ++ haskell_file
+        need [ haskell_path, "blank-canvas.wiki/examples/" ++ haskell_file ]
         liftIO $ print nm
 
-        txt <- readFile' $ haskell_file
+        txt <- readFile' $ haskell_path
 
         let (w,h) = head $
               [ case words ln of
@@ -178,7 +179,7 @@ main2 args = shakeArgs shakeOptions $ do
 
         sequence_ [
              do (_,_,_,ghc) <- liftIO $
-                              createProcess (proc "./dist/build/wiki-suite/wiki-suite" [nm])
+                              createProcess (proc "stack" ["build","--test",":wiki-suite","--ta",nm])
 
                  -- wait a second, for things to start
                 liftIO $ threadDelay (1 * 1000 * 1000)
@@ -189,10 +190,13 @@ main2 args = shakeArgs shakeOptions $ do
 
 
     "blank-canvas.wiki/examples/*.hs" %> \ out -> do
+        liftIO $ print "*hs"    				      
         liftIO $ print out
         let haskell_file = takeFileName out
 
-        txt <- readFile' $ haskell_file
+        liftIO $ print "before read file"
+        txt <- readFile' $ wiki_suite ++ "/" ++ haskell_file
+        liftIO $ print "after read file"
 
         let new = reverse
                 $ dropWhile (all isSpace)
@@ -252,14 +256,17 @@ main2 args = shakeArgs shakeOptions $ do
 -- */
 
 movies :: [String]
-movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
+movies = []
+       --["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples :: [String]
-examples = ["Red_Line","Favicon"]
+examples = [] {-
+	 ["Red_Line","Favicon"]
         ++ ["Color_Square"]
+-}
 
 tutorial :: [String]
-tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
+tutorial = ["Line"] {-, "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Arc","Quadratic_Curve","Bezier_Curve"]
         ++ ["Path","Line_Join","Rounded_Corners","Is_Point_In_Path"]
         ++ ["Custom_Shape","Rectangle","Circle","Semicircle"]
@@ -270,6 +277,7 @@ tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Shadow","Global_Alpha","Clipping_Region","Global_Composite_Operations"]
         ++ ["Grayscale","Get_Image_Data_URL","Load_Image_Data_URL"]
         ++ ["Load_Image_Data_URL_2"]
+-}
 
 wiki_dir :: String
 wiki_dir = "."
@@ -288,3 +296,6 @@ code_header = "````Haskell"
 
 code_footer :: String
 code_footer = "````"
+
+wiki_suite :: String
+wiki_suite = "wiki-suite"
