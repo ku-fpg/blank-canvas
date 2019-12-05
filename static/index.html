@@ -4,7 +4,6 @@
          <title>Blank Canvas</title>
         <script type="text/javascript" src="jquery.js"></script>
         <script type="text/javascript" src="jquery-json.js"></script>
-        <script type="text/javascript" src="kansas-comet.js"></script>
     </head>
     <body style="padding: 0px; margin: 0px; border:0px">
         <div id="canvas"></div>
@@ -264,7 +263,10 @@
                 $("#canvas").css("height",h + "px");
                 c = getContext("2d");
                 canvasbuffers.push(c);
-                $.kc.connect("/blank");
+		// bootstrap the web socket connection
+		window.jsb = {ws: new WebSocket('ws://' + location.host)};		
+		jsb.ws.onmessage = (evt) => eval(evt.data);
+		jsb.debug = true;
             });
         </script>
     </body>
