@@ -179,7 +179,7 @@ main2 args = shakeArgs shakeOptions $ do
 
         sequence_ [
              do (_,_,_,ghc) <- liftIO $
-                              createProcess (proc "stack" ["build","--test",":wiki-suite","--ta",nm])
+                              createProcess (proc "stack" ["exec","wiki-suite",nm])
 
                  -- wait a second, for things to start
                 liftIO $ threadDelay (1 * 1000 * 1000)
@@ -256,17 +256,15 @@ main2 args = shakeArgs shakeOptions $ do
 -- */
 
 movies :: [String]
-movies = []
-       --["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
+movies = [] -- ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples :: [String]
-examples = [] {-
-	 ["Red_Line","Favicon"]
+examples = ["Red_Line","Favicon"]
         ++ ["Color_Square"]
--}
+
 
 tutorial :: [String]
-tutorial = ["Line"] {-, "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
+tutorial = ["Line", "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Arc","Quadratic_Curve","Bezier_Curve"]
         ++ ["Path","Line_Join","Rounded_Corners","Is_Point_In_Path"]
         ++ ["Custom_Shape","Rectangle","Circle","Semicircle"]
@@ -277,7 +275,6 @@ tutorial = ["Line"] {-, "Line_Width", "Line_Color", "Line_Cap","Miter_Limit"]
         ++ ["Shadow","Global_Alpha","Clipping_Region","Global_Composite_Operations"]
         ++ ["Grayscale","Get_Image_Data_URL","Load_Image_Data_URL"]
         ++ ["Load_Image_Data_URL_2"]
--}
 
 wiki_dir :: String
 wiki_dir = "."

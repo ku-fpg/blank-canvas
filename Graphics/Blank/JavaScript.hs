@@ -31,7 +31,14 @@ import           Text.Read (Read(..), parens, readListPrecDefault)
 import           TextShow hiding (toLazyText)
 import           TextShow.TH (deriveTextShow)
 
+import qualified Network.JavaScript as JS
+
 -------------------------------------------------------------
+
+-- Orphan
+instance TextShow (JS.RemoteValue a)
+instance InstrShow (JS.RemoteValue a) where
+  showi v = I.fromText txt where JS.JavaScript txt = JS.var v
 
 -- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
 data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, Show)
@@ -44,19 +51,22 @@ $(deriveTextShow ''CanvasImage)
 instance InstrShow CanvasImage
 
 -- | A handle to the a canvas gradient. 'CanvasGradient's cannot be destroyed.
-newtype CanvasGradient = CanvasGradient Int    deriving (Eq, Ord, Show)
+newtype CanvasGradient = CanvasGradient (JS.RemoteValue CanvasGradient) deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasGradient)
-instance InstrShow CanvasGradient
+instance InstrShow CanvasGradient where
+   showi (CanvasGradient r) = showi r
 
 -- | A handle to a canvas pattern. 'CanvasPattern's cannot be destroyed.
-newtype CanvasPattern = CanvasPattern Int      deriving (Eq, Ord, Show)
+newtype CanvasPattern = CanvasPattern (JS.RemoteValue CanvasPattern) deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasPattern)
-instance InstrShow CanvasPattern
+instance InstrShow CanvasPattern where
+   showi (CanvasPattern r) = showi r
 
 -- | A handle to a canvas audio. 'CanvasAudio's cannot be destroyed.
-data CanvasAudio = CanvasAudio !Int !Double    deriving (Eq, Ord, Show)
+data CanvasAudio = CanvasAudio (JS.RemoteValue CanvasAudio) !Double deriving (Eq, Ord, Show)
 $(deriveTextShow ''CanvasAudio)
-instance InstrShow CanvasAudio
+instance InstrShow CanvasAudio where
+   showi (CanvasAudio r _) = showi r
 
 -------------------------------------------------------------
 
@@ -98,16 +108,17 @@ instance Image CanvasContext where
     width  (CanvasContext _ w _) = fromIntegral w
     height (CanvasContext _ _ h) = fromIntegral h
 
+{-
 class Audio a where
     jsAudio       :: a -> Instr
     durationAudio :: Fractional b => a -> b
     indexAudio    :: a -> Int -- the index to access the audio in the sounds array
 
-
 instance Audio CanvasAudio where
   jsAudio                         = jsCanvasAudio
   durationAudio (CanvasAudio _ d) = realToFrac d
   indexAudio    (CanvasAudio n _) = n
+-}
 
 -- instance Element Video  -- Not supported
 

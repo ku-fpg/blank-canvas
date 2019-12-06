@@ -113,28 +113,30 @@
 
             }
             function NewImage(src) {
-                return function (u,c) {
-                    var img = new Image();
-                    var count = images.push(img);
-                    img.onload = function() {
-                           $.kc.reply(u,[count - 1,img.width,img.height]);
-                    };
-                    img.onerror = function() { alert("Image " + src + " not found.\nAdd as a static file to fix this."); };
-                    img.src = src;
+                return function (c) {
+		    return new Promise( (good,bad) => {
+                      var img = new Image();
+                      var count = images.push(img);
+                      img.onload = function() {
+                           good([count - 1,img.width,img.height])
+                       };
+                       img.onerror = function() { bad("Image " + src + " not found.\nAdd as a static file to fix this."); };
+                       img.src = src;
+		    })
                 }
             }
 
             function MeasureText(txt) {
-                return function (u,c) {
+                return function (c) {
 	            // If we try return the object directly, via json, we
                     // get different results on different browsers.
 	            // So we build an object explicity.
-                    $.kc.reply(u,{ width: c.measureText(txt).width });
+                    return { width: c.measureText(txt).width };
                 }
             }
             function IsPointInPath(x,y) {
-                return function (u,c) {
-                    $.kc.reply(u,c.isPointInPath(x,y));
+                return function (c) {
+                    return c.isPointInPath(x,y);
                 }
             }
 
@@ -149,16 +151,16 @@
             }
 
             function GetImageData(sx,sy,sw,sh) {
-                return function (u,c) {
+                return function (c) {
                     var img = c.getImageData(sx,sy,sw,sh);
                     var arr = [];
                     for (var i = 0;i < img.data.length;i++) {
                         arr[i] = img.data[i];
                     }
-                    $.kc.reply(u,{ width: img.width
-                                 , height: img.height
-                                 , data: arr
-                                 });
+                    return { width: img.width
+                           , height: img.height
+                           , data: arr
+                           };
                 }
             }
 

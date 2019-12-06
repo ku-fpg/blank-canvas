@@ -131,10 +131,14 @@ module Graphics.Blank
         , Radians
         , RoundProperty(..)
         -- * @blank-canvas@ Extensions
-        -- ** Reading from 'Canvas'
+	-- ** static (image) data
+	, staticURL
+	, URL(..)
         , newImage
+        -- ** Reading from 'Canvas'
         , CanvasImage -- abstract
           -- ** Audio functionality
+{-
         , currentTimeAudio
         , durationAudio -- subject to change
         , indexAudio
@@ -147,6 +151,7 @@ module Graphics.Blank
         , setVolumeAudio
         , newAudio
         , CanvasAudio
+-}
          -- ** 'DeviceContext' attributes
         , devicePixelRatio
          -- ** 'CanvasContext', and off-screen Canvas.
@@ -531,6 +536,13 @@ send cxt (Canvas cm) = do
       m0 = evalStateT (runReaderT cm (deviceCanvasContext cxt)) 0
   JS.send (theComet cxt) m0
 
+-- | make a static file available to Canvas, via a custom URL.
+--
+-- >  url <- staticURL cxt "image/png" "image/foo.png"
+--
+staticURL :: DeviceContext -> ST.Text -> FilePath -> IO URL
+staticURL _ txt path = readDataURL txt path
+
 local_only :: Middleware
 local_only = Local.local $ responseLBS H.status403 [("Content-Type", "text/plain")] "local access only"
 
@@ -660,7 +672,7 @@ height = JavaScript.height
 -- | The width of an 'Image' in pixels.
 width :: (Image image, Num a) => image -> a
 width = JavaScript.width
-
+{-
 -- | The total length of the audio file in seconds.
 durationAudio :: (Audio a, Fractional b) => a -> b
 durationAudio = JavaScript.durationAudio
@@ -668,3 +680,5 @@ durationAudio = JavaScript.durationAudio
 -- | Returns the index of the given Audio in the array of Audio's in the javascript
 indexAudio :: Audio a => a -> Int
 indexAudio = JavaScript.indexAudio
+
+-}

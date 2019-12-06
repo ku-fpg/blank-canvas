@@ -1,5 +1,7 @@
 module Graphics.Blank.Types where
 
+import qualified Data.Text as ST
+
 -- | A value representing a percentage (e.g., @0.0@ represents 0%,
 -- @100.0@ represents 100%, etc.).
 type Percentage = Double
@@ -17,3 +19,7 @@ type Degrees = Double
 
 -- | An angle type in which 2π radians represents one complete rotation.
 type Radians = Double
+
+-- | A dynamically-created URL that blank canvas allows you
+--   to access. The user need to use 'static' to generate this URL.
+newtype URL = URL ST.Text

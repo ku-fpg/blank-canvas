@@ -8,8 +8,9 @@ import           Wiki -- (578,400)
 main :: IO ()
 main = do
     blankCanvas 3000 $ \ context -> do
+        url <- staticURL context "type/jpeg" "images/House.jpg"
         ImageData w h v <- send context $ do
-            img <- newImage "images/House.jpg"
+            img <- newImage url
             drawImage(img,[50,50])
             getImageData(50,50, width img, height img)
         

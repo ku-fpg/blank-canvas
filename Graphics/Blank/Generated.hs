@@ -21,16 +21,16 @@ import           Prelude.Compat
 
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
-    showi (PseudoProcedure f _ _) = showi f
+    showi (PseudoProcedure f _) = showi f
     showi (Method m _)      = showi m
     showi (Command c _)     = showi c
-    showi (MethodAudio a _) = showi a
+--    showi (MethodAudio a _) = showi a
     showi (Query q _) = showi q
 
 
 instance Show Method where
   showsPrec p = showsPrec p . toString . showi
-
+{-
 instance InstrShow MethodAudio where
   showiPrec _ = showi
   showi (PlayAudio audio)                    = jsAudio audio <> ".play()"
@@ -40,7 +40,7 @@ instance InstrShow MethodAudio where
   showi (SetMutedAudio        (audio, mute)) = jsAudio audio <> ".muted = " <> jsBool mute <> singleton ';'
   showi (SetPlaybackRateAudio (audio, rate)) = jsAudio audio <> ".playbackRate = " <> jsDouble rate <> singleton ';'
   showi (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
-
+-}
   -- showi (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
 
 instance InstrShow Method where
@@ -349,7 +349,7 @@ miterLimit = primitive . Method . MiterLimit
 -- @
 moveTo :: (Double, Double) -> Canvas ()
 moveTo = primitive . Method . MoveTo
-
+{-
 playAudio :: Audio audio => audio -> Canvas ()
 playAudio = primitive . MethodAudio . PlayAudio
 
@@ -375,7 +375,7 @@ setPlaybackRateAudio = primitive . MethodAudio . SetPlaybackRateAudio
 -- | Adjusts the volume.  Scaled from 0.0 - 1.0, any number outside of this range will result in an error
 setVolumeAudio :: Audio audio => (audio, Double) -> Canvas ()
 setVolumeAudio = primitive . MethodAudio . SetVolumeAudio
-
+-}
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()
 putImageData = primitive . Method . PutImageData

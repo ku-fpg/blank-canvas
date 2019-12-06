@@ -23,7 +23,7 @@ import qualified Data.Text as ST
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
-import           Graphics.Blank.Types.Cursor
+import           Graphics.Blank.Types.Cursor(CanvasCursor, jsCanvasCursor)
 import           Graphics.Blank.Types.Font
 
 import           Graphics.Blank.Instr
@@ -65,8 +65,8 @@ data Prim :: * -> * where
   Method      :: Method     -> CanvasContext -> Prim ()
   Command     :: Command     -> CanvasContext -> Prim () -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
-  MethodAudio :: MethodAudio -> CanvasContext -> Prim ()
-  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> a -> CanvasContext -> Prim ()
+--  MethodAudio :: MethodAudio -> CanvasContext -> Prim ()
+  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> CanvasContext -> Prim a
   --proc
   Query     :: InstrShow a => Query a     -> CanvasContext -> Prim a
 
@@ -113,7 +113,10 @@ primitive' (Method m cc) = Canvas $
 primitive' (Command cm _cc) = Canvas $
   lift $ lift $ JS.command $ JS.JavaScript $ toLazyText
     (showi cm)
-primitive' (PseudoProcedure pp a cc) = error "PseudoProcedure"
+primitive' (PseudoProcedure pp cc) = Canvas $ do
+  v <- lift $ lift $ JS.constructor $ JS.JavaScript $ toLazyText 
+        (jsCanvasContext cc <> singleton '.' <> showi pp)
+  return $ pseudoProcedureResult pp v
 primitive' (Query q cc) = Canvas $ do
   v <- lift $ lift $ JS.procedure $ JS.JavaScript $ toLazyText 
   	     (showi q <> "(" <> jsCanvasContext cc <> ")")
@@ -123,14 +126,10 @@ primitive' (Query q cc) = Canvas $ do
 
 
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
-function alloc f = Canvas $ do
-  c <- ask
-  u <- get
-  modify (+1)
-  let a = alloc u
-  error "function"
---  lift . lift $ RM.primitive (PseudoProcedure f a c)
-  return a
+function alloc f = do
+  -- Alloc is ignored, and the new number is provided
+  -- by the javascript bridge instead
+  primitive (PseudoProcedure f)
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
@@ -208,6 +207,7 @@ data Method
         | Transform (Double, Double, Double, Double, Double, Double)
         | Translate (Double, Double)
 
+{-
 -- Audio object methods: play(), pause(), setVolume()
 data MethodAudio
         = forall audio . Audio audio => PlayAudio             audio
@@ -217,6 +217,7 @@ data MethodAudio
         | forall audio . Audio audio => SetMutedAudio        (audio, Bool)
         | forall audio . Audio audio => SetPlaybackRateAudio (audio, Double)
         | forall audio . Audio audio => SetVolumeAudio       (audio, Double)
+-}
 
 data Command
   = Trigger Event
@@ -300,6 +301,11 @@ instance InstrShow (PseudoProcedure a) where
   showi (CreatePattern (img,dir)) = "createPattern("
         <> jsImage img <> singleton ',' <> jsRepeatDirection dir <> singleton ')'
 
+pseudoProcedureResult :: PseudoProcedure a -> JS.RemoteValue a -> a
+pseudoProcedureResult CreateLinearGradient{} i = CanvasGradient i
+pseudoProcedureResult CreateRadialGradient{} i = CanvasGradient i
+pseudoProcedureResult CreatePattern{}        i = CanvasPattern i
+
 -----------------------------------------------------------------------------
 
 data Query :: * -> * where
@@ -348,7 +354,7 @@ parseQueryResult (ToDataURL {}) o             = parseJSON o
 parseQueryResult (MeasureText {}) (Object v)  = TextMetrics <$> v .: "width"
 parseQueryResult (IsPointInPath {}) o         = parseJSON o
 parseQueryResult (NewImage {}) o              = uncurry3 CanvasImage <$> parseJSON o
-parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
+--parseQueryResult (NewAudio {}) o              = uncurry CanvasAudio <$> parseJSON o
 parseQueryResult (NewCanvas {}) o             = uncurry3 CanvasContext <$> parseJSON o
 parseQueryResult (GetImageData {}) (Object o) = ImageData
                                            <$> (o .: "width")
@@ -398,14 +404,14 @@ isPointInPath = primitive . Query . IsPointInPath
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
 -- If you are using local images, loading should be near instant.
-newImage :: ST.Text -> Canvas CanvasImage
-newImage = primitive . Query . NewImage . fromStrict
+newImage :: URL -> Canvas CanvasImage
+newImage (URL txt) = primitive $ Query $ NewImage $ fromStrict txt
 
 -- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
-newAudio :: ST.Text -> Canvas CanvasAudio
-newAudio = primitive . Query . NewAudio . fromStrict
+newAudio :: URL -> Canvas CanvasAudio
+newAudio (URL txt) = primitive $ Query $ NewAudio $ fromStrict txt
 
 -- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
 -- the specified CanvasAudio.
@@ -441,7 +447,7 @@ currentTimeAudio = primitive . Query . CurrentTimeAudio
 -- @
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
-createLinearGradient = function CanvasGradient . CreateLinearGradient
+createLinearGradient = function undefined . CreateLinearGradient
 
 -- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
 -- by the coordinates of two circles, which can be used to fill other shapes.
@@ -467,19 +473,22 @@ createLinearGradient = function CanvasGradient . CreateLinearGradient
 -- 'fillStyle' grd
 -- @
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
-createRadialGradient = function CanvasGradient . CreateRadialGradient
+createRadialGradient = function undefined . CreateRadialGradient
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
 --
 -- ==== __Example__
 --
 -- @
--- img <- newImage \"cat.jpg\"
--- pat <- 'createPattern'(img, 'repeatX')
--- 'fillStyle' pat
+-- url <- static \"cat.jpg\"
+-- ...
+-- send ... $ do
+--    img <- newImage \"cat.jpg\"
+--    pat <- 'createPattern'(img, 'repeatX')
+--    'fillStyle' pat
 -- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = function CanvasPattern . CreatePattern
+createPattern = function undefined . CreatePattern
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext

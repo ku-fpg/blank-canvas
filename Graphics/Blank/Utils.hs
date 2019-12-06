@@ -11,6 +11,7 @@ import           Data.Text.Encoding        (decodeUtf8, encodeUtf8)
 import           Graphics.Blank.Canvas
 import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
+import           Graphics.Blank.Types
 
 import           Prelude.Compat
 
@@ -44,10 +45,10 @@ infixr 0 #
 --
 -- >  url <- readDataURL "image/png" "image/foo.png"
 --
-readDataURL :: Text -> FilePath -> IO Text
+readDataURL :: Text -> FilePath -> IO URL
 readDataURL mime_type filePath = do
     dat <- B.readFile filePath
-    return $ "data:" <> mime_type <> ";base64," <> decodeUtf8 (encode dat)
+    return $ URL $ "data:" <> mime_type <> ";base64," <> decodeUtf8 (encode dat)
 
 -- | Find the MIME type for a data URL.
 --

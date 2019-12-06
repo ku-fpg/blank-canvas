@@ -10,7 +10,7 @@ main = do
     blankCanvas 3000 $ \ context -> do
         url <- Text.IO.readFile "data/dataURL.txt"
         send context $ do
-               img <- newImage url
+               img <- newImage (URL url)
                drawImage (img,[0,0])
         
         wiki $ snapShot context "images/Load_Image_Data_URL.png"
