@@ -276,40 +276,6 @@ blankCanvas opts actions = do
 
 --   print dataDir
 
-   -- use the comet
---   let kc_opts :: KC.Options
---       kc_opts = KC.Options { KC.prefix = "/blank", KC.verbose = if debug opts then 3 else 0 }
-
-{-
-
-{-
-	-- TODO
-       _ <- forkIO $ forever $ do
-               val <- atomically $ readTChan $ KC.eventQueue $ kc_doc
-               case fromJSON val of
-                  Success (event :: Event) -> do
-                          atomically $ writeTChan queue event
-                  _ -> return ()
--}
-       let cxt0 = DeviceContext kc_doc queue 300 300 1 locals False
-
-       -- A bit of bootstrapping, with the fake context
-       DeviceAttributes w h dpr <- send cxt0 device
-
-       -- Build the actual context
-       let cxt1 = cxt0
-                { ctx_width = w
-                , ctx_height = h
-                , ctx_devicePixelRatio = dpr
-                , weakRemoteMonad = weak opts
-                }
-
-       (actions $ cxt1) `catch` \ (e :: SomeException) -> do
-               print ("Exception in blank-canvas application:" :: String)
-               print e
-               throw e
--}
-
    app <- scottyApp $ do
 --        middleware logStdoutDev
         sequence_ [ Scotty.middleware ware
@@ -328,6 +294,13 @@ blankCanvas opts actions = do
 	  print "Sent"
 
           queue <- atomically newTChan
+	  
+	  _ <- forkIO $ forever $ do
+	  	 atomically $ do
+		   (val,_) <- JS.readEventChan eng
+		   case fromJSON val of
+                      Success (event :: Event) -> writeTChan queue event
+                      _ -> return ()
 
 	  -- use fake context to get values for real context
 	  let cxt0 = DeviceContext eng queue 300 300 1 locals False

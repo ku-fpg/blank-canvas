@@ -105,8 +105,8 @@
             function Device(c) {
                 return [c.canvas.width, c.canvas.height,myDevicePixelRatio];
             }
-            function Size(u,c) {
-                $.kc.reply(u,[c.canvas.width, c.canvas.height]);
+            function Size(c) {
+                return [c.canvas.width, c.canvas.height];
             }
             function ToDataURL(c) {
                 return c.canvas.toDataURL();
@@ -188,7 +188,7 @@
                 if (e.which != undefined) {
                     o.which = e.which;
                 }
-                $.kc.event(o);
+                jsb.event(o);
             }
 
             function register(name) {

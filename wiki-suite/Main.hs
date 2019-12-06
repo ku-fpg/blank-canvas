@@ -256,7 +256,7 @@ main2 args = shakeArgs shakeOptions $ do
 -- */
 
 movies :: [String]
-movies = [] -- ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
+movies = ["Rotating_Square","Tic_Tac_Toe","Bounce","Key_Read","Square"]
 
 examples :: [String]
 examples = ["Red_Line","Favicon"]

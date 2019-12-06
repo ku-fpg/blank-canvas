@@ -12,6 +12,7 @@ import           Data.Time.Clock.POSIX
 
 import           Graphics.Blank
 
+import           System.Directory
 import           System.Exit
 import           System.IO.Unsafe
 import           System.Posix.Process
@@ -70,6 +71,7 @@ snapShot context fileName = do
                         drawImage(top',[1,1])
                         toDataURL() -- of tempCanvas
 
+        createDirectoryIfMissing True $ "blank-canvas.wiki/tmp"
         writeDataURL ("blank-canvas.wiki/" ++ fileName) txt
 
 wiki :: a -> a
