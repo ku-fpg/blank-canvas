@@ -480,13 +480,13 @@ instance JSArg CanvasGradient where
     showiJS = jsCanvasGradient
 
 jsCanvasGradient :: CanvasGradient -> Instr
-jsCanvasGradient (CanvasGradient n) = "gradient_" <> showi n
+jsCanvasGradient (CanvasGradient n) = showi n
 
 instance JSArg CanvasPattern where
     showiJS = jsCanvasPattern
 
 jsCanvasPattern :: CanvasPattern -> Instr
-jsCanvasPattern (CanvasPattern n) = "pattern_" <> showi n
+jsCanvasPattern (CanvasPattern n) = showi n
 
 instance JSArg (Colour Double) where
     showiJS = jsColour
