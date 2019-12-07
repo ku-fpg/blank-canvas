@@ -342,7 +342,7 @@ blankCanvas opts actions = do
         return ()
 
    runSettings (setPort (port opts)
-               $ setTimeout 5
+               $ setTimeout 100
                $ defaultSettings
                ) app
 
