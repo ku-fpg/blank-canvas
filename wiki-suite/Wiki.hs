@@ -20,6 +20,8 @@ import           System.Process
 
 import           Text.Printf
 
+import           Development.Shake(removeFiles)
+
 -- import           Trace.Hpc.Reflect
 -- import           Trace.Hpc.Tix
 
@@ -99,6 +101,7 @@ whenM = M.when
 
 anim_png :: String -> IO String
 anim_png nm = do
+   removeFiles "blank.canvas.wiki/tmp" ["*.png"] 
    n <- getPOSIXTime                
    return $ "tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000 :: Double) :: Integer) ++ ".png"
 
