@@ -220,6 +220,7 @@ import           Network.Mime                 (defaultMimeMap,
 import           Network.Wai                  (Middleware, responseLBS)
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Middleware.Local as Local
+import           Network.Wai.Middleware.RequestLogger
 import qualified Network.JavaScript as JS
 
 import           Paths_blank_canvas
@@ -277,7 +278,7 @@ blankCanvas opts actions = do
 --   print dataDir
 
    app <- scottyApp $ do
---        middleware logStdoutDev
+--        Scotty.middleware logStdoutDev
         sequence_ [ Scotty.middleware ware
                   | ware <- middleware opts
                   ]
