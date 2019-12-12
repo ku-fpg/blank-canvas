@@ -431,6 +431,10 @@ class JSArg a where
     -- | Display a value as JavaScript data.
     showiJS :: a -> Instr
 
+    showJSB :: a -> JS.JavaScript
+    showJSB = JS.JavaScript . toLazyText . showiJS
+
+
 instance JSArg (AlphaColour Double) where
   showiJS = jsAlphaColour
 
