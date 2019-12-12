@@ -8,6 +8,7 @@ import           Control.Concurrent.STM
 import qualified Control.Monad as M
 
 import           Data.Text (Text)
+import qualified Data.Text as Text
 import           Data.Time.Clock.POSIX
 
 import           Graphics.Blank
@@ -74,6 +75,7 @@ snapShot context fileName = do
                         toDataURL() -- of tempCanvas
 
         createDirectoryIfMissing True $ "blank-canvas.wiki/tmp"
+	print $("Writing to","blank-canvas.wiki/" ++ fileName, Text.length txt)
         writeDataURL ("blank-canvas.wiki/" ++ fileName) txt
 
 wiki :: a -> a
