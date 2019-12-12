@@ -102,6 +102,10 @@ instance Monad Canvas where
      Canvas m' -> m' cc
   (>>) = (*>)
 
+primitiveMethod :: JS.JavaScript -> Canvas ()
+primitiveMethod js = Canvas $ \ cc ->
+  JS.command $ showJSB cc <> "." <> js
+
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ \ cc -> 
   case primitive' (f cc) of
