@@ -507,7 +507,7 @@ sendW' cxt = go mempty
 send :: forall a . DeviceContext -> Canvas a -> IO a
 send cxt (Canvas cm) = do
   let m0 :: JS.RemoteMonad a
-      m0 = evalStateT (runReaderT cm (deviceCanvasContext cxt)) 0
+      m0 = cm (deviceCanvasContext cxt)
   JS.send (theComet cxt) m0
 
 -- | make a static file available to Canvas, via a custom URL.

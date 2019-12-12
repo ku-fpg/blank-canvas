@@ -82,47 +82,49 @@ instance KnownResult Prim where
 -- TODO: newtype, after removing InstrShow
 data Canvas a = Canvas 
         (InstrShow Method =>
-	 ReaderT CanvasContext     -- the context, for the graphic contexts
-        (StateT Int                -- local number allocations
-        (JS.RemoteMonad
-          )) a)
+	 CanvasContext          -- the context, for the graphic contexts
+         -> JS.RemoteMonad a)
 
 instance Functor Canvas where
-  fmap f (Canvas g) = Canvas (fmap f g)
+  fmap f (Canvas g) = Canvas $ \ cc -> fmap f (g cc)
 
 instance Applicative Canvas where
-  pure = return
-  Canvas f <*> Canvas g = Canvas (f <*> g)
+  pure a = Canvas $ \ _ -> return a
+  Canvas f <*> Canvas g = Canvas $ \ cc -> (f cc <*> g cc)
+  Canvas f *> Canvas g = Canvas $ \ cc -> f cc *> g cc
+  Canvas f <* Canvas g = Canvas $ \ cc -> f cc <* g cc
 
 instance Monad Canvas where
-  return = Canvas . return
-  Canvas m >>= k = Canvas $ do
-   r <- m
+  return = pure
+  Canvas m >>= k = Canvas $ \ cc -> do
+   r <- m cc
    case k r of
-     Canvas m' -> m'
+     Canvas m' -> m' cc
+  (>>) = (*>)
 
 primitive :: (CanvasContext -> Prim a) -> Canvas a
-primitive f = do
-  c <- Canvas $ ask
-  primitive' (f c)
+primitive f = Canvas $ \ cc -> 
+  case primitive' (f cc) of
+   Canvas g -> g cc
 
 primitive' :: Prim a -> Canvas a
-primitive' (Method m cc) = Canvas $
-  lift $ lift $ JS.command $ JS.JavaScript $ toLazyText
+primitive' (Method m cc) = Canvas $ \ cc ->
+  JS.command $ JS.JavaScript $ toLazyText
     (jsCanvasContext cc <> singleton '.' <> showi m)
-primitive' (Command cm _cc) = Canvas $
-  lift $ lift $ JS.command $ JS.JavaScript $ toLazyText
+primitive' (Command cm _cc) = Canvas $ \ cc ->
+  JS.command $ JS.JavaScript $ toLazyText
     (showi cm)
-primitive' (PseudoProcedure pp cc) = Canvas $ do
-  v <- lift $ lift $ JS.constructor $ JS.JavaScript $ toLazyText 
-        (jsCanvasContext cc <> singleton '.' <> showi pp)
-  return $ pseudoProcedureResult pp v
-primitive' (Query q cc) = Canvas $ do
-  v <- lift $ lift $ JS.procedure $ JS.JavaScript $ toLazyText 
-  	     (showi q <> "(" <> jsCanvasContext cc <> ")")
-  case parse (parseQueryResult q) v of
-    Error msg -> fail msg -- TODO: revisit this fail
-    Success a -> return a
+primitive' (PseudoProcedure pp cc) = Canvas $ \ cc -> 
+  pseudoProcedureResult pp <$> 
+     (JS.constructor $ JS.JavaScript $ toLazyText 
+          (jsCanvasContext cc <> singleton '.' <> showi pp))
+primitive' (Query q cc) = Canvas $ \ cc ->
+  (\ v -> case parse (parseQueryResult q) v of
+    Error msg -> error msg -- TODO: revisit this fail
+    Success a -> a) <$>
+  (JS.procedure $ JS.JavaScript $ toLazyText 
+  	     (showi q <> "(" <> jsCanvasContext cc <> ")"))
+
 
 
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
@@ -250,7 +252,7 @@ with context (Canvas m) = Canvas $ do
 
 -- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
-myCanvasContext = Canvas ask
+myCanvasContext = Canvas $ return
 
 -----------------------------------------------------------------------------
 
