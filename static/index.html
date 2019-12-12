@@ -268,7 +268,7 @@
 		// bootstrap the web socket connection
 		window.jsb = {ws: new WebSocket('ws://' + location.host)};		
 		jsb.ws.onmessage = (evt) => { console.log(evt,evt.data) ; eval(evt.data); }
-		jsb.debug = true;
+//		jsb.debug = true;
             });
         </script>
     </body>
