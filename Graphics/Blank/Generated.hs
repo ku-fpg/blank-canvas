@@ -16,6 +16,8 @@ import           Graphics.Blank.Instr
 
 import           Prelude.Compat
 
+import qualified Network.JavaScript as JS
+
 -- import           TextShow (TextShow(..), FromTextShow(..), singleton)
 
 
@@ -348,7 +350,7 @@ miterLimit = primitive . Method . MiterLimit
 -- 'stroke'()
 -- @
 moveTo :: (Double, Double) -> Canvas ()
-moveTo = primitive . Method . MoveTo
+moveTo (a1,a2) = primitiveMethod $ JS.call "moveTo" [showJSB a1,showJSB  a2]
 {-
 playAudio :: Audio audio => audio -> Canvas ()
 playAudio = primitive . MethodAudio . PlayAudio
