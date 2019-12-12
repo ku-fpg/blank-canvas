@@ -101,7 +101,6 @@ whenM = M.when
 
 anim_png :: String -> IO String
 anim_png nm = do
-   removeFiles "blank.canvas.wiki/tmp" ["*.png"] 
    n <- getPOSIXTime                
    return $ "tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000 :: Double) :: Integer) ++ ".png"
 

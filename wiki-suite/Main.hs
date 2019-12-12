@@ -154,11 +154,7 @@ main2 args = shakeArgs shakeOptions $ do
 
         liftIO $ print (out,nm)
 
---        let tmp = "tmp"
-
---        liftIO $ createDirectoryIfMissing False tmp
---        liftIO $ removeFiles tmp [wiki_suit nm ++ "*.png"]
---        liftIO $ createDirectoryIfMissing False tmp
+        liftIO $ removeFiles (wiki_suite ++ "/tmp") ["*.png"]
 
         need [ "blank-canvas.wiki/" ++ toMinus nm ++ ".md" ]
         let haskell_file = nm ++ ".hs"
