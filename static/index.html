@@ -165,14 +165,14 @@
             }
 
             function Cursor(cur) {
-                return function(u, c) {
+                return function(c) {
                     c.canvas.style.cursor = cur;
-                    $.kc.reply(u, []);
+		    return [];
                 };
             }
 
-            function Sync(u,c) {
-                $.kc.reply(u,[]);
+            function Sync(c) {
+	        return [];
             }
 
             function Trigger(e) {
