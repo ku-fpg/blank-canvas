@@ -75,12 +75,12 @@ writeDataURL fileName
 
 -- | Draws an image onto the canvas at the given x- and y-coordinates.
 drawImageAt :: Image image => (image, Double, Double) -> Canvas ()
-drawImageAt (img, dx, dy) = primitive . Method $ DrawImage (img, [dx, dy])
+drawImageAt (img, dx, dy) = drawImage (img, [dx, dy])
 
 -- | Acts like 'drawImageAt', but with two extra 'Double' arguments. The third and fourth
 --   'Double's specify the width and height of the image, respectively.
 drawImageSize :: Image image => (image, Double, Double, Double, Double) -> Canvas ()
-drawImageSize (img, dx, dy, dw, dh) = primitive . Method $ DrawImage (img, [dx, dy, dw, dh])
+drawImageSize (img, dx, dy, dw, dh) = drawImage (img, [dx, dy, dw, dh])
 
 -- | Acts like 'drawImageSize', but with four extra 'Double' arguments before the arguments
 --   of 'drawImageSize'. The first and second 'Double's specify the x- and y-coordinates at
@@ -92,7 +92,7 @@ drawImageSize (img, dx, dy, dw, dh) = primitive . Method $ DrawImage (img, [dx, 
 -- @
 drawImageCrop :: Image image => (image, Double, Double, Double, Double, Double, Double, Double, Double) -> Canvas ()
 drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
-  = primitive . Method $ DrawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
+  = drawImage (img, [sx, sy, sw, sh, dx, dy, dw, dh])
 
 -- | Writes 'ImageData' to the canvas at the given x- and y-coordinates.
 putImageDataAt :: (ImageData, Double, Double) -> Canvas ()

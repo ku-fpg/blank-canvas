@@ -227,7 +227,8 @@ closePath () = primitiveMethod "closePath" []
 
 -- | drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize', and 'drawImageCrop' for variants with exact numbers of arguments.
 drawImage :: Image image => (image,[Double]) -> Canvas ()
-drawImage = primitive . Method . DrawImage
+drawImage (img, args) = primitiveMethod "drawImage" 
+  (jsbImage img : map showJSB args)
 
 -- | Fills the current path with the current 'fillStyle'.
 --

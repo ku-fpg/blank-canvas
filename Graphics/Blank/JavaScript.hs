@@ -93,8 +93,11 @@ instance InstrShow ImageData where
 -- | Class for JavaScript objects that represent images (including the canvas itself).
 class Image a where
     jsImage :: a -> Instr
+    jsbImage :: a -> JS.JavaScript
     width  :: Num b => a -> b
     height :: Num b => a -> b
+
+    jsbImage = JS.JavaScript . toLazyText . jsImage
 
 instance Image CanvasImage where
     jsImage = jsCanvasImage
