@@ -47,37 +47,6 @@ instance InstrShow MethodAudio where
 
 instance InstrShow Method where
   showiPrec _ = showi
-  showi (Arc (a1,a2,a3,a4,a5,a6)) = "arc("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
-         <> jsDouble a5 <> singleton ',' <> jsBool a6   <> singleton ')'
-  showi (ArcTo (a1,a2,a3,a4,a5)) = "arcTo("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ','
-         <> jsDouble a4 <> singleton ',' <> jsDouble a5 <> singleton ')'
-  showi BeginPath = "beginPath()"
-  showi (BezierCurveTo (a1,a2,a3,a4,a5,a6)) = "bezierCurveTo("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
-         <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showi (ClearRect (a1,a2,a3,a4)) = "clearRect("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showi Clip = "clip()"
-  showi ClosePath = "closePath()"
-  showi (DrawImage (a1,a2)) = "drawImage(" <> jsImage a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
-  showi Fill = "fill()"
-  showi (FillRect (a1,a2,a3,a4)) = "fillRect("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showi (FillStyle (a1)) = "fillStyle = (" <> jsStyle a1 <> singleton ')'
-  showi (FillText (a1,a2,a3)) = "fillText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
-  showi (Font (a1)) = "font = (" <> jsCanvasFont a1 <> singleton ')'
-  showi (GlobalAlpha (a1)) = "globalAlpha = (" <> jsDouble a1 <> singleton ')'
-  showi (GlobalCompositeOperation (a1)) = "globalCompositeOperation = (" <> jsText a1 <> singleton ')'
-  showi (LineCap (a1)) = "lineCap = (" <> jsLineEndCap a1 <> singleton ')'
-  showi (LineJoin (a1)) = "lineJoin = (" <> jsLineJoinCorner a1 <> singleton ')'
-  showi (LineTo (a1,a2)) = "lineTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showi (LineWidth (a1)) = "lineWidth = (" <> jsDouble a1 <> singleton ')'
   showi (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
   showi (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
   showi (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'

@@ -175,27 +175,7 @@ instance Monoid a => Monoid (Canvas a) where
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
-        -- regular HTML5 canvas commands
-        = Arc (Double, Double, Double, Radians, Radians, Bool)
-        | ArcTo (Double, Double, Double, Double, Double)
-        | BeginPath
-        | BezierCurveTo (Double, Double, Double, Double, Double, Double)
-        | ClearRect (Double, Double, Double, Double)
-        | Clip
-        | ClosePath
-        | forall image . Image image => DrawImage (image,[Double]) -- drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize', and 'drawImageCrop' for variants with exact numbers of arguments.
-        | Fill
-        | FillRect (Double, Double, Double, Double)
-        | forall style . Style style => FillStyle style
-        | FillText (Text, Double, Double)
-        | forall canvasFont . CanvasFont canvasFont => Font canvasFont
-        | GlobalAlpha Alpha
-        | GlobalCompositeOperation Text
-        | LineCap LineEndCap
-        | LineJoin LineJoinCorner
-        | LineTo (Double, Double)
-        | LineWidth Double
-        | MiterLimit Double
+        = MiterLimit Double
         | MoveTo (Double, Double)
         | PutImageData (ImageData, [Double]) -- 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
         | QuadraticCurveTo (Double, Double, Double, Double)
