@@ -130,7 +130,8 @@ instance InstrShow Method where
 -- * @cc@ is the arc direction, where @True@ indicates counterclockwise and
 --   @False@ indicates clockwise.
 arc :: (Double, Double, Double, Radians, Radians, Bool) -> Canvas ()
-arc = primitive . Method . Arc
+arc (a1,a2,a3,a4,a5,a6) = primitiveMethod $ JS.call "arc"
+  [ showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5, showJSB a6]
 
 -- | @'arcTo'(x1, y1, x2, y2, r)@ creates an arc between two tangents,
 -- specified by two control points and a radius.
@@ -145,7 +146,8 @@ arc = primitive . Method . Arc
 --
 -- * @r@ is the arc's radius
 arcTo :: (Double, Double, Double, Double, Double) -> Canvas ()
-arcTo = primitive . Method . ArcTo
+arcTo (a1,a2,a3,a4,a5) = primitiveMethod $ JS.call "arcTo"
+  [ showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5]
 
 -- | Begins drawing a new path. This will empty the current list of subpaths.
 --
@@ -158,7 +160,7 @@ arcTo = primitive . Method . ArcTo
 -- 'stroke'()
 -- @
 beginPath :: () -> Canvas ()
-beginPath () = primitive $ Method BeginPath
+beginPath () = primitiveMethod $ JS.call "beginPath" []
 
 -- | @'bezierCurveTo'(cp1x, cp1y, cp2x, cp2y x, y)@ adds a cubic Bézier curve to the path
 -- (whereas 'quadraticCurveTo' adds a quadratic Bézier curve).
@@ -175,7 +177,8 @@ beginPath () = primitive $ Method BeginPath
 --
 -- * @y@ is the y-coordinate of the end point
 bezierCurveTo :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
-bezierCurveTo = primitive . Method . BezierCurveTo
+bezierCurveTo (a1,a2,a3,a4,a5,a6) = primitiveMethod $ JS.call "bezierCurveTo"
+  [ showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5, showJSB a6]
 
 -- | @'clearRect'(x, y, w, h)@ clears all pixels within the rectangle with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ (i.e., sets the pixels to transparent black).
@@ -188,7 +191,8 @@ bezierCurveTo = primitive . Method . BezierCurveTo
 -- 'clearRect'(20, 20, 100, 50)
 -- @
 clearRect :: (Double, Double, Double, Double) -> Canvas ()
-clearRect = primitive . Method . ClearRect
+clearRect (a1,a2,a3,a4) = primitiveMethod $ JS.call "clearRect" 
+  [ showJSB a1, showJSB a2, showJSB a3, showJSB a4 ]
 
 -- | Turns the path currently being built into the current clipping path.
 -- Anything drawn after 'clip' is called will only be visible if inside the new
@@ -204,7 +208,7 @@ clearRect = primitive . Method . ClearRect
 -- 'fillRect'(0, 0, 150, 100)
 -- @
 clip :: () -> Canvas ()
-clip () = primitive $ Method Clip
+clip () = primitiveMethod $ JS.call "clip" []
 
 -- | Creates a path from the current point back to the start, to close it.
 --
@@ -219,7 +223,7 @@ clip () = primitive $ Method Clip
 -- 'stroke'()
 -- @
 closePath :: () -> Canvas ()
-closePath () = primitive $ Method ClosePath
+closePath () = primitiveMethod $ JS.call "closePath" []
 
 -- | drawImage' takes 2, 4, or 8 'Double' arguments. See 'drawImageAt', 'drawImageSize', and 'drawImageCrop' for variants with exact numbers of arguments.
 drawImage :: Image image => (image,[Double]) -> Canvas ()
@@ -234,7 +238,7 @@ drawImage = primitive . Method . DrawImage
 -- 'fill'()
 -- @
 fill :: () -> Canvas ()
-fill () = primitive $ Method Fill
+fill () = primitiveMethod $ JS.call "fill" []
 
 -- | @'fillRect'(x, y, w, h)@ draws a filled rectangle with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'fillStyle'.
@@ -246,7 +250,8 @@ fill () = primitive $ Method Fill
 -- 'fillRect'(0, 0, 300, 150)
 -- @
 fillRect :: (Double, Double, Double, Double) -> Canvas ()
-fillRect = primitive . Method . FillRect
+fillRect (a1, a2, a3, a4) = primitiveMethod $ JS.call "fillRect" 
+  [ showJSB a1, showJSB a2, showJSB a3, showJSB a4 ]
 
 -- | Sets the color, gradient, or pattern used to fill a drawing ('black' by default).
 --
@@ -263,7 +268,7 @@ fillRect = primitive . Method . FillRect
 -- 'fillStyle' pat
 -- @
 fillStyle :: Style style => style -> Canvas ()
-fillStyle = primitive . Method . FillStyle
+fillStyle st = primitiveMethod $ JS.call "fillStyle=" [jsbStyle st]
 
 -- | @'fillText'(t, x, y)@ fills the text @t@ at position @(x, y)@
 -- using the current 'fillStyle'.
@@ -275,7 +280,8 @@ fillStyle = primitive . Method . FillStyle
 -- 'fillText'(\"Hello, World!\", 50, 100)
 -- @
 fillText :: (ST.Text, Double, Double) -> Canvas ()
-fillText (t, a, b) = primitive . Method $ FillText (fromStrict t, a, b)
+fillText (t, a, b) = primitiveMethod $ JS.call "fillText"
+  [showJSB t, showJSB a, showJSB b]
 
 -- | Sets the text context's font properties.
 --
@@ -291,11 +297,11 @@ fillText (t, a, b) = primitive . Method $ FillText (fromStrict t, a, b)
 -- }
 -- @
 font :: CanvasFont canvasFont => canvasFont -> Canvas ()
-font = primitive . Method . Font
+font f = primitiveMethod $ JS.call "font=" [jsbCanvasFont f]
 
 -- | Set the alpha value that is applied to shapes before they are drawn onto the canvas.
 globalAlpha :: Alpha -> Canvas ()
-globalAlpha = primitive . Method . GlobalAlpha
+globalAlpha a = primitiveMethod $ JS.call "globalAlpha=" [showJSB a]
 
 -- | Sets how new shapes should be drawn over existing shapes.
 --
@@ -410,7 +416,7 @@ rect = primitive . Method . Rect
 -- | Restores the most recently saved canvas by popping the top entry off of the
 -- drawing state stack. If there is no state, do nothing.
 restore :: () -> Canvas ()
-restore () = primitive $ Method Restore
+restore () = primitiveMethod $ JS.call "restore" []
 
 -- | Applies a rotation transformation to the canvas. When you call functions
 -- such as 'fillRect' after 'rotate', the drawings will be rotated clockwise by
@@ -427,7 +433,7 @@ rotate = primitive . Method . Rotate
 
 -- | Saves the entire canvas by pushing the current state onto a stack.
 save :: () -> Canvas ()
-save () = primitive $ Method Save
+save () = primitiveMethod $ JS.call "save" []
 
 -- | Applies a scaling transformation to the canvas units, where the first argument
 -- is the percent to scale horizontally, and the second argument is the percent to
@@ -441,7 +447,7 @@ save () = primitive $ Method Save
 -- 'scale'(-1, 1)           -- Flip the context horizontally
 -- @
 scale :: (Interval, Interval) -> Canvas ()
-scale = primitive . Method . Scale
+scale (a1,a2) = primitiveMethod $ JS.call "scale" [showJSB a1, showJSB a2]
 
 -- | Resets the canvas's transformation matrix to the identity matrix,
 -- then calls 'transform' with the given arguments.
