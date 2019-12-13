@@ -31,12 +31,16 @@ import           Text.Read (Read(..), readListPrecDefault)
 
 import           TextShow (TextShow(..), FromTextShow(..), showbSpace)
 
+import qualified Network.JavaScript as JS
+
 -------------------------------------------------------------------------------
 
 -- | A data type that can represent a browser font.
 class CanvasFont a where
     -- | Convert a value into a JavaScript string representing a font value.
     jsCanvasFont :: a -> Instr
+    jsbCanvasFont :: a -> JS.JavaScript
+    jsbCanvasFont = JS.JavaScript . toLazyText . jsCanvasFont
 
 instance CanvasFont Text where
     jsCanvasFont = jsText

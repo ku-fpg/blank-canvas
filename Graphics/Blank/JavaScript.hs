@@ -129,6 +129,8 @@ instance Audio CanvasAudio where
 class Style a where
     -- | Convert a value into a JavaScript string representing a style value.
     jsStyle :: a -> Instr
+    jsbStyle :: a -> JS.JavaScript
+    jsbStyle = JS.JavaScript . toLazyText . jsStyle
 
 instance Style Text                 where { jsStyle = jsText }
 instance Style CanvasGradient       where { jsStyle = jsCanvasGradient }
