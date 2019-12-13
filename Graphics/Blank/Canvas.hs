@@ -102,9 +102,14 @@ instance Monad Canvas where
      Canvas m' -> m' cc
   (>>) = (*>)
 
-primitiveMethod :: JS.JavaScript -> Canvas ()
-primitiveMethod js = Canvas $ \ cc ->
-  JS.command $ showJSB cc <> "." <> js
+primitiveMethod :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
+primitiveMethod f args = Canvas $ \ cc ->
+  JS.command $ showJSB cc <> "." <> JS.call f args
+
+-- A bit of a hack; we use method generation to also
+-- generate attribute assignment.
+primitiveAttribute :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
+primitiveAttribute f args = primitiveMethod (f <> "=") args
 
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ \ cc -> 
