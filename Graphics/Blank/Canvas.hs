@@ -175,10 +175,7 @@ instance Monoid a => Monoid (Canvas a) where
 
 -- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
 data Method
-        = MiterLimit Double
-        | MoveTo (Double, Double)
-        | PutImageData (ImageData, [Double]) -- 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
-        | QuadraticCurveTo (Double, Double, Double, Double)
+        = QuadraticCurveTo (Double, Double, Double, Double)
         | Rect (Double, Double, Double, Double)
         | Restore
         | Rotate Radians

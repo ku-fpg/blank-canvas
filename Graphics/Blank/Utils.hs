@@ -96,7 +96,7 @@ drawImageCrop (img, sx, sy, sw, sh, dx, dy, dw, dh)
 
 -- | Writes 'ImageData' to the canvas at the given x- and y-coordinates.
 putImageDataAt :: (ImageData, Double, Double) -> Canvas ()
-putImageDataAt (imgData, dx, dy) = primitive . Method $ PutImageData (imgData, [dx, dy])
+putImageDataAt (imgData, dx, dy) = putImageData (imgData, [dx, dy])
 
 -- | Acts like 'putImageDataAt', but with four extra 'Double' arguments that specify
 --   which region of the 'ImageData' (the dirty rectangle) should be drawn. The third
@@ -109,4 +109,4 @@ putImageDataAt (imgData, dx, dy) = primitive . Method $ PutImageData (imgData, [
 -- @
 putImageDataDirty :: (ImageData, Double, Double, Double, Double, Double, Double) -> Canvas ()
 putImageDataDirty (imgData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
-  = primitive . Method $ PutImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])
+  = putImageData (imgData, [dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight])

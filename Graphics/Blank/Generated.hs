@@ -47,9 +47,6 @@ instance InstrShow MethodAudio where
 
 instance InstrShow Method where
   showiPrec _ = showi
-  showi (MiterLimit (a1)) = "miterLimit = (" <> jsDouble a1 <> singleton ')'
-  showi (MoveTo (a1,a2)) = "moveTo(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showi (PutImageData (a1,a2)) = "putImageData(" <> jsImageData a1 <> singleton ',' <> jsList jsDouble a2 <> singleton ')'
   showi (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
          <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
          <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
@@ -314,7 +311,7 @@ lineWidth a = primitiveAttribute "lineWidth" [showJSB a]
 -- | Sets the maximum miter length (@10.0@ by default) to use when the
 -- 'lineWidth' is 'miter'.
 miterLimit :: Double -> Canvas ()
-miterLimit = primitive . Method . MiterLimit
+miterLimit a = primitiveAttribute "miterLimit" [showJSB a]
 
 -- | @'moveTo'(x, y)@ moves the starting point of a new subpath to the given @(x, y)@ coordinates.
 --
@@ -357,8 +354,8 @@ setVolumeAudio = primitive . MethodAudio . SetVolumeAudio
 -}
 -- | 'putImageData' takes 2 or 6 'Double' arguments. See `putImageDataAt' and `putImageDataDirty' for variants with exact numbers of arguments.
 putImageData :: (ImageData, [Double]) -> Canvas ()
-putImageData = primitive . Method . PutImageData
-
+putImageData (a1,a2) =
+  primitiveMethod "putImageData" (showJSB a1 : map showJSB a2)
 -- | @'quadraticCurveTo'(cpx, cpy, x, y)@ adds a quadratic Bézier curve to the path
 -- (whereas 'bezierCurveTo' adds a cubic Bézier curve).
 --
