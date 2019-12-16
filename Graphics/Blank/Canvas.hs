@@ -133,6 +133,16 @@ primitiveConstructor :: JS.JavaScript -> [JS.JavaScript]
 primitiveConstructor f args = Canvas $ \ cc ->
   JS.constructor $ showJSB cc <> "." <> JS.call f args
 
+primitiveQuery :: JS.JavaScript 
+	       -> [JS.JavaScript] 
+	       -> (Value -> Parser a)
+	       -> Canvas a
+primitiveQuery f args k = Canvas $ \ cc ->
+  (\ v -> case parse k v of
+    Error msg -> error msg -- TODO: revisit this fail
+    Success a -> a) <$> (JS.procedure $ 
+       (JS.call f args <> "(" <> showJSB cc <> ")"))
+
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ \ cc -> 
   case primitive' (f cc) of
@@ -312,7 +322,8 @@ uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
-device = primitive $ Query Device
+device = primitiveQuery "Device" [] $ \ v -> 
+  uncurry3 DeviceAttributes <$> parseJSON v
 
 -- | Turn the canvas into a PNG data stream / data URL.
 --

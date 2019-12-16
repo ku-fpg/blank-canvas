@@ -100,11 +100,12 @@
             // as wrapper.
 
             // ##############################################################
-            // These are the Queries
+            // These are the Queries, taking 2 arguments, then second one 
+            // being the (graphics) context.
 
-            function Device(c) {
-                return [c.canvas.width, c.canvas.height,myDevicePixelRatio];
-            }
+            Device = () => (c) => 
+	       [c.canvas.width, c.canvas.height,myDevicePixelRatio];
+
             function Size(c) {
                 return [c.canvas.width, c.canvas.height];
             }
