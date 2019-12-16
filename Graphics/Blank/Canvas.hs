@@ -62,7 +62,7 @@ instance InstrShow TextMetrics
 
 data Prim :: * -> * where
   --Cmd
-  Method      :: Method     -> CanvasContext -> Prim ()
+--  Method      :: Method     -> CanvasContext -> Prim ()
   Command     :: Command     -> CanvasContext -> Prim () -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
 --  MethodAudio :: MethodAudio -> CanvasContext -> Prim ()
@@ -81,8 +81,7 @@ instance KnownResult Prim where
 
 -- TODO: newtype, after removing InstrShow
 data Canvas a = Canvas 
-        (InstrShow Method =>
-	 CanvasContext          -- the context, for the graphic contexts
+        (CanvasContext          -- the context, for the graphic contexts
          -> JS.RemoteMonad a)
 
 instance Functor Canvas where
@@ -117,9 +116,9 @@ primitive f = Canvas $ \ cc ->
    Canvas g -> g cc
 
 primitive' :: Prim a -> Canvas a
-primitive' (Method m cc) = Canvas $ \ cc ->
-  JS.command $ JS.JavaScript $ toLazyText
-    (jsCanvasContext cc <> singleton '.' <> showi m)
+--primitive' (Method m cc) = Canvas $ \ cc ->
+--  JS.command $ JS.JavaScript $ toLazyText
+--    (jsCanvasContext cc <> singleton '.' <> showi m)
 primitive' (Command cm _cc) = Canvas $ \ cc ->
   JS.command $ JS.JavaScript $ toLazyText
     (showi cm)
@@ -172,28 +171,6 @@ instance Monoid a => Monoid (Canvas a) where
   mappend = liftM2 mappend
 #endif
   mempty  = return mempty
-
--- HTML5 Canvas assignments: FillStyle, Font, GlobalAlpha, GlobalCompositeOperation, LineCap, LineJoin, LineWidth, MiterLimit, ShadowBlur, ShadowColor, ShadowOffsetX, ShadowOffsetY, StrokeStyle, TextAlign, TextBaseline
-data Method
-        = QuadraticCurveTo (Double, Double, Double, Double)
-        | Rect (Double, Double, Double, Double)
-        | Restore
-        | Rotate Radians
-        | Save
-        | Scale (Interval, Interval)
-        | SetTransform (Double, Double, Double, Double, Double, Double)
-        | ShadowBlur Double
-        | forall canvasColor . CanvasColor canvasColor => ShadowColor canvasColor
-        | ShadowOffsetX Double
-        | ShadowOffsetY Double
-        | Stroke
-        | StrokeRect (Double, Double, Double, Double)
-        | forall style . Style style => StrokeStyle style
-        | StrokeText (Text,Double, Double)
-        | TextAlign TextAnchorAlignment
-        | TextBaseline TextBaselineAlignment
-        | Transform (Double, Double, Double, Double, Double, Double)
-        | Translate (Double, Double)
 
 {-
 -- Audio object methods: play(), pause(), setVolume()

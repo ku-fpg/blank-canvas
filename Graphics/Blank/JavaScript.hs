@@ -147,6 +147,9 @@ class Style a => CanvasColor a
 jsCanvasColor :: CanvasColor color => color -> Instr
 jsCanvasColor = jsStyle
 
+jsbCanvasColor :: CanvasColor color => color -> JS.JavaScript
+jsbCanvasColor = jsbStyle
+
 instance CanvasColor Text
 instance CanvasColor (Colour Double)
 instance CanvasColor (AlphaColour Double)

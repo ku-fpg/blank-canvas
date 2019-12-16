@@ -24,14 +24,11 @@ import qualified Network.JavaScript as JS
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
     showi (PseudoProcedure f _) = showi f
-    showi (Method m _)      = showi m
     showi (Command c _)     = showi c
 --    showi (MethodAudio a _) = showi a
     showi (Query q _) = showi q
 
 
-instance Show Method where
-  showsPrec p = showsPrec p . toString . showi
 {-
 instance InstrShow MethodAudio where
   showiPrec _ = showi
@@ -44,40 +41,6 @@ instance InstrShow MethodAudio where
   showi (SetVolumeAudio       (audio, vol))  = jsAudio audio <> ".volume = " <> jsDouble vol <> singleton ';'
 -}
   -- showi (CurrentTimeAudio audio) = jsAudio audio <> ".currentTime"
-
-instance InstrShow Method where
-  showiPrec _ = showi
-  showi (QuadraticCurveTo (a1,a2,a3,a4)) = "quadraticCurveTo("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showi (Rect (a1,a2,a3,a4)) = "rect("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showi Restore = "restore()"
-  showi (Rotate (a1)) = "rotate(" <> jsDouble a1 <> singleton ')'
-  showi Save = "save()"
-  showi (Scale (a1,a2)) = "scale(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
-  showi (SetTransform (a1,a2,a3,a4,a5,a6)) = "setTransform("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
-         <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showi (ShadowBlur (a1)) = "shadowBlur = (" <> jsDouble a1 <> singleton ')'
-  showi (ShadowColor (a1)) = "shadowColor = (" <> jsCanvasColor a1 <> singleton ')'
-  showi (ShadowOffsetX (a1)) = "shadowOffsetX = (" <> jsDouble a1 <> singleton ')'
-  showi (ShadowOffsetY (a1)) = "shadowOffsetY = (" <> jsDouble a1 <> singleton ')'
-  showi Stroke = "stroke()"
-  showi (StrokeRect (a1,a2,a3,a4)) = "strokeRect("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ')'
-  showi (StrokeStyle (a1)) = "strokeStyle = (" <> jsStyle a1 <> singleton ')'
-  showi (StrokeText (a1,a2,a3)) = "strokeText(" <> jsText a1 <> singleton ',' <> jsDouble a2 <> singleton ',' <> jsDouble a3 <> singleton ')'
-  showi (TextAlign (a1)) = "textAlign = (" <> jsTextAnchorAlignment a1 <> singleton ')'
-  showi (TextBaseline (a1)) = "textBaseline = (" <> jsTextBaselineAlignment a1 <> singleton ')'
-  showi (Transform (a1,a2,a3,a4,a5,a6)) = "transform("
-         <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ','
-         <> jsDouble a3 <> singleton ',' <> jsDouble a4 <> singleton ','
-         <> jsDouble a5 <> singleton ',' <> jsDouble a6 <> singleton ')'
-  showi (Translate (a1,a2)) = "translate(" <> jsDouble a1 <> singleton ',' <> jsDouble a2 <> singleton ')'
 
 -- DSL
 
@@ -97,7 +60,7 @@ instance InstrShow Method where
 --   @False@ indicates clockwise.
 arc :: (Double, Double, Double, Radians, Radians, Bool) -> Canvas ()
 arc (a1,a2,a3,a4,a5,a6) = primitiveMethod "arc"
-  [ showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5, showJSB a6]
+  [showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5, showJSB a6]
 
 -- | @'arcTo'(x1, y1, x2, y2, r)@ creates an arc between two tangents,
 -- specified by two control points and a radius.
@@ -367,7 +330,8 @@ putImageData (a1,a2) =
 --
 -- * @y@ is the y-coordinate of the end point
 quadraticCurveTo :: (Double, Double, Double, Double) -> Canvas ()
-quadraticCurveTo = primitive . Method . QuadraticCurveTo
+quadraticCurveTo (a1,a2,a3,a4) = primitiveMethod "quadraticCurveTo"
+  [showJSB a1, showJSB a2, showJSB a3, showJSB a4]
 
 -- | @'rect'(x, y, w, h)@ creates a rectangle with an upper-left corner at position
 -- @(x, y)@, width @w@, and height @h@ (where width and height are in pixels).
@@ -379,7 +343,8 @@ quadraticCurveTo = primitive . Method . QuadraticCurveTo
 -- 'fill'()
 -- @
 rect :: (Double, Double, Double, Double) -> Canvas ()
-rect = primitive . Method . Rect
+rect (a1,a2,a3,a4) = primitiveMethod "rect"
+  [showJSB a1, showJSB a2, showJSB a3, showJSB a4]
 
 -- | Restores the most recently saved canvas by popping the top entry off of the
 -- drawing state stack. If there is no state, do nothing.
@@ -397,7 +362,7 @@ restore () = primitiveMethod "restore" []
 -- 'fillRect'(0, 0, 20, 10) -- Draw a 10x20 rectangle
 -- @
 rotate :: Radians -> Canvas ()
-rotate = primitive . Method . Rotate
+rotate r = primitiveMethod "rotate" [showJSB r]
 
 -- | Saves the entire canvas by pushing the current state onto a stack.
 save :: () -> Canvas ()
@@ -420,11 +385,12 @@ scale (a1,a2) = primitiveMethod "scale" [showJSB a1, showJSB a2]
 -- | Resets the canvas's transformation matrix to the identity matrix,
 -- then calls 'transform' with the given arguments.
 setTransform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
-setTransform = primitive . Method . SetTransform
+setTransform (a1,a2,a3,a4,a5,a6) = primitiveMethod "setTransform"
+  [showJSB a1, showJSB a2, showJSB a2, showJSB a4, showJSB a5, showJSB a6]
 
 -- | Sets the blur level for shadows (@0.0@ by default).
 shadowBlur :: Double -> Canvas ()
-shadowBlur = primitive . Method . ShadowBlur
+shadowBlur a1 = primitiveAttribute "shadowBlur" [showJSB a1]
 
 -- | Sets the color used for shadows.
 --
@@ -435,15 +401,15 @@ shadowBlur = primitive . Method . ShadowBlur
 -- 'shadowColor' $ 'rgb' 0 255 0
 -- @
 shadowColor :: CanvasColor canvasColor => canvasColor -> Canvas ()
-shadowColor = primitive . Method . ShadowColor
+shadowColor a1 = primitiveAttribute "shadowColor" [jsbCanvasColor a1]
 
 -- | Sets the horizontal distance that a shadow will be offset (@0.0@ by default).
 shadowOffsetX :: Double -> Canvas ()
-shadowOffsetX = primitive . Method . ShadowOffsetX
+shadowOffsetX a1 = primitiveAttribute "shadowOffsetX" [showJSB a1]
 
 -- | Sets the vertical distance that a shadow will be offset (@0.0@ by default).
 shadowOffsetY :: Double -> Canvas ()
-shadowOffsetY = primitive . Method . ShadowOffsetY
+shadowOffsetY a1 = primitiveAttribute "shadowOffsetY" [showJSB a1]
 
 -- | Draws the current path's strokes with the current 'strokeStyle' ('black' by default).
 --
@@ -454,7 +420,7 @@ shadowOffsetY = primitive . Method . ShadowOffsetY
 -- 'stroke'()
 -- @
 stroke :: () -> Canvas ()
-stroke () = primitive $ Method Stroke
+stroke () = primitiveMethod "stroke" []
 
 -- | @'strokeRect'(x, y, w, h)@ draws a rectangle (no fill) with upper-left
 -- corner @(x, y)@, width @w@, and height @h@ using the current 'strokeStyle'.
@@ -466,7 +432,8 @@ stroke () = primitive $ Method Stroke
 -- 'strokeRect'(0, 0, 300, 150)
 -- @
 strokeRect :: (Double, Double, Double, Double) -> Canvas ()
-strokeRect = primitive . Method . StrokeRect
+strokeRect (a1,a2,a3,a4) = primitiveMethod "strokeRect"
+  [showJSB a1, showJSB a2, showJSB a3, showJSB a4]
 
 -- | Sets the color, gradient, or pattern used for strokes.
 --
@@ -483,7 +450,8 @@ strokeRect = primitive . Method . StrokeRect
 -- 'strokeStyle' pat
 -- @
 strokeStyle :: Style style => style -> Canvas ()
-strokeStyle = primitive . Method . StrokeStyle
+strokeStyle a1 = primitiveAttribute "strokeStyle"
+  [jsbStyle a1]
 
 -- | @'strokeText'(t, x, y)@ draws text @t@ (with no fill) at position @(x, y)@
 -- using the current 'strokeStyle'.
@@ -495,15 +463,16 @@ strokeStyle = primitive . Method . StrokeStyle
 -- 'strokeText'(\"Hello, World!\", 50, 100)
 -- @
 strokeText :: (ST.Text, Double, Double) -> Canvas ()
-strokeText (t, a, b) = primitive . Method $ StrokeText (fromStrict t, a, b)
+strokeText (t, a, b) = primitiveMethod "strokeText"
+  [showJSB t, showJSB a, showJSB b]
 
 -- | Sets the 'TextAnchorAlignment' to use when drawing text.
 textAlign :: TextAnchorAlignment -> Canvas ()
-textAlign = primitive . Method . TextAlign
+textAlign a1 = primitiveAttribute "textAlign" [showJSB a1]
 
 -- | Sets the 'TextBaselineAlignment' to use when drawing text.
 textBaseline :: TextBaselineAlignment -> Canvas ()
-textBaseline = primitive . Method . TextBaseline
+textBaseline a1 = primitiveAttribute "textBaseline" [showJSB a1]
 
 -- | Applies a transformation by multiplying a matrix to the canvas's
 -- current transformation. If @'transform'(a, b, c, d, e, f)@ is called, the matrix
@@ -528,7 +497,8 @@ textBaseline = primitive . Method . TextBaseline
 --
 -- * @f@ is the vertical movement
 transform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
-transform = primitive . Method . Transform
+transform (a1,a2,a3,a4,a5,a6) = primitiveMethod "transform"
+  [showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5, showJSB a6]
 
 -- | Applies a translation transformation by remapping the origin (i.e., the (0,0)
 -- position) on the canvas. When you call functions such as 'fillRect' after
@@ -542,4 +512,4 @@ transform = primitive . Method . Transform
 -- 'fillRect'(0, 0, 40, 40) -- Draw a 40x40 square, starting in position (20, 20)
 -- @
 translate :: (Double, Double) -> Canvas ()
-translate = primitive . Method . Translate
+translate (a1,a2) = primitiveMethod "translate" [showJSB a1, showJSB a2]
