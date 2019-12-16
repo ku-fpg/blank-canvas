@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -101,17 +103,29 @@ instance Monad Canvas where
      Canvas m' -> m' cc
   (>>) = (*>)
 
-primitiveMethod :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
-primitiveMethod f args = Canvas $ \ cc ->
+class Method r where
+  type Context r
+  context :: (JSArg (Context r) => Context r -> JS.RemoteMonad ()) -> r
+
+instance Method (Canvas ()) where
+  type Context (Canvas ()) = CanvasContext
+  context = Canvas 
+
+instance JSArg c => Method (c -> Canvas ()) where
+  type Context (c -> Canvas ()) = c
+  context f c = Canvas $ \ _ -> f c
+
+primitiveMethod :: Method m => JS.JavaScript -> [JS.JavaScript] -> m
+primitiveMethod f args = context $ \ cc ->
   JS.command $ showJSB cc <> "." <> JS.call f args
 
 -- A bit of a hack; we use method generation to also
 -- generate attribute assignment.
-primitiveAttribute :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
+primitiveAttribute :: Method m => JS.JavaScript -> [JS.JavaScript] -> m	
 primitiveAttribute f args = primitiveMethod (f <> "=") args
 
 primitiveCommand :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
-primitiveCommand f args = Canvas $ \ cc ->
+primitiveCommand f args = Canvas $ \ _ ->
   JS.command $ JS.call f args
 
 primitiveConstructor :: JS.JavaScript -> [JS.JavaScript]
@@ -223,8 +237,8 @@ trigger ev = primitiveCommand "Trigger"
 -- grd # 'addColorStop'(0, 'red')
 -- @
 addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) g = primitiveCommand "AddColorStop"
-  [showJSB off, jsbCanvasColor rep, showJSB g]
+addColorStop (off,rep) = primitiveMethod "addColorStop"
+  [showJSB off, jsbCanvasColor rep]
 
 -- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
