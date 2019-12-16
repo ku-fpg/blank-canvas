@@ -190,7 +190,11 @@
                 }
                 jsb.event(o);
             }
-
+	  
+            function AddColorStop(off,rep,g) {
+	      g.addColorStop(off,rep);
+  	    }
+	      
             function register(name) {
                 $(document).bind(name,Trigger);
             }

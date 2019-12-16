@@ -110,6 +110,10 @@ primitiveMethod f args = Canvas $ \ cc ->
 primitiveAttribute :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
 primitiveAttribute f args = primitiveMethod (f <> "=") args
 
+primitiveCommand :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
+primitiveCommand f args = Canvas $ \ cc ->
+  JS.command $ JS.call f args
+
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ \ cc -> 
   case primitive' (f cc) of
@@ -210,8 +214,7 @@ instance InstrShow Command where
 -- | 'with' runs a set of canvas commands in the context
 -- of a specific canvas buffer.
 with :: CanvasContext -> Canvas a -> Canvas a
-with context (Canvas m) = Canvas $ do
-  local (const context) m
+with c (Canvas m) = Canvas $ \ _ -> m c
 
 -- | 'myCanvasContext' returns the current 'CanvasContext'.
 myCanvasContext :: Canvas CanvasContext
@@ -221,7 +224,8 @@ myCanvasContext = Canvas $ return
 
 -- | Triggers a specific named event.
 trigger :: Event -> Canvas ()
-trigger = primitive . Command . Trigger
+trigger ev = primitiveCommand "Trigger"
+  [JS.JavaScript $ decodeUtf8 $ encode ev]
 
 -- | Adds a color and stop position in a 'CanvasGradient'. A stop position is a
 -- number between 0.0 and 1.0 that represents the position between start and stop
@@ -234,15 +238,16 @@ trigger = primitive . Command . Trigger
 -- grd # 'addColorStop'(0, 'red')
 -- @
 addColorStop :: CanvasColor color => (Interval, color) -> CanvasGradient -> Canvas ()
-addColorStop (off,rep) = primitive . Command . AddColorStop (off,rep)
+addColorStop (off,rep) g = primitiveCommand "AddColorStop"
+  [showJSB off, jsbCanvasColor rep, showJSB g]
 
 -- | 'console_log' aids debugging by sending the argument to the browser @console.log@.
 console_log :: JSArg msg => msg -> Canvas ()
-console_log = primitive . Command . Log
+console_log msg = primitiveCommand "console.log" [showJSB msg]
 
 -- | 'eval' executes the argument in JavaScript directly.
 eval :: ST.Text -> Canvas ()
-eval = primitive . Command . Eval . fromStrict
+eval txt = Canvas $ \ _ -> JS.command $ JS.JavaScript $ fromStrict txt
 
 -----------------------------------------------------------------------------
 
