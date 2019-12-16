@@ -166,13 +166,6 @@
 
             Sync = () => (c) => [];
 
-            function Cursor(cur) {
-                return function(c) {
-                    c.canvas.style.cursor = cur;
-		    return [];
-                };
-            }
-
             function Trigger(e) {
                 var o = {};
                 o.metaKey = e.metaKey;
