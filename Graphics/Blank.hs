@@ -173,7 +173,6 @@ module Graphics.Blank
         , eventQueue
         , wait
         , flush
-        , frame
         , Event(..)
         , EventName
         , EventQueue

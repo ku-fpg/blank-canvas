@@ -207,8 +207,6 @@ instance InstrShow Command where
   showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
   showi (Eval cmd) = fromText cmd -- no escaping or interpretation
     -- TODO: Make sure all browsers are supported:
-  showi Frame                        = surround "nextFrame(function(){" "})"
-
 -----------------------------------------------------------------------------
 
 -- | 'with' runs a set of canvas commands in the context
@@ -484,5 +482,3 @@ cursor = primitive . Query . Cursor
 sync :: Canvas ()
 sync = primitive $ Query Sync
 
-frame :: Canvas ()
-frame = primitive $ Command Frame
