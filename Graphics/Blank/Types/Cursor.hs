@@ -19,10 +19,14 @@ import           Text.Read (Read(..), readListPrecDefault)
 
 import           TextShow (TextShow(..), FromTextShow(..))
 
+import qualified Network.JavaScript as JS
+
 -- | A data type that can represent a browser cursor.
 class CanvasCursor a where
     -- | Convert a value into a JavaScript string representing a cursor value.
     jsCanvasCursor :: a -> Instr
+    jsbCanvasCursor :: a -> JS.JavaScript
+    jsbCanvasCursor = JS.JavaScript . toLazyText . jsCanvasCursor
 
 instance CanvasCursor TL.Text where
     jsCanvasCursor = jsText

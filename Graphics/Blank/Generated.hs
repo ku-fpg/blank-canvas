@@ -19,6 +19,7 @@ import           Prelude.Compat
 import qualified Network.JavaScript as JS
 
 -- import           TextShow (TextShow(..), FromTextShow(..), singleton)
+import           Graphics.Blank.Types.Cursor(CanvasCursor, jsbCanvasCursor)
 
 {-
 instance InstrShow a => InstrShow (Prim a) where
@@ -513,3 +514,14 @@ transform (a1,a2,a3,a4,a5,a6) = primitiveMethod "transform"
 -- @
 translate :: (Double, Double) -> Canvas ()
 translate (a1,a2) = primitiveMethod "translate" [showJSB a1, showJSB a2]
+
+-- | Change the canvas cursor to the specified URL or keyword.
+--
+-- ==== __Examples__
+--
+-- @
+-- cursor $ 'url' \"image.png\" 'default_'
+-- cursor 'crosshair'
+-- @
+cursor :: CanvasCursor cursor => cursor -> Canvas ()
+cursor cur = primitiveAttribute "canvas.style.cursor" [jsbCanvasCursor cur]

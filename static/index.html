@@ -104,15 +104,14 @@
             // being the (graphics) context.
 
             Device = () => (c) => 
-	       [c.canvas.width, c.canvas.height,myDevicePixelRatio];
+	        [c.canvas.width, c.canvas.height,myDevicePixelRatio];
 
             function Size(c) {
                 return [c.canvas.width, c.canvas.height];
             }
-            function ToDataURL(c) {
-                return c.canvas.toDataURL();
+            ToDataURL = () => (c) =>
+                c.canvas.toDataURL()
 
-            }
             function NewImage(src) {
                 return function (c) {
 		    return new Promise( (good,bad) => {
@@ -165,15 +164,13 @@
                 }
             }
 
+            Sync = () => (c) => [];
+
             function Cursor(cur) {
                 return function(c) {
                     c.canvas.style.cursor = cur;
 		    return [];
                 };
-            }
-
-            function Sync(c) {
-	        return [];
             }
 
             function Trigger(e) {

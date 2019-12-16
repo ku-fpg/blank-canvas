@@ -59,5 +59,5 @@ module Graphics.Blank.Cursor (
     , url
     ) where
 
-import Graphics.Blank.Canvas (cursor)
+import Graphics.Blank.Generated (cursor)
 import Graphics.Blank.Types.Cursor

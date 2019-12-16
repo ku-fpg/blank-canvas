@@ -16,7 +16,7 @@
 module Graphics.Blank.Canvas where
 
 
-import           Data.Aeson (FromJSON(..),Value(..), Result(..), encode)
+import           Data.Aeson (FromJSON(..),Value(..), Result(..), encode, withObject)
 import           Data.Aeson.Types (Parser, parse, (.:))
 import           Data.Text.Lazy (Text, fromStrict, toStrict)
 import           Data.Text.Lazy.Encoding (decodeUtf8)
@@ -25,7 +25,6 @@ import qualified Data.Text as ST
 import           Graphics.Blank.Events
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
-import           Graphics.Blank.Types.Cursor(CanvasCursor, jsCanvasCursor)
 import           Graphics.Blank.Types.Font
 
 import           Graphics.Blank.Instr
@@ -61,7 +60,7 @@ instance InstrShow TextMetrics
 -- Command: f()
 -- PseudoProcedure: var asdf_num = ctx.f()
 
-
+{-
 data Prim :: * -> * where
   --Cmd
 --  Method      :: Method     -> CanvasContext -> Prim ()
@@ -71,6 +70,7 @@ data Prim :: * -> * where
 --  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> CanvasContext -> Prim a
   --proc
   Query     :: InstrShow a => Query a     -> CanvasContext -> Prim a
+-}
 
 {-
 instance KnownResult Prim where
@@ -143,6 +143,7 @@ primitiveQuery f args k = Canvas $ \ cc ->
     Success a -> a) <$> (JS.procedure $ 
        (JS.call f args <> "(" <> showJSB cc <> ")"))
 
+{-
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ \ cc -> 
   case primitive' (f cc) of
@@ -165,7 +166,7 @@ primitive' (Query q cc) = Canvas $ \ cc ->
     Success a -> a) <$>
   (JS.procedure $ JS.JavaScript $ toLazyText 
   	     (showi q <> "(" <> jsCanvasContext cc <> ")"))
-
+-}
 
 {-
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
@@ -259,7 +260,7 @@ eval :: ST.Text -> Canvas ()
 eval txt = Canvas $ \ _ -> JS.command $ JS.JavaScript $ fromStrict txt
 
 -----------------------------------------------------------------------------
-
+{-
 data Query :: * -> * where
         Device               ::                                            Query DeviceAttributes
         ToDataURL            ::                                            Query Text
@@ -317,6 +318,7 @@ parseQueryResult (Sync {}) _                  = return () -- we just accept anyt
 parseQueryResult (CurrentTimeAudio {}) o      = parseJSON o
 -- parseQueryResult (GetVolumeAudio   {})
 parseQueryResult _ _                          = Fail.fail "no parse in blank-canvas server (internal error)"
+-}
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
@@ -330,7 +332,7 @@ device = primitiveQuery "Device" [] $ \ v ->
 -- > "data:image/png;base64,iVBORw0KGgo.."
 --
 toDataURL :: () -> Canvas ST.Text
-toDataURL () = fmap toStrict . primitive $ Query ToDataURL
+toDataURL () = primitiveQuery "ToDataURL" [] parseJSON
 
 -- | Queries the measured width of the text argument.
 --
@@ -340,7 +342,9 @@ toDataURL () = fmap toStrict . primitive $ Query ToDataURL
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
 measureText :: ST.Text -> Canvas TextMetrics
-measureText = primitive . Query . MeasureText . fromStrict
+measureText txt = primitiveQuery "MeasureText" [showJSB txt] $ 
+  withObject "TextMetrics" $ \ o -> 
+    TextMetrics <$> o .: "width"
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
 --
@@ -352,19 +356,23 @@ measureText = primitive . Query . MeasureText . fromStrict
 -- b <- 'isPointInPath'(10, 10) -- b == True
 -- @
 isPointInPath :: (Double, Double) -> Canvas Bool
-isPointInPath = primitive . Query . IsPointInPath
+isPointInPath (a1,a2) = 
+  primitiveQuery "IsPointInPath" [showJSB a1,showJSB a2] parseJSON
 
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
 -- /after/ loading.
 -- If you are using local images, loading should be near instant.
 newImage :: URL -> Canvas CanvasImage
-newImage (URL txt) = primitive $ Query $ NewImage $ fromStrict txt
+newImage (URL txt) = primitiveQuery "NewImage" [showJSB txt] $ \ v ->
+  uncurry3 CanvasImage <$> parseJSON v
 
 -- | 'newAudio' takes a URL (or file path) to an audio file and returns the 'CanvasAudio' handle
 -- /after/ loading.
 -- If you are using local audio files, loading should be near instant.
-newAudio :: URL -> Canvas CanvasAudio
-newAudio (URL txt) = primitive $ Query $ NewAudio $ fromStrict txt
+-- TODO
+--newAudio :: URL -> Canvas CanvasAudio
+--newAudio (URL txt) = primitiveQuery "NewAudio" [showJSB txt] $ \ v ->
+--  uncurry CanvasAudio <$> parseJSON v
 
 -- | 'currentTimeAudio' returns the current time (in seconds) of the audio playback of
 -- the specified CanvasAudio.
@@ -377,7 +385,7 @@ newAudio (URL txt) = primitive $ Query $ NewAudio $ fromStrict txt
 -- @
 
 currentTimeAudio :: CanvasAudio -> Canvas Double
-currentTimeAudio = primitive . Query . CurrentTimeAudio
+currentTimeAudio = error "TODO" -- primitive . Query . CurrentTimeAudio
 
 -- | @'createLinearGradient'(x0, y0, x1, y1)@ creates a linear gradient along a line,
 -- which can be used to fill other shapes.
@@ -451,25 +459,20 @@ createPattern (img, dir) =
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
-newCanvas = primitive . Query . NewCanvas
+newCanvas (w,h) = primitiveQuery "NewCanvas" [showJSB w, showJSB h] $ \ o ->
+  uncurry3 CanvasContext <$> parseJSON o
 
 -- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
 -- upper-left corner @(x, y)@, width @w@, and height @h@.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
-getImageData = primitive . Query . GetImageData
-
--- | Change the canvas cursor to the specified URL or keyword.
---
--- ==== __Examples__
---
--- @
--- cursor $ 'url' \"image.png\" 'default_'
--- cursor 'crosshair'
--- @
-cursor :: CanvasCursor cursor => cursor -> Canvas ()
-cursor = primitive . Query . Cursor
+getImageData (sx,sy,sw,sh) = primitiveQuery "GetImageData" 
+  [showJSB sx, showJSB sy, showJSB sw, showJSB sh] $ 
+    withObject "ImageData" $ \ o -> 
+      ImageData <$> (o .: "width")
+                <*> (o .: "height")
+                <*> (o .: "data")
 
 -- | Send all commands to the browser, wait for the browser to act, then continue.
 sync :: Canvas ()
-sync = primitive $ Query Sync
+sync = primitiveQuery "Sync" [] $ const $ return ()
 

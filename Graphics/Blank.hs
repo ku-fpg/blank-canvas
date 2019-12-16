@@ -203,7 +203,7 @@ import qualified Graphics.Blank.Canvas        as Canvas
 import           Graphics.Blank.DeviceContext
 import           Graphics.Blank.Events
 import           Graphics.Blank.Generated     hiding (fillStyle, font,
-                                               shadowColor, strokeStyle)
+                                               shadowColor, strokeStyle, cursor)
 import qualified Graphics.Blank.Generated     as Generated
 import           Graphics.Blank.JavaScript    hiding (durationAudio, height,
                                                indexAudio, width)
@@ -636,7 +636,7 @@ addColorStop (i, t) = Canvas.addColorStop (i, LT.fromStrict t)
 -- cursor \"crosshair\"
 -- @
 cursor :: ST.Text -> Canvas ()
-cursor = Canvas.cursor . LT.fromStrict
+cursor = Generated.cursor . LT.fromStrict
 
 -- | The height of an 'Image' in pixels.
 height :: (Image image, Num a) => image -> a
