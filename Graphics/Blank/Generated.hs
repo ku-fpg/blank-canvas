@@ -20,14 +20,14 @@ import qualified Network.JavaScript as JS
 
 -- import           TextShow (TextShow(..), FromTextShow(..), singleton)
 
-
+{-
 instance InstrShow a => InstrShow (Prim a) where
     showiPrec _ = showi
     showi (PseudoProcedure f _) = showi f
-    showi (Command c _)     = showi c
+--    showi (Command c _)     = showi c
 --    showi (MethodAudio a _) = showi a
     showi (Query q _) = showi q
-
+-}
 
 {-
 instance InstrShow MethodAudio where

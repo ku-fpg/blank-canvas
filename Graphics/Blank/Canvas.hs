@@ -63,10 +63,10 @@ instance InstrShow TextMetrics
 data Prim :: * -> * where
   --Cmd
 --  Method      :: Method     -> CanvasContext -> Prim ()
-  Command     :: Command     -> CanvasContext -> Prim () -- TODO: Remove this CanvasContext (it's never used)
+--  Command     :: Command     -> CanvasContext -> Prim () -- TODO: Remove this CanvasContext (it's never used)
   -- TODO: To be merged with 'Method':
 --  MethodAudio :: MethodAudio -> CanvasContext -> Prim ()
-  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> CanvasContext -> Prim a
+--  PseudoProcedure  :: InstrShow a => PseudoProcedure a -> CanvasContext -> Prim a
   --proc
   Query     :: InstrShow a => Query a     -> CanvasContext -> Prim a
 
@@ -114,6 +114,11 @@ primitiveCommand :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
 primitiveCommand f args = Canvas $ \ cc ->
   JS.command $ JS.call f args
 
+primitiveConstructor :: JS.JavaScript -> [JS.JavaScript]
+                   -> Canvas (JS.RemoteValue a)
+primitiveConstructor f args = Canvas $ \ cc ->
+  JS.constructor $ showJSB cc <> "." <> JS.call f args
+
 primitive :: (CanvasContext -> Prim a) -> Canvas a
 primitive f = Canvas $ \ cc -> 
   case primitive' (f cc) of
@@ -123,13 +128,13 @@ primitive' :: Prim a -> Canvas a
 --primitive' (Method m cc) = Canvas $ \ cc ->
 --  JS.command $ JS.JavaScript $ toLazyText
 --    (jsCanvasContext cc <> singleton '.' <> showi m)
-primitive' (Command cm _cc) = Canvas $ \ cc ->
-  JS.command $ JS.JavaScript $ toLazyText
-    (showi cm)
-primitive' (PseudoProcedure pp cc) = Canvas $ \ cc -> 
-  pseudoProcedureResult pp <$> 
-     (JS.constructor $ JS.JavaScript $ toLazyText 
-          (jsCanvasContext cc <> singleton '.' <> showi pp))
+--primitive' (Command cm _cc) = Canvas $ \ cc ->
+--  JS.command $ JS.JavaScript $ toLazyText
+--    (showi cm)
+--primitive' (PseudoProcedure pp cc) = Canvas $ \ cc -> 
+--  pseudoProcedureResult pp <$> 
+--     (JS.constructor $ JS.JavaScript $ toLazyText 
+--          (jsCanvasContext cc <> singleton '.' <> showi pp))
 primitive' (Query q cc) = Canvas $ \ cc ->
   (\ v -> case parse (parseQueryResult q) v of
     Error msg -> error msg -- TODO: revisit this fail
@@ -138,12 +143,13 @@ primitive' (Query q cc) = Canvas $ \ cc ->
   	     (showi q <> "(" <> jsCanvasContext cc <> ")"))
 
 
-
+{-
 function :: InstrShow a => (Int -> a) -> PseudoProcedure a -> Canvas a
 function alloc f = do
   -- Alloc is ignored, and the new number is provided
   -- by the javascript bridge instead
   primitive (PseudoProcedure f)
+-}
 
 -- data Canvas :: * -> * where
 --         Method      :: Method                      -> Canvas ()     -- <context>.<method>
@@ -188,25 +194,6 @@ data MethodAudio
         | forall audio . Audio audio => SetVolumeAudio       (audio, Double)
 -}
 
-data Command
-  = Trigger Event
-  | forall color . CanvasColor color => AddColorStop (Interval, color) CanvasGradient
-  | forall msg . JSArg msg => Log msg
-  | Eval Text
-  | Frame
-
-instance Show Command where
-  showsPrec p = showsPrec p . I.toString . showi
-
-instance InstrShow Command where
-  showiPrec _ = showi
-  showi (Trigger e) = "Trigger(" <> (fromText . decodeUtf8 $ encode e) <> singleton ')'
-  showi (AddColorStop (off,rep) g) = jsCanvasGradient g <> ".addColorStop("
-         <> jsDouble off <> singleton ',' <> jsCanvasColor rep
-         <> singleton ')'
-  showi (Log msg) = "console.log(" <> showiJS msg <> singleton ')'
-  showi (Eval cmd) = fromText cmd -- no escaping or interpretation
-    -- TODO: Make sure all browsers are supported:
 -----------------------------------------------------------------------------
 
 -- | 'with' runs a set of canvas commands in the context
@@ -246,33 +233,6 @@ console_log msg = primitiveCommand "console.log" [showJSB msg]
 -- | 'eval' executes the argument in JavaScript directly.
 eval :: ST.Text -> Canvas ()
 eval txt = Canvas $ \ _ -> JS.command $ JS.JavaScript $ fromStrict txt
-
------------------------------------------------------------------------------
-
-data PseudoProcedure :: * -> * where
-  CreateLinearGradient :: (Double,Double,Double,Double)               -> PseudoProcedure CanvasGradient
-  CreateRadialGradient :: (Double,Double,Double,Double,Double,Double) -> PseudoProcedure CanvasGradient
-  CreatePattern        :: Image image => (image, RepeatDirection)     -> PseudoProcedure CanvasPattern
-
-
-instance Show (PseudoProcedure a) where
-  showsPrec p = showsPrec p . I.toString . showi
-
-instance InstrShow (PseudoProcedure a) where
-  showiPrec _ = showi
-  showi (CreateLinearGradient (x0,y0,x1,y1)) = "createLinearGradient("
-        <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ','
-        <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ')'
-  showi (CreateRadialGradient (x0,y0,r0,x1,y1,r1)) = "createRadialGradient("
-        <> jsDouble x0 <> singleton ',' <> jsDouble y0 <> singleton ',' <> jsDouble r0 <> singleton ','
-        <> jsDouble x1 <> singleton ',' <> jsDouble y1 <> singleton ',' <> jsDouble r1 <> singleton ')'
-  showi (CreatePattern (img,dir)) = "createPattern("
-        <> jsImage img <> singleton ',' <> jsRepeatDirection dir <> singleton ')'
-
-pseudoProcedureResult :: PseudoProcedure a -> JS.RemoteValue a -> a
-pseudoProcedureResult CreateLinearGradient{} i = CanvasGradient i
-pseudoProcedureResult CreateRadialGradient{} i = CanvasGradient i
-pseudoProcedureResult CreatePattern{}        i = CanvasPattern i
 
 -----------------------------------------------------------------------------
 
@@ -415,7 +375,9 @@ currentTimeAudio = primitive . Query . CurrentTimeAudio
 -- @
 
 createLinearGradient :: (Double, Double, Double, Double) -> Canvas CanvasGradient
-createLinearGradient = function undefined . CreateLinearGradient
+createLinearGradient (x0,y0,x1,y1) =
+  CanvasGradient <$> primitiveConstructor "createLinearGradient"
+    [showJSB x0,showJSB y0,showJSB x1,showJSB y1]
 
 -- | @'createRadialGradient'(x0, y0, r0, x1, y1, r1)@ creates a radial gradient given
 -- by the coordinates of two circles, which can be used to fill other shapes.
@@ -441,7 +403,9 @@ createLinearGradient = function undefined . CreateLinearGradient
 -- 'fillStyle' grd
 -- @
 createRadialGradient :: (Double, Double, Double, Double, Double, Double) -> Canvas CanvasGradient
-createRadialGradient = function undefined . CreateRadialGradient
+createRadialGradient (x0,y0,r0,x1,y1,r1) =
+  CanvasGradient <$> primitiveConstructor "createRadialGradient"
+    [showJSB x0,showJSB y0,showJSB r0,showJSB x1,showJSB y1,showJSB r1]
 
 -- | Creates a pattern using a 'CanvasImage' and a 'RepeatDirection'.
 --
@@ -456,7 +420,9 @@ createRadialGradient = function undefined . CreateRadialGradient
 --    'fillStyle' pat
 -- @
 createPattern :: (CanvasImage, RepeatDirection) -> Canvas CanvasPattern
-createPattern = function undefined . CreatePattern
+createPattern (img, dir) =
+  CanvasPattern <$> primitiveConstructor "createPattern"
+    [jsbImage img, showJSB dir]
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
