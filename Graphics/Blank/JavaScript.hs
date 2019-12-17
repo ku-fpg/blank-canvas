@@ -41,7 +41,12 @@ instance InstrShow (JS.RemoteValue a) where
   showi v = I.fromText txt where JS.JavaScript txt = JS.var v
 
 -- | A handle to an offscreen canvas. 'CanvasContext' cannot be destroyed.
-data CanvasContext = CanvasContext Int Int Int deriving (Eq, Ord, Show)
+data CanvasContext = 
+  CanvasContext (Maybe (JS.RemoteValue CanvasContext)) 
+  		Int
+		Int
+     deriving (Eq, Ord, Show)
+
 $(deriveTextShow ''CanvasContext)
 instance InstrShow CanvasContext
 
@@ -480,7 +485,8 @@ instance JSArg CanvasContext where
     showiJS = jsCanvasContext
 
 jsCanvasContext :: CanvasContext -> Instr
-jsCanvasContext (CanvasContext n _ _) = "canvasbuffers[" <> showi n <> I.singleton ']'
+jsCanvasContext (CanvasContext (Just r) _ _) = showi r
+jsCanvasContext (CanvasContext Nothing _ _)  = "c"
 
 instance JSArg CanvasImage where
     showiJS = jsCanvasImage

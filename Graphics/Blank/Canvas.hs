@@ -113,9 +113,14 @@ primitiveCommand f args = Canvas $ \ _ ->
   JS.command $ JS.call f args
 
 primitiveConstructor :: JS.JavaScript -> [JS.JavaScript]
-                   -> Canvas (JS.RemoteValue a)
+         	     -> Canvas (JS.RemoteValue a)
 primitiveConstructor f args = Canvas $ \ cc ->
   JS.constructor $ showJSB cc <> "." <> JS.call f args
+
+blankConstructor :: JS.JavaScript -> [JS.JavaScript]
+                   -> Canvas (JS.RemoteValue a)
+blankConstructor f args = Canvas $ \ cc ->
+  JS.constructor $ JS.call (JS.call f args) [showJSB cc]
 
 primitiveQuery :: JS.JavaScript 
 	       -> [JS.JavaScript] 
@@ -321,8 +326,9 @@ createPattern (img, dir) =
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
-newCanvas (w,h) = primitiveQuery "NewCanvas" [showJSB w, showJSB h] $ \ o ->
-  uncurry3 CanvasContext <$> parseJSON o
+newCanvas (w,h) = 
+  (\ cc -> CanvasContext (Just cc) w h) <$>
+    blankConstructor "NewCanvas" [showJSB w, showJSB h]
 
 -- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
 -- upper-left corner @(x, y)@, width @w@, and height @h@.

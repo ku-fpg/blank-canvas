@@ -42,7 +42,8 @@ instance Image DeviceContext where
   height = fromIntegral . ctx_height
 
 deviceCanvasContext :: DeviceContext -> CanvasContext
-deviceCanvasContext cxt = CanvasContext 0 (ctx_width cxt) (ctx_height cxt)
+deviceCanvasContext cxt = CanvasContext Nothing (ctx_width cxt) (ctx_height cxt)
+
 
 -- | 'devicePixelRatio' returns the device's pixel ratio as used. Typically, the
 -- browser ignores @devicePixelRatio@ in the canvas, which can make fine details

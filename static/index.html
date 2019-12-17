@@ -145,8 +145,7 @@
                     var canvas = document.createElement('canvas');
                     canvas.width = w;
                     canvas.height = h;
-                    var count = canvasbuffers.push(canvas.getContext("2d"));
-                    return [count - 1,w,h];
+                    return canvas.getContext("2d");
                 }
             }
 
