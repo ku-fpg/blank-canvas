@@ -387,7 +387,7 @@ scale (a1,a2) = primitiveMethod "scale" [showJSB a1, showJSB a2]
 -- then calls 'transform' with the given arguments.
 setTransform :: (Double, Double, Double, Double, Double, Double) -> Canvas ()
 setTransform (a1,a2,a3,a4,a5,a6) = primitiveMethod "setTransform"
-  [showJSB a1, showJSB a2, showJSB a2, showJSB a4, showJSB a5, showJSB a6]
+  [showJSB a1, showJSB a2, showJSB a3, showJSB a4, showJSB a5, showJSB a6]
 
 -- | Sets the blur level for shadows (@0.0@ by default).
 shadowBlur :: Double -> Canvas ()
