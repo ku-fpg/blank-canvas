@@ -141,6 +141,7 @@ class Style a where
     jsbStyle = JS.JavaScript . toLazyText . jsStyle
 
 instance Style Text                 where { jsStyle = jsText }
+instance Style ST.Text              where { jsStyle = jsText . fromStrict }
 instance Style CanvasGradient       where { jsStyle = jsCanvasGradient }
 instance Style CanvasPattern        where { jsStyle = jsCanvasPattern }
 instance Style (Colour Double)      where { jsStyle = jsColour }
