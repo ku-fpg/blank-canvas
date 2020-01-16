@@ -21,6 +21,8 @@ main = do
                   , debug = True
                   , root = dat
                   } $ \ canvas -> do
+  princessURL <- staticURL canvas "type/jpeg" "/images/princess.jpg"
+  fanURL      <- staticURL canvas "type/jpeg" "/images/fan.jpg"
   sequence_ [ -- blank the screeen
 
               do send canvas $ do
@@ -33,7 +35,10 @@ main = do
                  send canvas $ do
                       save()
 
-                 example canvas
+                 example $ EC { ecCanvas      = canvas
+                              , ecPrincessURL = princessURL
+                              , ecFanURL      = fanURL
+                              }
 
                  send canvas $ do
                       restore()
@@ -46,9 +51,9 @@ main = do
 
             | (example,name) <- drop 15 $ cycle (map wrap examples ++ io_examples)
             ]
-    where wrap (example,name) = (send <*> example, name)
+    where wrap (example,name) = (\ec -> send (ecCanvas ec) (example ec), name)
 
-examples :: [(DeviceContext -> Canvas (), Text)]
+examples :: [(ExampleContext -> Canvas (), Text)]
 examples =
         -- Lines
         [ (example_1_2_1,"1.2.1 Line")
@@ -101,11 +106,17 @@ examples =
         -- Mouse Detection 2.5
         ]
 
-io_examples :: [(DeviceContext -> IO (), Text)]
+io_examples :: [(ExampleContext -> IO (), Text)]
 io_examples =
         [ (example_2_3_4,"2.3.4 Get Image Data URL")
         , (example_2_3_5,"2.3.5 Load Image Data URL")
         ]
+
+data ExampleContext = EC
+  { ecCanvas      :: DeviceContext
+  , ecPrincessURL :: URL
+  , ecFanURL      :: URL
+  }
 
 -- Examples taken from http://www.html5canvastutorials.com/tutorials/html5-canvas-tutorials-introduction/
 
@@ -123,7 +134,7 @@ example_1_2_1, example_1_2_2, example_1_2_3, example_1_2_4,
     example_1_8_1, example_1_8_2, example_1_8_3, example_1_8_4, example_1_8_5, example_1_8_6, example_1_8_7,
     example_2_1_1,
     example_2_2_1, example_2_2_2, example_2_2_3, example_2_2_4
-  :: Image image => image -> Canvas ()
+  :: ExampleContext -> Canvas ()
 
 example_1_2_1 _ = do
         moveTo(100,150)
@@ -143,7 +154,7 @@ example_1_2_3 _ = do
         strokeStyle "#ff0000"
         stroke()
 
-example_1_2_4 canvas = do
+example_1_2_4 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
 
         sequence_
@@ -157,7 +168,7 @@ example_1_2_4 canvas = do
            | (cap,n) <- zip ["butt","round","square"] [-50,0,50]
            ]
 
-example_1_3_1 canvas = do
+example_1_3_1 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         let centerX = w / 2;
         let centerY = h / 2;
@@ -273,7 +284,7 @@ example_1_5_2 _ = do
         strokeStyle "black";
         stroke();
 
-example_1_5_3 canvas = do
+example_1_5_3 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         let centerX = w / 2
         let centerY = h / 2
@@ -315,7 +326,7 @@ example_1_6_1 _ = do
         strokeStyle "blue";
         stroke();
 
-example_1_6_2 canvas = do
+example_1_6_2 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         rect(0, 0, w, h)
         grd <- createLinearGradient(0, 0, w, h)
@@ -326,7 +337,7 @@ example_1_6_2 canvas = do
         Style.fillStyle grd;
         fill();
 
-example_1_6_3 canvas = do
+example_1_6_3 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         rect(0, 0, w, h)
         grd <- createRadialGradient (238, 50, 10, 238, 50, 300)
@@ -337,29 +348,29 @@ example_1_6_3 canvas = do
         Style.fillStyle grd;
         fill();
 
-example_1_6_4 canvas = do
+example_1_6_4 EC{ecCanvas = canvas, ecFanURL = fanURL} = do
         let (w,h) = size canvas
-        imageObj <- newImage "/images/fan.jpg"
+        imageObj <- newImage fanURL
         pattern <- createPattern (imageObj,"repeat")
         rect(0, 0, w, h);
         Style.fillStyle pattern;
         fill();
 
-example_1_7_1 _ = do
-        img <- newImage "/images/princess.jpg"
+example_1_7_1 EC{ecPrincessURL = princessURL} = do
+        img <- newImage princessURL
         drawImage(img,[69,50])
 
-example_1_7_2 _ = do
-        img <- newImage "/images/princess.jpg"
+example_1_7_2 EC{ecPrincessURL = princessURL} = do
+        img <- newImage princessURL
         drawImage(img,[69,50,97,129])
 
-example_1_7_3 _ = do
-        img <- newImage "/images/princess.jpg"
+example_1_7_3 EC{ecPrincessURL = princessURL} = do
+        img <- newImage princessURL
         drawImage(img,[400,200,300,400,100,100,150,200])
 
-example_1_7_4 _ = do
-        img1 <- newImage "/images/princess.jpg"
-        img2 <- newImage "/images/fan.jpg"
+example_1_7_4 EC{ecPrincessURL = princessURL, ecFanURL = fanURL} = do
+        img1 <- newImage princessURL
+        img2 <- newImage fanURL
         drawImage(img1,[69,50,97,129])
         drawImage(img2,[400,50])
 
@@ -378,7 +389,7 @@ example_1_8_3 _ = do
         strokeStyle "blue"
         strokeText("Hello World!", 80, 110)
 
-example_1_8_4 canvas = do
+example_1_8_4 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         let x = w / 2
         let y = h / 2
@@ -387,7 +398,7 @@ example_1_8_4 canvas = do
         fillStyle "blue"
         fillText("Hello World!", x, y)
 
-example_1_8_5 canvas = do
+example_1_8_5 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         let x = w / 2
         let y = h / 2
@@ -397,7 +408,7 @@ example_1_8_5 canvas = do
         fillStyle "blue"
         fillText("Hello World!", x, y)
 
-example_1_8_6 canvas = do
+example_1_8_6 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         let x = w / 2
         let y = h / 2 - 10;
@@ -413,7 +424,7 @@ example_1_8_6 canvas = do
         fillStyle "#555"
         fillText("(" <> Text.pack (show w') <> "px wide)", x, y + 40)
 
-example_1_8_7 canvas = do
+example_1_8_7 EC{ecCanvas = canvas} = do
         let w = width canvas
         font "lighter 16pt Calibri"
         fillStyle "#000"
@@ -433,7 +444,7 @@ example_1_8_7 canvas = do
              else do wrapText (wc+1) text           x y                maxWidth lineHeight
 
 
-example_2_1_1 canvas = do
+example_2_1_1 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas
         let rectWidth = 150;
         let rectHeight = 75;
@@ -464,7 +475,7 @@ example_2_2_2 _ = do
       fillStyle "red";
       fill();
 
-example_2_2_3 canvas = do
+example_2_2_3 EC{ecCanvas = canvas} = do
       let (w,h) = size canvas
       let x = w / 2;
       let y = h / 2;
@@ -510,7 +521,7 @@ example_2_2_3 canvas = do
       strokeStyle "blue";
       stroke();
 
-example_2_2_4 canvas = do
+example_2_2_4 EC{ecCanvas = canvas} = do
         let (w,h) = size canvas :: (Double, Double)
         tempCanvas <- newCanvas (round w,round h)
         console_log tempCanvas
@@ -570,9 +581,9 @@ example_2_2_4 canvas = do
               , (thisOperation,x) <- comps  `zip` [0..]
               ]
 
-example_2_3_4, example_2_3_5 :: DeviceContext -> IO ()
+example_2_3_4, example_2_3_5 :: ExampleContext -> IO ()
 
-example_2_3_4 canvas = do
+example_2_3_4 EC{ecCanvas = canvas} = do
    url <- send canvas $ do
         beginPath();
         moveTo(170, 80);
@@ -593,11 +604,11 @@ example_2_3_4 canvas = do
         font "18pt Calibri"
         fillText(Text.pack $ show $ Text.take 50 $ url, 10, 300)
 
-example_2_3_5 canvas = do
+example_2_3_5 EC{ecCanvas = canvas} = do
    fileName <- getDataFileName "static/data/dataURL.txt"
    url <- Text.IO.readFile fileName
    send canvas $ do
-           img <- newImage url
+           img <- newImage (URL url)
            drawImage (img,[0,0])
 
 -- example_last :: Canvas ()

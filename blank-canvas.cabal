@@ -85,7 +85,7 @@ Library
                        fail                   == 4.9.*,
                        free,
                        http-types             >= 0.8     && < 0.13,
-		       javascript-bridge     == 0.2.0,
+                       javascript-bridge      == 0.2.0,
                        mime-types             >= 0.1.0.3 && < 0.2,
                        mtl,
                        natural-transformation >= 0.4     && < 0.5,

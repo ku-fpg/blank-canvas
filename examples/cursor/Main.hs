@@ -5,6 +5,7 @@ module Main (main) where
 import Data.Functor (void)
 import Data.Key (forWithKey_)
 import Data.List (genericLength)
+import qualified Data.Text as T
 import Data.Text (Text)
 
 import Graphics.Blank
@@ -22,8 +23,9 @@ main = do
             h     = height context
             delta = h / genericLength cursorValues
 
+        url <- staticURL context "image/png" cursorImage
         send context $ do
-            void $ newImage(cursorImage);
+            void $ newImage(url);
             font("12pt Calibri");
             forWithKey_ cursorValues $ \i text -> do
                 let isEven :: Bool
@@ -56,7 +58,7 @@ main = do
 
         loop
 
-cursorImage :: Text
+cursorImage :: FilePath
 cursorImage = "/images/cursor.png"
 
 cursorValues :: [Text]
@@ -96,5 +98,5 @@ cursorValues = [ "auto"
                , "zoom-out"
                , "grab"
                , "grabbing"
-               , "url('" <> cursorImage <> "'), default"
+               , "url('" <> T.pack cursorImage <> "'), default"
                ]

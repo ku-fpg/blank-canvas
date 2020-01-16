@@ -3,15 +3,16 @@
 module Main (main) where
 
 import qualified Data.Text as T
-import           Data.Text (Text)
 import           Graphics.Blank
 import           Prelude.Compat
 
-imgPath :: Text
+imgPath :: FilePath
 imgPath = "/images/fan.jpg"
 
 main :: IO ()
-main = blankCanvas 3000 $ \ ctx -> send ctx $ do
+main = blankCanvas 3000 $ \ ctx -> do
+  url <- staticURL ctx "type/jpeg" imgPath
+  send ctx $ do
      let (w, h) = (width ctx, height ctx)
      console_log . T.pack . show $ (w, h)
 
@@ -28,5 +29,5 @@ main = blankCanvas 3000 $ \ ctx -> send ctx $ do
           | (x,p) <- [1..3] `zip` [9,18,36]
           , (y,z) <- [1..3] `zip` [0.5,1,2]
           ]
-     top' <- newImage imgPath
+     top' <- newImage url
      drawImage(top', [0,0,w,h/2,0,h/2,w/2,h/4])
