@@ -240,7 +240,6 @@ import qualified Control.Natural              as N
 --import qualified Control.Remote.Packet.Strong as SP
 --import qualified Control.Remote.Packet.Weak   as WP
 
-import qualified Control.Monad.Fail           as Fail
 import           Control.Monad.Reader         hiding (local)
 import           Control.Monad.State          (evalStateT)
 --import qualified Control.Monad.State          as State
@@ -294,7 +293,7 @@ blankCanvas opts actions = do
 	  print "Sent"
 
           queue <- atomically newTChan
-	  
+
 	  _ <- forkIO $ forever $ do
 	  	 atomically $ do
 		   (val,_) <- JS.readEventChan eng
@@ -421,7 +420,7 @@ sendS' cxt sp = evalStateT (go sp) mempty
         sendToCanvas cxt $ prevCmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
         v <- KC.getReply (theComet cxt) uq
         case parse (parseQueryResult query) v of
-          Error msg -> Fail.fail msg
+          Error msg -> fail msg
           Success a -> return a
 
     sendGradient :: PseudoProcedure CanvasGradient -> CanvasGradient -> CanvasContext -> StateT Instr IO ()
@@ -485,7 +484,7 @@ sendW' cxt = go mempty
       send' $ cmds <> showi query <> singleton '(' <> showi uq <> singleton ',' <> jsCanvasContext c <> ");"
       v <- KC.getReply (theComet cxt) uq
       case parse (parseQueryResult query) v of
-        Error msg -> Fail.fail msg
+        Error msg -> fail msg
         Success a -> return a
 
     sendGradient :: Instr -> PseudoProcedure CanvasGradient -> CanvasGradient -> CanvasContext -> IO ()

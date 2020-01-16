@@ -1,3 +1,5 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 {-|
 Module:      Graphics.Blank.Style
 Copyright:   (C) 2014-2015, The University of Kansas
@@ -14,7 +16,7 @@ Note that this module exports function names that conflict with "Graphics.Blank"
 Make sure to hide any functions from "Graphics.Blank" that you use from this
 module.
 -}
-module Graphics.Blank.Style 
+module Graphics.Blank.Style
     ( -- * Overloaded versions of 'Canvas' functions
       strokeStyle
     , fillStyle
@@ -189,8 +191,6 @@ module Graphics.Blank.Style
     , rebeccapurple
     ) where
 
-import qualified Control.Monad.Fail as Fail
-
 import qualified Data.Colour as Colour
 import           Data.Colour hiding (black, transparent)
 import qualified Data.Colour.Names as Names
@@ -204,7 +204,7 @@ import           Graphics.Blank.Generated
 import           Graphics.Blank.JavaScript
 import           Graphics.Blank.Types
 
-import           Prelude hiding (tan)
+import           Prelude.Compat hiding (tan)
 
 -- | Specifies a 'Colour' by its red, green, and blue components, where each component
 -- is an integer between 0 and 255.
@@ -217,7 +217,7 @@ rgbPercent :: Percentage -> Percentage -> Percentage -> Colour Double
 rgbPercent r g b = sRGB (r/100) (g/100) (b/100)
 
 -- | Specifies an 'AlphaColour' by its RGB components and an alpha value.
--- 
+--
 -- @
 -- 'rgba' r g b 0.0 = 'transparent'
 -- @
@@ -226,7 +226,7 @@ rgba r g b = withOpacity $ rgb r g b
 
 -- | Specifies an 'AlphaColour' by its RGB component percentages (which should be
 -- between 0% and 100%) and an alpha value.
--- 
+--
 -- @
 -- 'rgbaPercent' r g b 0.0 = 'transparent'
 -- @
@@ -240,7 +240,7 @@ hsl h s l = uncurryRGB sRGB $ HSL.hsl (realToFrac h) (s/100) (l/100)
 
 -- |
 -- Specifies an 'AlphaColour' by its HSL values and an alpha value.
--- 
+--
 -- @
 -- 'hsla' h s v 0.0 = 'transparent'
 -- @
@@ -250,7 +250,7 @@ hsla h s l = withOpacity $ hsl h s l
 -- |
 -- Takes a string naming a 'Colour' (must be all lowercase) and returns it. Fails if
 -- the name is not recognized.
-readColourName :: Fail.MonadFail m => String -> m (Colour Double)
+readColourName :: MonadFail m => String -> m (Colour Double)
 readColourName "rebeccapurple" = return rebeccapurple
 readColourName name            = Names.readColourName name
 

@@ -36,7 +36,6 @@ import           TextShow.TH (deriveTextShow)
 
 --import           Control.Remote.Monad hiding (primitive)
 --import qualified Control.Remote.Monad as RM
-import qualified Control.Monad.Fail as Fail
 import           Control.Monad.Reader
 import           Control.Monad.State
 
@@ -56,7 +55,7 @@ instance InstrShow TextMetrics
 
 -----------------------------------------------------------------------------
 
-newtype Canvas a = Canvas 
+newtype Canvas a = Canvas
         (CanvasContext          -- the context, for the graphic contexts
          -> JS.RemoteMonad a)
 
@@ -93,7 +92,7 @@ class Method r where
 
 instance Method (Canvas ()) where
   type Context (Canvas ()) = CanvasContext
-  context = Canvas 
+  context = Canvas
 
 instance JSArg c => Method (c -> Canvas ()) where
   type Context (c -> Canvas ()) = c
@@ -105,7 +104,7 @@ primitiveMethod f args = context $ \ cc ->
 
 -- A bit of a hack; we use method generation to also
 -- generate attribute assignment.
-primitiveAttribute :: Method m => JS.JavaScript -> [JS.JavaScript] -> m	
+primitiveAttribute :: Method m => JS.JavaScript -> [JS.JavaScript] -> m
 primitiveAttribute f args = primitiveMethod (f <> "=") args
 
 primitiveCommand :: JS.JavaScript -> [JS.JavaScript] -> Canvas ()
@@ -122,14 +121,14 @@ blankConstructor :: JS.JavaScript -> [JS.JavaScript]
 blankConstructor f args = Canvas $ \ cc ->
   JS.constructor $ JS.call (JS.call f args) [showJSB cc]
 
-primitiveQuery :: JS.JavaScript 
-	       -> [JS.JavaScript] 
+primitiveQuery :: JS.JavaScript
+	       -> [JS.JavaScript]
 	       -> (Value -> Parser a)
 	       -> Canvas a
 primitiveQuery f args k = Canvas $ \ cc ->
   (\ v -> case parse k v of
     Error msg -> error msg -- TODO: revisit this fail
-    Success a -> a) <$> (JS.procedure $ 
+    Success a -> a) <$> (JS.procedure $
        (JS.call f args <> "(" <> showJSB cc <> ")"))
 
 
@@ -191,7 +190,7 @@ uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 device :: Canvas DeviceAttributes
-device = primitiveQuery "Device" [] $ \ v -> 
+device = primitiveQuery "Device" [] $ \ v ->
   uncurry3 DeviceAttributes <$> parseJSON v
 
 -- | Turn the canvas into a PNG data stream / data URL.
@@ -209,8 +208,8 @@ toDataURL () = primitiveQuery "ToDataURL" [] parseJSON
 -- 'TextMetrics' w <- 'measureText' \"Hello, World!\"
 -- @
 measureText :: ST.Text -> Canvas TextMetrics
-measureText txt = primitiveQuery "MeasureText" [showJSB txt] $ 
-  withObject "TextMetrics" $ \ o -> 
+measureText txt = primitiveQuery "MeasureText" [showJSB txt] $
+  withObject "TextMetrics" $ \ o ->
     TextMetrics <$> o .: "width"
 
 -- | @'isPointInPath'(x, y)@ queries whether point @(x, y)@ is within the current path.
@@ -223,7 +222,7 @@ measureText txt = primitiveQuery "MeasureText" [showJSB txt] $
 -- b <- 'isPointInPath'(10, 10) -- b == True
 -- @
 isPointInPath :: (Double, Double) -> Canvas Bool
-isPointInPath (a1,a2) = 
+isPointInPath (a1,a2) =
   primitiveQuery "IsPointInPath" [showJSB a1,showJSB a2] parseJSON
 
 -- | 'newImage' takes a URL (perhaps a data URL), and returns the 'CanvasImage' handle
@@ -326,16 +325,16 @@ createPattern (img, dir) =
 
 -- | Create a new, off-screen canvas buffer. Takes width and height as arguments.
 newCanvas :: (Int, Int) -> Canvas CanvasContext
-newCanvas (w,h) = 
+newCanvas (w,h) =
   (\ cc -> CanvasContext (Just cc) w h) <$>
     blankConstructor "NewCanvas" [showJSB w, showJSB h]
 
 -- | @'getImageData'(x, y, w, h)@ capture 'ImageData' from the rectangle with
 -- upper-left corner @(x, y)@, width @w@, and height @h@.
 getImageData :: (Double, Double, Double, Double) -> Canvas ImageData
-getImageData (sx,sy,sw,sh) = primitiveQuery "GetImageData" 
-  [showJSB sx, showJSB sy, showJSB sw, showJSB sh] $ 
-    withObject "ImageData" $ \ o -> 
+getImageData (sx,sy,sw,sh) = primitiveQuery "GetImageData"
+  [showJSB sx, showJSB sy, showJSB sw, showJSB sh] $
+    withObject "ImageData" $ \ o ->
       ImageData <$> (o .: "width")
                 <*> (o .: "height")
                 <*> (o .: "data")
