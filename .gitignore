@@ -37,3 +37,4 @@ tix/
 wiki-suite/dist
 bugs/
 .\#*
+.shake/
