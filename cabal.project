@@ -1,5 +1,6 @@
 packages: .
           ./examples
+          ./wiki-suite
 
 package blank-canvas-examples
   flags: +examples

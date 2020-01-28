@@ -3,20 +3,29 @@ Version:             0.7
 Synopsis:            HTML5 Canvas Graphics Library wiki generator and test suite
 build-type:          Simple
 Cabal-version:       >= 1.10
-tested-with:         GHC == 7.8.4, GHC == 7.10.3
+tested-with:         GHC == 7.8.4
+                   , GHC == 7.10.3
+                   , GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.1
 data-files:          images/Haskell.jpg
                      images/House.jpg
 
 executable wiki-suite
-    build-depends:    base              >= 4.7  && < 4.14,
+    build-depends:    base                  >= 4.7  && < 4.14,
+                      base-compat-batteries >= 0.10 && < 0.12,
                       blank-canvas,
-                      containers        >= 0.5  && < 0.7,
-                      process           >= 1.2  && < 1.7,
-                      stm               >= 2.2  && < 2.6,
-                      text              >= 1.1  && < 1.3,
-                      time              >= 1.4  && < 1.10,
-                      unix              >= 2.7  && < 2.8,
-                      vector            >= 0.10 && < 0.13
+                      containers            >= 0.5  && < 0.7,
+                      process               >= 1.2  && < 1.7,
+                      directory             >= 1.2,
+                      shake                 >= 0.14,
+                      stm                   >= 2.2  && < 2.6,
+                      text                  >= 1.1  && < 1.3,
+                      time                  >= 1.4  && < 1.10,
+                      unix                  >= 2.7  && < 2.8,
+                      vector                >= 0.10 && < 0.13
 
     default-language: Haskell2010
 -- add -fhpc to do coverage
