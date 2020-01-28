@@ -1,6 +1,12 @@
 ## next
 TODO
 
+## 0.7.1
+* Remove the `wiki-suite` test suite from `blank-canvas.cabal`, as it was never
+  intended to work as a traditional test suite. The functionality of
+  `wiki-suite` has moved to a subdirectory of the upstream `blank-canvas`
+  repository.
+
 ## 0.7
 * Strengthen the `Monad` constraint on `readColourName` to `MonadFail`.
 
