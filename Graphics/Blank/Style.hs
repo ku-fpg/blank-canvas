@@ -191,6 +191,7 @@ module Graphics.Blank.Style
     , rebeccapurple
     ) where
 
+import qualified Control.Monad.Fail as Fail
 import qualified Data.Colour as Colour
 import           Data.Colour hiding (black, transparent)
 import qualified Data.Colour.Names as Names
@@ -250,7 +251,7 @@ hsla h s l = withOpacity $ hsl h s l
 -- |
 -- Takes a string naming a 'Colour' (must be all lowercase) and returns it. Fails if
 -- the name is not recognized.
-readColourName :: MonadFail m => String -> m (Colour Double)
+readColourName :: Fail.MonadFail m => String -> m (Colour Double)
 readColourName "rebeccapurple" = return rebeccapurple
 readColourName name            = Names.readColourName name
 
