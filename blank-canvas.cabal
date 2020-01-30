@@ -74,7 +74,7 @@ Library
   build-depends:       aeson                  >= 0.7     && < 1.5,
                        base64-bytestring      == 1.0.*,
                        base                   >= 4.11    && < 4.15,
-                       base-compat            >= 0.10    && < 0.12,
+                       base-compat            >= 0.11    && < 0.12,
                        bytestring             == 0.10.*,
                        colour                 >= 2.2     && < 2.4,
                        containers             >= 0.5     && < 0.7,
