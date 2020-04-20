@@ -3,3 +3,9 @@ no-tests-no-benchmarks: False
 unconstrained:          False
 copy-fields:            all
 run-tests:              False
+
+raw-project
+  -- Work around https://github.com/haskell/cabal/issues/5586
+  package javascript-bridge
+    tests:      False
+    benchmarks: False
