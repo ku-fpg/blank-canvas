@@ -105,10 +105,15 @@ install:
     echo "source-repository-package"                               >> cabal.project
     echo "  type:     git"                                         >> cabal.project
     echo "  location: https://github.com/ku-fpg/javascript-bridge" >> cabal.project
-    echo "  tag:      675cb47d67431349d6b24eb157f5132428857e44"    >> cabal.project
+    echo "  tag:      238861d264c838f4b1b566f1e17002bcbcd6b2c6"    >> cabal.project
     echo ""                                                        >> cabal.project
     echo "package blank-canvas-examples"                           >> cabal.project
     echo "  flags: +examples"                                      >> cabal.project
+    echo ""                                                        >> cabal.project
+    echo "source-repository-package"                               >> cabal.project
+    echo "  type:     git"                                         >> cabal.project
+    echo "  location: https://github.com/ku-fpg/javascript-bridge" >> cabal.project
+    echo "  tag:      238861d264c838f4b1b566f1e17002bcbcd6b2c6"    >> cabal.project
     echo ""                                                        >> cabal.project
     echo "package javascript-bridge"                               >> cabal.project
     echo "  tests:      False"                                     >> cabal.project
@@ -152,10 +157,15 @@ script:
     echo "source-repository-package"                               >> cabal.project
     echo "  type:     git"                                         >> cabal.project
     echo "  location: https://github.com/ku-fpg/javascript-bridge" >> cabal.project
-    echo "  tag:      675cb47d67431349d6b24eb157f5132428857e44"    >> cabal.project
+    echo "  tag:      238861d264c838f4b1b566f1e17002bcbcd6b2c6"    >> cabal.project
     echo ""                                                        >> cabal.project
     echo "package blank-canvas-examples"                           >> cabal.project
     echo "  flags: +examples"                                      >> cabal.project
+    echo ""                                                        >> cabal.project
+    echo "source-repository-package"                               >> cabal.project
+    echo "  type:     git"                                         >> cabal.project
+    echo "  location: https://github.com/ku-fpg/javascript-bridge" >> cabal.project
+    echo "  tag:      238861d264c838f4b1b566f1e17002bcbcd6b2c6"    >> cabal.project
     echo ""                                                        >> cabal.project
     echo "package javascript-bridge"                               >> cabal.project
     echo "  tests:      False"                                     >> cabal.project
