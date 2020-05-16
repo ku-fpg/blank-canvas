@@ -95,12 +95,6 @@ install:
     echo "packages: ." >> cabal.project
     echo "packages: ./examples" >> cabal.project
     echo "packages: ./wiki-suite" >> cabal.project
-  - echo 'package blank-canvas' >> cabal.project
-  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
-  - echo 'package blank-canvas-examples' >> cabal.project
-  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
-  - echo 'package wiki-suite' >> cabal.project
-  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - |
     echo "source-repository-package"                               >> cabal.project
     echo "  type:     git"                                         >> cabal.project
@@ -147,12 +141,6 @@ script:
     echo "packages: ${PKGDIR_blank_canvas}" >> cabal.project
     echo "packages: ${PKGDIR_blank_canvas_examples}" >> cabal.project
     echo "packages: ${PKGDIR_wiki_suite}" >> cabal.project
-  - echo 'package blank-canvas' >> cabal.project
-  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
-  - echo 'package blank-canvas-examples' >> cabal.project
-  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
-  - echo 'package wiki-suite' >> cabal.project
-  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - |
     echo "source-repository-package"                               >> cabal.project
     echo "  type:     git"                                         >> cabal.project
