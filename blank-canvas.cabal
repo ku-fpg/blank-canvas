@@ -76,7 +76,7 @@ Library
 
   default-language:    Haskell2010
   build-depends:       aeson                 >= 0.7     && < 1.6,
-                       base64-bytestring     >= 1.0     && < 1.2,
+                       base64-bytestring     >= 1.0     && < 1.3,
                        base                  >= 4.7     && < 4.15,
                        base-compat-batteries >= 0.10    && < 0.12,
                        bytestring            == 0.10.*,
