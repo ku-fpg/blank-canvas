@@ -1,35 +1,38 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell   #-}
 module Graphics.Blank.JavaScript where
 
-import           Data.Char (isControl, isAscii, ord)
+import           Data.Bits                       (shiftR, (.&.))
+import           Data.Char                       (isAscii, isControl, ord)
 import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
 import           Data.List
 import           Data.String
-import           Data.Text (Text)
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Builder as B (singleton)
-import qualified Data.Vector.Unboxed as V
-import           Data.Vector.Unboxed (Vector, toList)
-import           Data.Word (Word8)
+import           Data.Text                       (Text)
+import qualified Data.Text.Lazy                  as TL
+import qualified Data.Text.Lazy.Builder          as B (singleton)
+import           Data.Vector.Unboxed             (Vector, toList)
+import qualified Data.Vector.Unboxed             as V
+import           Data.Word                       (Word8)
 
 import           Graphics.Blank.Parser
 
 import           Prelude.Compat
 
-import           Text.ParserCombinators.ReadP (choice, skipSpaces)
+import           Text.ParserCombinators.ReadP    (choice, skipSpaces)
 import           Text.ParserCombinators.ReadPrec (lift)
-import           Text.Read (Read(..), parens, readListPrecDefault)
+import           Text.Read                       (Read (..), parens,
+                                                  readListPrecDefault)
 
+import           Numeric                         (showHex)
 import           TextShow
-import           TextShow.Data.Floating (showbFFloat)
-import           TextShow.Data.Integral (showbHex)
-import           TextShow.TH (deriveTextShow)
+import           TextShow.Data.Floating          (showbFFloat)
+import           TextShow.Data.Integral          (showbHex)
+import           TextShow.TH                     (deriveTextShow)
 
 -------------------------------------------------------------
 
@@ -543,13 +546,6 @@ jsLiteralBuilder = jsQuoteBuilder . jsEscapeBuilder
 jsQuoteBuilder :: Builder -> Builder
 jsQuoteBuilder b = B.singleton '"' <> b <> B.singleton '"'
 
--- | Transform a character to a lazy 'TL.Text' that represents its JS
---   unicode escape sequence.
-jsUnicodeChar :: Char -> TL.Text
-jsUnicodeChar c =
-    let hex = toLazyText . showbHex $ ord c
-    in "\\u" <> TL.replicate (4 - TL.length hex) (TL.singleton '0') <> hex
-
 -- | Correctly replace a `Builder'`s characters by the JS escape sequences.
 jsEscapeBuilder :: Builder -> Builder
 jsEscapeBuilder = fromLazyText . TL.concatMap jsEscapeChar . toLazyText
@@ -558,8 +554,6 @@ jsEscapeBuilder = fromLazyText . TL.concatMap jsEscapeChar . toLazyText
 jsEscapeChar :: Char -> TL.Text
 jsEscapeChar '\\' = "\\\\"
 -- Special control sequences.
-jsEscapeChar '\0' = jsUnicodeChar '\0' -- Ambigous with numbers
-jsEscapeChar '\a' = jsUnicodeChar '\a' -- Non JS
 jsEscapeChar '\b' = "\\b"
 jsEscapeChar '\f' = "\\f"
 jsEscapeChar '\n' = "\\n"
@@ -568,7 +562,17 @@ jsEscapeChar '\t' = "\\t"
 jsEscapeChar '\v' = "\\v"
 jsEscapeChar '\"' = "\\\""
 jsEscapeChar '\'' = "\\'"
--- Non-control ASCII characters can remain as they are.
-jsEscapeChar c' | not (isControl c') && isAscii c' = TL.singleton c'
--- All other non ASCII signs are escaped to unicode.
-jsEscapeChar c' = jsUnicodeChar c'
+-- Code borrowed from GHCJS implementation: https://github.com/ghcjs/ghcjs/blob/718b37fc7167269ebca633914c716c3dbe6d0faf/src/Compiler/JMacro/Base.hs#L887-L905
+jsEscapeChar '/'  = "\\/"
+jsEscapeChar c
+    -- Non-control ASCII characters can remain as they are.
+    | not (isControl c) && isAscii c = TL.singleton c
+    | ord c <= 0xff   = hexxs "\\x" 2 (ord c)
+    -- All other non ASCII signs are escaped to unicode.
+    | ord c <= 0xffff = hexxs "\\u" 4 (ord c)
+    | otherwise      = let cp0 = ord c - 0x10000 -- output surrogate pair
+                       in hexxs "\\u" 4 ((cp0 `shiftR` 10) + 0xd800) `mappend`
+                          hexxs "\\u" 4 ((cp0 .&. 0x3ff) + 0xdc00)
+    where hexxs prefix pad cp =
+            let h = showHex cp ""
+            in  TL.pack (prefix ++ replicate (pad - length h) '0' ++ h)
