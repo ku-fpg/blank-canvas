@@ -10,7 +10,7 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.List
+import           Data.List                       hiding (length)
 import           Data.String
 import           Data.Text                       (Text)
 import qualified Data.Text.Lazy                  as TL
