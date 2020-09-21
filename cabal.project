@@ -4,6 +4,3 @@ packages: .
 
 package blank-canvas-examples
   flags: +examples
-
--- Work around https://github.com/yesodweb/wai/pull/813
-constraints: wai-extra <3.0.30 || >3.0.31
