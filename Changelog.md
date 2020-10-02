@@ -1,3 +1,6 @@
+### 0.7.3
+* Allow building with GHC 9.0.
+
 ### 0.7.2
 * Render Unicode codepoints beyond `0xFFFF` properly.
 
