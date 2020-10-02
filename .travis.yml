@@ -114,8 +114,10 @@ install:
   - if [ $HCNUMVER -ge 80200 ] ; then echo 'package wiki-suite' >> cabal.project ; fi
   - "if [ $HCNUMVER -ge 80200 ] ; then echo '  ghc-options: -Werror=missing-methods' >> cabal.project ; fi"
   - |
-    echo "package blank-canvas-examples" >> cabal.project
-    echo "  flags: +examples"            >> cabal.project
+    echo "constraints: http-date <0.0.9 || >0.0.9" >> cabal.project
+    echo ""                                        >> cabal.project
+    echo "package blank-canvas-examples"           >> cabal.project
+    echo "  flags: +examples"                      >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(blank-canvas|blank-canvas-examples|wiki-suite)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
@@ -152,8 +154,10 @@ script:
   - if [ $HCNUMVER -ge 80200 ] ; then echo 'package wiki-suite' >> cabal.project ; fi
   - "if [ $HCNUMVER -ge 80200 ] ; then echo '  ghc-options: -Werror=missing-methods' >> cabal.project ; fi"
   - |
-    echo "package blank-canvas-examples" >> cabal.project
-    echo "  flags: +examples"            >> cabal.project
+    echo "constraints: http-date <0.0.9 || >0.0.9" >> cabal.project
+    echo ""                                        >> cabal.project
+    echo "package blank-canvas-examples"           >> cabal.project
+    echo "  flags: +examples"                      >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(blank-canvas|blank-canvas-examples|wiki-suite)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
