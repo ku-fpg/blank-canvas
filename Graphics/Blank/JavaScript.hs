@@ -10,7 +10,7 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.List                       hiding (length)
+import qualified Data.List                       as L
 import           Data.String
 import           Data.Text                       (Text)
 import qualified Data.Text.Lazy                  as TL
@@ -507,7 +507,7 @@ jsLineJoinCorner :: LineJoinCorner -> Builder
 jsLineJoinCorner = jsLiteralBuilder . showb
 
 jsList :: (a -> Builder) -> [a] -> Builder
-jsList js = mconcat . intersperse "," . map js
+jsList js = mconcat . L.intersperse "," . map js
 
 instance JSArg RepeatDirection where
     showbJS = jsRepeatDirection

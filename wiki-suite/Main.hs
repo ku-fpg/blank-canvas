@@ -7,7 +7,7 @@ import           Prelude hiding ((*>))
 import           Control.Concurrent
 
 import           Data.Char
-import           Data.List
+import qualified Data.List                   as L
 
 import qualified Development.Shake as Shake
 import           Development.Shake hiding (doesFileExist)
@@ -171,7 +171,7 @@ main2 args = shakeArgs shakeOptions $ do
                  [_,_,_,n] -> read n
                  _ -> (512,384)
               | ln <- lines txt
-              , "import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln
+              , "import" `L.isPrefixOf` ln && "Wiki" `L.isInfixOf` ln
               ] ++ [(512,384) :: (Int, Int)]
 
 
@@ -205,12 +205,12 @@ main2 args = shakeArgs shakeOptions $ do
         let new = reverse
                 $ dropWhile (all isSpace)
                 $ reverse
-                [ if "module" `isPrefixOf` ln
+                [ if "module" `L.isPrefixOf` ln
                   then "module Main where"
                   else ln
                 | ln <- lines txt
-                , not ("wiki $" `isInfixOf` ln)         -- remove the wiki stuff
-                , not ("import" `isPrefixOf` ln && "Wiki" `isInfixOf` ln)
+                , not ("wiki $" `L.isInfixOf` ln)         -- remove the wiki stuff
+                , not ("import" `L.isPrefixOf` ln && "Wiki" `L.isInfixOf` ln)
                 ]
 
         writeFileChanged out (unlines $ map (untabify 0) new)
@@ -234,7 +234,7 @@ main2 args = shakeArgs shakeOptions $ do
                 else return []
 --        liftIO $ print txts
 
-        let p = not . (code_header `isPrefixOf`)
+        let p = not . (code_header `L.isPrefixOf`)
         let textToKeep = takeWhile p txts
 
         let haskell_file = map (\ c -> if c == '-' then '_' else c)
