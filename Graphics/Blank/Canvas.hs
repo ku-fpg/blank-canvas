@@ -92,7 +92,7 @@ class Method r where
 
 instance Method (Canvas ()) where
   type Context (Canvas ()) = CanvasContext
-  context = Canvas
+  context f = Canvas f
 
 instance JSArg c => Method (c -> Canvas ()) where
   type Context (c -> Canvas ()) = c
