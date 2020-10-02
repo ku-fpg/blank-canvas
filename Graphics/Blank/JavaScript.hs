@@ -10,7 +10,7 @@ import           Data.Colour
 import           Data.Colour.SRGB
 import           Data.Default.Class
 import           Data.Ix
-import           Data.List
+import qualified Data.List                       as L
 import           Data.String
 import qualified Data.Text                       as ST
 import           Data.Text.Lazy                  (Text, fromStrict)
@@ -560,7 +560,7 @@ jsLineJoinCorner :: LineJoinCorner -> Instr
 jsLineJoinCorner = jsLiteralBuilder . showi
 
 jsList :: (a -> Instr) -> [a] -> Instr
-jsList js = mconcat . intersperse "," . map js
+jsList js = mconcat . L.intersperse "," . map js
 
 instance JSArg RepeatDirection where
     showiJS = jsRepeatDirection
