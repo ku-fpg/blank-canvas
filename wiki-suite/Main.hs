@@ -162,7 +162,7 @@ main2 args = shakeArgs shakeOptions $ do
         need [ haskell_path, "blank-canvas.wiki/examples/" ++ haskell_file ]
         liftIO $ print nm
 
-        txt <- readFile' $ haskell_path
+        txt <- Shake.readFile' $ haskell_path
 
         let (w,h) = head $
               [ case words ln of
@@ -191,7 +191,7 @@ main2 args = shakeArgs shakeOptions $ do
         let haskell_file = takeFileName out
 
         liftIO $ print "before read file"
-        txt <- readFile' $ wiki_suite ++ "/" ++ haskell_file
+        txt <- Shake.readFile' $ wiki_suite ++ "/" ++ haskell_file
         liftIO $ print "after read file"
 
         let new = reverse
@@ -234,7 +234,7 @@ main2 args = shakeArgs shakeOptions $ do
 
 
         liftIO $ print haskell_file
-        txt <- readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file
+        txt <- Shake.readFile' $ "blank-canvas.wiki/examples/" ++ haskell_file
 
         let new = unlines $
                        [ t | t <- textToKeep
