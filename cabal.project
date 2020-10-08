@@ -4,6 +4,3 @@ packages: .
 
 package blank-canvas-examples
   flags: +examples
-
--- Work around https://github.com/kazu-yamamoto/http-date/issues/12
-constraints: http-date <0.0.9 || >0.0.9
