@@ -1,4 +1,4 @@
-# blank-canvas [![Hackage version](https://img.shields.io/hackage/v/blank-canvas.svg?style=flat)](http://hackage.haskell.org/package/blank-canvas) [![Build Status](https://img.shields.io/travis/ku-fpg/blank-canvas.svg?style=flat)](https://travis-ci.org/ku-fpg/blank-canvas)
+# blank-canvas [![Hackage version](https://img.shields.io/hackage/v/blank-canvas.svg?style=flat)](http://hackage.haskell.org/package/blank-canvas) [![Build Status](https://github.com/ku-fpg/blank-canvas/workflows/Haskell-CI/badge.svg)](https://github.com/ku-fpg/blank-canvas/actions?query=workflow%3AHaskell-CI)
 
 ### Background
 
