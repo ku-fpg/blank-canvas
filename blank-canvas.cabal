@@ -99,6 +99,8 @@ Library
                        vector                >= 0.10    && < 0.13
 
   GHC-options:         -Wall
+  if impl(ghc >= 8.6)
+    ghc-options:       -Wno-star-is-type
   GHC-prof-options:    -Wall -fsimpl-tick-factor=100000
 
 source-repository head
