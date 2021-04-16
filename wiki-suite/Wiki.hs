@@ -70,12 +70,12 @@ snapShot context fileName = do
                         stroke()
 
                         restore()
-                        
+
                         drawImage(top',[1,1])
                         toDataURL() -- of tempCanvas
 
         createDirectoryIfMissing True $ "blank-canvas.wiki/tmp"
-	print $("Writing to","blank-canvas.wiki/" ++ fileName, Text.length txt)
+	print ("Writing to","blank-canvas.wiki/" ++ fileName, Text.length txt)
         writeDataURL ("blank-canvas.wiki/" ++ fileName) txt
 
 wiki :: a -> a
@@ -83,15 +83,15 @@ wiki = id
 
 close :: DeviceContext -> IO ()
 close context = do
---        n <- getPOSIXTime                
+--        n <- getPOSIXTime
 --        Tix tix <- examineTix
---	let tix' = filter (\ t -> ("Graphics.Blank" `isPrefixOf` tixModuleName t)) 
+--	let tix' = filter (\ t -> ("Graphics.Blank" `isPrefixOf` tixModuleName t))
 --	         $ tix
 --        writeFile ("tix/tix_" ++ printf "_%013d" (floor (fromRational (toRational n) * 1000) :: Integer) ++ ".tix") $ show $ Tix tix'
         send context $ eval "open(location, '_self').close()"
         threadDelay (1000 * 1000);
         putStrLn "dieing"
-        p <- getProcessID 
+        p <- getProcessID
         callProcess "kill" [show p]
         quit
 
@@ -103,7 +103,7 @@ whenM = M.when
 
 anim_png :: String -> IO String
 anim_png nm = do
-   n <- getPOSIXTime                
+   n <- getPOSIXTime
    return $ "tmp/" ++ nm ++ printf "_%013d" (floor (fromRational (toRational n) * 1000 :: Double) :: Integer) ++ ".png"
 
 build_anim :: String -> Int -> IO ()
