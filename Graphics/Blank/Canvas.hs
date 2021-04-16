@@ -48,11 +48,13 @@ data Canvas :: * -> * where
         Return    :: a                           -> Canvas a
 
 instance Monad Canvas where
+#if !(MIN_VERSION_base(4,11,0))
         return = Return
+#endif
         (>>=) = Bind
 
 instance Applicative Canvas where
-  pure  = return
+  pure  = Return
   (<*>) = ap
 
 instance Functor Canvas where
