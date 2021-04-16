@@ -73,14 +73,11 @@ showiHex :: (Integral a, Show a) => a -> Instr
 showiHex i = fromString $ showHex i ""
 
 instance Semigroup Instr where
-    (<>) = mappend
+    Instr a1 b1 <> Instr a2 b2 =
+      Instr (a1 <> a2) (b2 <> b1)
 
 instance Monoid Instr where
     mempty = Instr mempty mempty
-    mappend (Instr a1 b1)
-            (Instr a2 b2) =
-      Instr (a1 <> a2)
-            (b2 <> b1)
 
 instance IsString Instr where
     fromString = fromBuilder . fromString
