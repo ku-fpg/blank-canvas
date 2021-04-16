@@ -61,7 +61,9 @@ dataURLMimeType txt
     | otherwise = error "dataURLMimeType: bad parse"
  where
    (dat,rest0)       = Text.span (/= ':') txt
-   Just (_,rest1)    = Text.uncons rest0
+   rest1             = case Text.uncons rest0 of
+                         Just (_,rest1') -> rest1'
+                         Nothing         -> "dataURLMimeType: Unexpected empty Text"
    (mime_type,rest2) = Text.span (/= ';') rest1
 
 -- | Write a data URL to a given file.
