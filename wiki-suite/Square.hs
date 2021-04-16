@@ -6,7 +6,8 @@ import Wiki -- (512,512)
 
 main :: IO ()
 main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
-          let loop (x,y) (color:colors) = do
+          let loop _     []             = fail "Unexpected empty list of colors"
+              loop (x,y) (color:colors) = do
                 send context $ saveRestore $ do
                         translate (x,y)
                         beginPath()
@@ -40,7 +41,7 @@ main = blankCanvas 3000 { events = ["mousedown"] } $ \ context -> do
                         Nothing -> loop (x,y) colors
                         Just (x',y') -> loop (x',y') colors
 
-          putStrLn "calling size"                
+          putStrLn "calling size"
           loop (width context / 2,height context / 2)
                (cycle [ "#749871", "#1887f2", "#808080", "f01234"])
 
