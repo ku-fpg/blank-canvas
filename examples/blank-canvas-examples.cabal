@@ -57,7 +57,7 @@ executable blank-canvas-example-html5canvastutorial
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
   build-depends:       base                  >= 4.7   && < 4.16,
-                       base-compat-batteries >= 0.10  && < 0.12,
+                       base-compat-batteries >= 0.10  && < 0.13,
                        blank-canvas,
                        text                  >= 1.1   && < 1.3
   hs-source-dirs:      html5canvastutorial
@@ -71,7 +71,7 @@ executable blank-canvas-example-keyread
     buildable:         False
   main-is:             Main.hs
   build-depends:       base                  >= 4.7  && < 4.16,
-                       base-compat-batteries >= 0.10 && < 0.12,
+                       base-compat-batteries >= 0.10 && < 0.13,
                        blank-canvas,
                        text                  >= 1.1  && < 1.3
   hs-source-dirs:      keyread
@@ -121,7 +121,7 @@ executable blank-canvas-example-text
     buildable:         False
   main-is:             Main.hs
   build-depends:       base                  >= 4.7  && < 4.16,
-                       base-compat-batteries >= 0.10 && < 0.12,
+                       base-compat-batteries >= 0.10 && < 0.13,
                        blank-canvas,
                        text                  >= 1.1  && < 1.3
   hs-source-dirs:      text
@@ -177,7 +177,7 @@ executable blank-canvas-example-cursor
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
   build-depends:       base                  >= 4.7  && < 4.16,
-                       base-compat-batteries >= 0.10 && < 0.12,
+                       base-compat-batteries >= 0.10 && < 0.13,
                        blank-canvas,
                        keys                  >= 3.10,
                        text                  >= 1.1  && < 1.3
