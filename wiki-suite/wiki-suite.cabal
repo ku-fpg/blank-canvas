@@ -11,13 +11,14 @@ Cabal-version:       >= 1.10
 tested-with:         GHC == 8.4.4
                    , GHC == 8.6.5
                    , GHC == 8.8.4
-                   , GHC == 8.10.4
-                   , GHC == 9.0.1
+                   , GHC == 8.10.7
+                   , GHC == 9.0.2
+                   , GHC == 9.2.2
 data-files:          images/Haskell.jpg
                      images/House.jpg
 
 executable wiki-suite
-    build-depends:    base              >= 4.11 && < 4.16,
+    build-depends:    base              >= 4.11 && < 4.17,
                       base-compat       >= 0.11 && < 0.13,
                       blank-canvas,
                       containers        >= 0.5  && < 0.7,
@@ -27,7 +28,7 @@ executable wiki-suite
                       stm               >= 2.2  && < 2.6,
                       shake             >= 0.17 && < 0.20,
                       text              >= 1.1  && < 2.1,
-                      time              >= 1.4  && < 1.10,
+                      time              >= 1.4  && < 1.12,
                       unix              >= 2.7  && < 2.8,
                       vector            >= 0.10 && < 0.13
 
