@@ -219,6 +219,8 @@ jobs:
           if [ $((HCNUMVER >= 80200)) -ne 0 ] ; then echo "package wiki-suite" >> cabal.project ; fi
           if [ $((HCNUMVER >= 80200)) -ne 0 ] ; then echo "    ghc-options: -Werror=missing-methods" >> cabal.project ; fi
           cat >> cabal.project <<EOF
+          constraints: basement < 0.0.13 || > 0.0.13
+
           package blank-canvas-examples
             flags: +examples
           EOF

@@ -4,3 +4,8 @@ packages: .
 
 package blank-canvas-examples
   flags: +examples
+
+constraints:
+  -- Needed to allow to building with GHC 8.0
+  -- See https://github.com/haskell-foundation/foundation/issues/561
+  basement < 0.0.13 || > 0.0.13
