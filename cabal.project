@@ -8,4 +8,4 @@ package blank-canvas-examples
 source-repository-package
   type: git
   location: https://github.com/ku-fpg/javascript-bridge
-  tag: f5b13c4d56b918b8dc8e7560028736f778cf304e
+  tag: 04c6a3708582be1824b9e841f8280d03ac08c566
