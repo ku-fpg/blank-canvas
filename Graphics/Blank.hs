@@ -240,7 +240,7 @@ import qualified Control.Natural              as N
 --import qualified Control.Remote.Packet.Strong as SP
 --import qualified Control.Remote.Packet.Weak   as WP
 
-import           Control.Monad.Reader         hiding (local)
+import           Control.Monad                (forever)
 import           Control.Monad.State          (evalStateT)
 --import qualified Control.Monad.State          as State
 --import           Control.Monad.Writer

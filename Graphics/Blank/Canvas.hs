@@ -34,10 +34,9 @@ import           Prelude.Compat
 
 import           TextShow.TH (deriveTextShow)
 
+import           Control.Monad (liftM2)
 --import           Control.Remote.Monad hiding (primitive)
 --import qualified Control.Remote.Monad as RM
-import           Control.Monad.Reader
-import           Control.Monad.State
 
 import qualified Network.JavaScript as JS
 
