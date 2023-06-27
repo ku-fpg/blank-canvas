@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.16
+# version: 0.16.3
 #
-# REGENDATA ("0.16",["github","cabal.project"])
+# REGENDATA ("0.16.3",["github","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -206,7 +206,7 @@ jobs:
           source-repository-package
             type:     git
             location: https://github.com/ku-fpg/javascript-bridge
-            tag:      d1aab2a5919ab2a710cc7945f13cbd3bb396098e
+            tag:      20aaca23deb99770767dce0fec7974a9cacca271
 
           package blank-canvas-examples
             flags: +examples
