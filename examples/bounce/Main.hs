@@ -2,6 +2,9 @@
 module Main where
 
 import Control.Concurrent
+import Data.List.NonEmpty (NonEmpty(..))
+import qualified Data.Stream.Infinite as Stream
+import Data.Stream.Infinite (Stream)
 import Data.Text (Text)
 import Graphics.Blank
 
@@ -40,7 +43,8 @@ go context = do
             | y + 25 >= h && d > 0 = ((x,y),-(d-0.5)*0.97,a)
             | otherwise         = ((x,y),d,a)
 
-     let loop (balls,cols) = do
+     let loop :: ([Ball Text], Stream Text) -> IO ()
+         loop (balls,cols) = do
 
              send context $ do
                 clearCanvas
@@ -48,15 +52,15 @@ go context = do
                      [ showBall xy col
                      | (xy,_,col) <- balls
                      ]
-             threadDelay (20 * 1000) 
+             threadDelay (20 * 1000)
 
              es <- flush context
 
-             let newBalls = [ ((x,y),0,head cols) 
+             let newBalls = [ ((x,y),0,Stream.head cols)
                             | Just (x,y) <- map ePageXY es
                             ]
-                      
-             loop (map bounce $ map moveBall $ balls ++ newBalls, tail cols)
+
+             loop (map bounce $ map moveBall $ balls ++ newBalls, Stream.tail cols)
 
 
-     loop ([((100,100),0,"blue")],cycle ["red","blue","green","orange","cyan"])
+     loop ([((100,100),0,"blue")],Stream.cycle ("red" :| ["blue","green","orange","cyan"]))

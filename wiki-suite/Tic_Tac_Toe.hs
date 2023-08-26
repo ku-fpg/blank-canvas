@@ -56,17 +56,20 @@ loop context board turn = do
                     y' <- fd ((y - height context / 2) / sz)
                     return (x',y')
 
-            fd x = 
+            fd x =
 --                    trace (show ("fx",x,r)) $
                     if r `elem` [-1..1] then Just (signum r) else Nothing
                 where r = round (x * 3.3333)
 
         let press = (width context / 2 + fromIntegral x * (sz / 4),height context / 2 + fromIntegral y * (sz / 4)) -- wiki $
-                where (x,y) = head [ ix | (ix,Nothing)                                   -- wiki $
-                                                 <- [ ((x',y'),Map.lookup (x',y') board) -- wiki $
-                                                    | y' <- [-1,0,1]                     -- wiki $
-                                                    , x' <- [-1,0,1]                     -- wiki $
-                                                    ]]                                   -- wiki $
+                where xys = [ ix | (ix,Nothing)                                   -- wiki $
+                                          <- [ ((x',y'),Map.lookup (x',y') board) -- wiki $
+                                             | y' <- [-1,0,1]                     -- wiki $
+                                             , x' <- [-1,0,1]                     -- wiki $
+                                             ]]                                   -- wiki $
+                      (x,y) = case xys of                                         -- wiki $
+                                xy:_ -> xy                                        -- wiki $
+                                []   -> error "Impossible: Already cleared board" -- wiki $
 
         _ <- wiki $ forkIO $ send context $ trigger $ Event {
               eMetaKey = False

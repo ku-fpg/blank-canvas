@@ -73,8 +73,6 @@ import qualified Scale_Transform
 import qualified Rotate_Transform
 import qualified Custom_Transform
 
-import System.Environment
-
 main :: IO ()
 main = do
      args <- getArgs
@@ -166,14 +164,17 @@ main2 args = shakeArgs shakeOptions $ do
 
         txt <- Shake.readFile' $ "wiki-suite/" ++ haskell_file
 
-        let (w,h) = head $
+        let whLines =
               [ case words ln of
                  [_,_,_,n] -> read n
                  _ -> (512,384)
               | ln <- lines txt
               , "import" `L.isPrefixOf` ln && "Wiki" `L.isInfixOf` ln
               ] ++ [(512,384) :: (Int, Int)]
-
+        let (w,h) =
+              case whLines of
+                whLine:_ -> whLine
+                [] -> error $ "No width/height found in " ++ haskell_file
 
         sequence_ [
              do (_,_,_,ghc) <- liftIO $
