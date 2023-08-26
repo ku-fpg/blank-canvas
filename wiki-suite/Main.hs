@@ -14,6 +14,7 @@ import qualified Development.Shake           as Shake
 import           Development.Shake.FilePath
 
 import           System.Directory
+import           System.Environment
 import           System.IO
 import           System.Process
 
@@ -73,8 +74,6 @@ import qualified Text_Stroke
 import qualified Text_Wrap
 import qualified Tic_Tac_Toe
 import qualified Translate_Transform
-
-import           System.Environment
 
 main :: IO ()
 main = do
@@ -164,14 +163,17 @@ main2 args = shakeArgs shakeOptions $ do
 
         txt <- Shake.readFile' $ haskell_path
 
-        let (w,h) = head $
+        let whLines =
               [ case words ln of
                  [_,_,_,n] -> read n
                  _         -> (512,384)
               | ln <- lines txt
               , "import" `L.isPrefixOf` ln && "Wiki" `L.isInfixOf` ln
               ] ++ [(512,384) :: (Int, Int)]
-
+        let (w,h) =
+              case whLines of
+                whLine:_ -> whLine
+                [] -> error $ "No width/height found in " ++ haskell_file
 
         sequence_ [
              do (_,_,_,ghc) <- liftIO $
