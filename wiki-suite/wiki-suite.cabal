@@ -30,7 +30,7 @@ executable wiki-suite
                       stm               >= 2.2  && < 2.6,
                       shake             >= 0.17 && < 0.20,
                       streams           >= 0.1,
-                      text              >= 1.1  && < 2.1,
+                      text              >= 1.1  && < 2.2,
                       time              >= 1.4  && < 1.13,
                       unix              >= 2.7  && < 2.9,
                       vector            >= 0.10 && < 0.14

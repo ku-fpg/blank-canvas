@@ -94,7 +94,7 @@ Library
                        scotty                 >= 0.10    && < 0.13,
                        semigroups             >= 0.18    && < 1,
                        stm                    >= 2.2     && < 2.6,
-                       text                   >= 1.1     && < 2.1,
+                       text                   >= 1.1     && < 2.2,
                        text-show              >= 2       && < 4,
                        transformers           >= 0.3     && < 0.7,
                        wai                    == 3.*,
