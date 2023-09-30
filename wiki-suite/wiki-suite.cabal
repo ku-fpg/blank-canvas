@@ -25,7 +25,7 @@ executable wiki-suite
     build-depends:    base                  >= 4.9  && < 4.20,
                       base-compat-batteries >= 0.10 && < 0.14,
                       blank-canvas,
-                      containers            >= 0.5  && < 0.7,
+                      containers            >= 0.5  && < 0.8,
                       process               >= 1.2  && < 1.7,
                       directory             >= 1.2,
                       shake                 >= 0.14,
