@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE GADTs               #-}
 {-# LANGUAGE NoImplicitPrelude   #-}
 {-# LANGUAGE OverloadedStrings   #-}
@@ -327,7 +328,7 @@ blankCanvas opts actions = do
 
         -- There has to be a better way of doing this, using function, perhaps?
         get (Scotty.regex "^/(.*)$") $ do
-          fileName :: Text <- Scotty.param "1"
+          fileName :: Text <- captureParam "1"
           db <- liftIO $ atomically $ readTVar $ locals
           if fileName `S.member` db
           then do
@@ -343,6 +344,12 @@ blankCanvas opts actions = do
                $ setTimeout 100
                $ defaultSettings
                ) app
+  where
+#if MIN_VERSION_scotty(0,20,0)
+    captureParam = Scotty.captureParam
+#else
+    captureParam = Scotty.param
+#endif
 
 {-
 generalSend :: forall m a . RunMonad m

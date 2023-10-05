@@ -1,6 +1,9 @@
 ## next
 TODO
 
+### 0.7.4 [2023.10.05]
+* Support building with `scotty-0.20`.
+
 ### 0.7.3
 * Allow building with GHC 9.0.
 
