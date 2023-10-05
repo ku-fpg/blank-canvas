@@ -1,5 +1,5 @@
 Name:                blank-canvas
-Version:             0.7.3
+Version:             0.7.4
 Synopsis:            HTML5 Canvas Graphics Library
 
 Description:      @blank-canvas@ is a Haskell binding to the complete
@@ -89,7 +89,10 @@ Library
                        http-types            >= 0.8     && < 0.13,
                        mime-types            >= 0.1.0.3 && < 0.2,
                        kansas-comet          >= 0.4     && < 0.5,
-                       scotty                >= 0.10    && < 0.13,
+                       -- TODO: Eventually, we should bump the lower version
+                       -- bounds to >=0.20 so that we can remove some CPP in
+                       -- Graphics.Blank.
+                       scotty                >= 0.10    && < 0.21,
                        semigroups            >= 0.18    && < 1,
                        stm                   >= 2.2     && < 2.6,
                        text                  >= 1.1     && < 2.2,
