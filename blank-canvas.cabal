@@ -92,7 +92,7 @@ Library
                        -- TODO: Eventually, we should bump the lower version
                        -- bounds to >=0.20 so that we can remove some CPP in
                        -- Graphics.Blank.
-                       scotty                >= 0.10    && < 0.22,
+                       scotty                >= 0.10    && < 0.23,
                        semigroups            >= 0.18    && < 1,
                        stm                   >= 2.2     && < 2.6,
                        text                  >= 1.1     && < 2.2,
