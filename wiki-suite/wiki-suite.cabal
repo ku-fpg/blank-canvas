@@ -20,11 +20,12 @@ tested-with:         GHC == 8.0.2
                    , GHC == 9.6.6
                    , GHC == 9.8.4
                    , GHC == 9.10.1
+                   , GHC == 9.12.1
 data-files:          images/Haskell.jpg
                      images/House.jpg
 
 executable wiki-suite
-    build-depends:    base                  >= 4.9  && < 4.21,
+    build-depends:    base                  >= 4.9  && < 4.22,
                       base-compat-batteries >= 0.10 && < 0.15,
                       blank-canvas,
                       containers            >= 0.5  && < 0.8,
@@ -34,7 +35,7 @@ executable wiki-suite
                       stm                   >= 2.2  && < 2.6,
                       streams               >= 0.1,
                       text                  >= 1.1  && < 2.2,
-                      time                  >= 1.4  && < 1.13,
+                      time                  >= 1.4  && < 1.15,
                       unix                  >= 2.7  && < 2.9,
                       vector                >= 0.10 && < 0.14
 
