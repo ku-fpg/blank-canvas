@@ -9,6 +9,3 @@ source-repository-package
   type: git
   location: https://github.com/ku-fpg/javascript-bridge
   tag: 683aff351c70c1ccb7cff6227fc14241ac4ada48
-
--- Workaround until https://github.com/jaspervdj/websockets/pull/254 is merged
-allow-newer: websockets:containers
