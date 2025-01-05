@@ -8,4 +8,15 @@ package blank-canvas-examples
 source-repository-package
   type: git
   location: https://github.com/ku-fpg/javascript-bridge
-  tag: 683aff351c70c1ccb7cff6227fc14241ac4ada48
+  tag: 84ce469f560cd82bad8a359fb3197106d9473d2d
+
+-- TODO: Remove this once the ecosystem has caught up with GHC 9.12
+allow-newer:
+  aeson:ghc-prim,
+  aeson:template-haskell,
+  indexed-traversable:base,
+  indexed-traversable-instances:base,
+  integer-conversion:base,
+  semialign:base,
+  these:base,
+  uuid-types:template-haskell

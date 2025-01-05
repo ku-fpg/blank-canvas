@@ -28,6 +28,11 @@ jobs:
     strategy:
       matrix:
         include:
+          - compiler: ghc-9.12.1
+            compilerKind: ghc
+            compilerVersion: 9.12.1
+            setup-method: ghcup
+            allow-failure: false
           - compiler: ghc-9.10.1
             compilerKind: ghc
             compilerVersion: 9.10.1
@@ -201,10 +206,19 @@ jobs:
           echo "packages: ${PKGDIR_blank_canvas_examples}" >> cabal.project
           echo "packages: ${PKGDIR_wiki_suite}" >> cabal.project
           cat >> cabal.project <<EOF
+          allow-newer: aeson:ghc-prim
+          allow-newer: aeson:template-haskell
+          allow-newer: indexed-traversable:base
+          allow-newer: indexed-traversable-instances:base
+          allow-newer: integer-conversion:base
+          allow-newer: semialign:base
+          allow-newer: these:base
+          allow-newer: uuid-types:template-haskell
+
           source-repository-package
             type:     git
             location: https://github.com/ku-fpg/javascript-bridge
-            tag:      683aff351c70c1ccb7cff6227fc14241ac4ada48
+            tag:      84ce469f560cd82bad8a359fb3197106d9473d2d
 
           package blank-canvas-examples
             flags: +examples
