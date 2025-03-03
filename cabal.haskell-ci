@@ -4,6 +4,8 @@ unconstrained:          False
 copy-fields:            all
 run-tests:              False
 error-missing-methods:  none
+-- Work around https://github.com/haskell-CI/haskell-ci/issues/766
+cabal-install-version:  3.14.1.1
 
 raw-project
   -- Work around https://github.com/haskell/cabal/issues/5586
