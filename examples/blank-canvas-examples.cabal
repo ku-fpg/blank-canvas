@@ -141,7 +141,7 @@ executable blank-canvas-example-tictactoe
   main-is:             Main.hs
   build-depends:       base         >= 4.9 && < 4.22,
                        blank-canvas,
-                       containers   >= 0.5 && < 0.8,
+                       containers   >= 0.5 && < 0.9,
                        text         >= 1.1 && < 2.2
   hs-source-dirs:      tictactoe
   default-language:    Haskell2010
