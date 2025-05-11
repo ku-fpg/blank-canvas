@@ -40,41 +40,41 @@ instance CanvasCursor Cursor where
 -- <http://creativecommons.org/licenses/by-sa/2.5/ CC-BY-SA 2.5>.
 data Cursor = Auto         -- ^ The browser determines the cursor to display based on the
                            --   current context.
-            | Default      -- ^ <<https://developer.mozilla.org/@api/deki/files/3438/=default.gif>>
+            | Default      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/default.gif>>
             | None         -- ^ No cursor is rendered.
-            | ContextMenu  -- ^ <<https://developer.mozilla.org/@api/deki/files/3461/=context-menu.png>>
-            | Help         -- ^ <<https://developer.mozilla.org/@api/deki/files/3442/=help.gif>>
-            | Pointer      -- ^ <<https://developer.mozilla.org/@api/deki/files/3449/=pointer.gif>>
-            | Progress     -- ^ <<https://developer.mozilla.org/@api/deki/files/3450/=progress.gif>>
-            | Wait         -- ^ <<https://developer.mozilla.org/@api/deki/files/3457/=wait.gif>>
-            | Cell         -- ^ <<https://developer.mozilla.org/@api/deki/files/3434/=cell.gif>>
-            | Crosshair    -- ^ <<https://developer.mozilla.org/@api/deki/files/3437/=crosshair.gif>>
-            | Text         -- ^ <<https://developer.mozilla.org/files/3809/text.gif>>
-            | VerticalText -- ^ <<https://developer.mozilla.org/@api/deki/files/3456/=vertical-text.gif>>
-            | Alias        -- ^ <<https://developer.mozilla.org/@api/deki/files/3432/=alias.gif>>
-            | Copy         -- ^ <<https://developer.mozilla.org/@api/deki/files/3436/=copy.gif>>
-            | Move         -- ^ <<https://developer.mozilla.org/@api/deki/files/3443/=move.gif>>
-            | NoDrop       -- ^ <<https://developer.mozilla.org/@api/deki/files/3445/=no-drop.gif>>
-            | NotAllowed   -- ^ <<https://developer.mozilla.org/@api/deki/files/3446/=not-allowed.gif>>
-            | AllScroll    -- ^ <<https://developer.mozilla.org/@api/deki/files/3433/=all-scroll.gif>>
-            | ColResize    -- ^ <<https://developer.mozilla.org/@api/deki/files/3435/=col-resize.gif>>
-            | RowResize    -- ^ <<https://developer.mozilla.org/@api/deki/files/3451/=row-resize.gif>>
-            | NResize      -- ^ <<https://developer.mozilla.org/files/4083/n-resize.gif>>
-            | EResize      -- ^ <<https://developer.mozilla.org/files/4085/e-resize.gif>>
-            | SResize      -- ^ <<https://developer.mozilla.org/files/4087/s-resize.gif>>
-            | WResize      -- ^ <<https://developer.mozilla.org/files/4089/w-resize.gif>>
-            | NEResize     -- ^ <<https://developer.mozilla.org/files/4091/ne-resize.gif>>
-            | NWResize     -- ^ <<https://developer.mozilla.org/files/4093/nw-resize.gif>>
-            | SEResize     -- ^ <<https://developer.mozilla.org/files/4097/se-resize.gif>>
-            | SWResize     -- ^ <<https://developer.mozilla.org/files/4095/sw-resize.gif>>
-            | EWResize     -- ^ <<https://developer.mozilla.org/files/3806/3-resize.gif>>
-            | NSResize     -- ^ <<https://developer.mozilla.org/files/3808/6-resize.gif>>
-            | NESWResize   -- ^ <<https://developer.mozilla.org/files/3805/1-resize.gif>>
-            | NWSEResize   -- ^ <<https://developer.mozilla.org/files/3807/4-resize.gif>>
-            | ZoomIn       -- ^ <<https://developer.mozilla.org/@api/deki/files/3459/=zoom-in.gif>>
-            | ZoomOut      -- ^ <<https://developer.mozilla.org/@api/deki/files/3460/=zoom-out.gif>>
-            | Grab         -- ^ <<https://developer.mozilla.org/@api/deki/files/3440/=grab.gif>>
-            | Grabbing     -- ^ <<https://developer.mozilla.org/@api/deki/files/3441/=grabbing.gif>>
+            | ContextMenu  -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/context-menu.png>>
+            | Help         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/help.gif>>
+            | Pointer      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/pointer.gif>>
+            | Progress     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/progress.gif>>
+            | Wait         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/wait.gif>>
+            | Cell         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/cell.gif>>
+            | Crosshair    -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/crosshair.gif>>
+            | Text         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/text.gif>>
+            | VerticalText -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/vertical-text.gif>>
+            | Alias        -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/alias.gif>>
+            | Copy         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/copy.gif>>
+            | Move         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/move.gif>>
+            | NoDrop       -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/no-drop.gif>>
+            | NotAllowed   -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/not-allowed.gif>>
+            | AllScroll    -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/all-scroll.gif>>
+            | ColResize    -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/col-resize.gif>>
+            | RowResize    -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/row-resize.gif>>
+            | NResize      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/n-resize.gif>>
+            | EResize      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/e-resize.gif>>
+            | SResize      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/s-resize.gif>>
+            | WResize      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/w-resize.gif>>
+            | NEResize     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/ne-resize.gif>>
+            | NWResize     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/nw-resize.gif>>
+            | SEResize     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/se-resize.gif>>
+            | SWResize     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/sw-resize.gif>>
+            | EWResize     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/3-resize.gif>>
+            | NSResize     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/6-resize.gif>>
+            | NESWResize   -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/1-resize.gif>>
+            | NWSEResize   -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/4-resize.gif>>
+            | ZoomIn       -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/zoom-in.gif>>
+            | ZoomOut      -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/zoom-out.gif>>
+            | Grab         -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/grab.gif>>
+            | Grabbing     -- ^ <<https://developer.mozilla.org/en-US/docs/Web/CSS/cursor/grabbing.gif>>
             | URL TL.Text Cursor
               -- ^ An image from a URL. Must be followed by another 'Cursor'.
     deriving (Eq, Ord)
