@@ -25,7 +25,7 @@ data-files:          images/Haskell.jpg
 
 executable wiki-suite
     build-depends:    base              >= 4.11 && < 4.23,
-                      base-compat       >= 0.11 && < 0.15,
+                      base-compat       >= 0.11 && < 0.16,
                       blank-canvas,
                       containers        >= 0.5  && < 0.9,
                       directory         ,
