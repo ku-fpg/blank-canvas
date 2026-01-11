@@ -1,4 +1,4 @@
-### next [????.??.??]
+### 0.7.5 [2026.01.10]
 * Allow building with GHC 9.14.
 * Allow building with `scotty-0.30.*`.
 * Remove unused `fail`, `semigroups`, and `transformers` dependencies.
