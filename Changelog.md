@@ -1,3 +1,6 @@
+### next [????.??.??]
+* Remove unused `fail`, `semigroups`, and `transformers` dependencies.
+
 ### 0.7.4 [2023.10.05]
 * Support building with `scotty-0.20`.
 
