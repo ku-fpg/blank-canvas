@@ -125,8 +125,7 @@ executable blank-canvas-example-text
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base                  >= 4.9  && < 4.22,
-                       base-compat-batteries >= 0.10 && < 0.15,
+  build-depends:       base-compat-batteries >= 0.10 && < 0.15,
                        blank-canvas,
                        text                  >= 1.1  && < 2.2
   hs-source-dirs:      text
