@@ -19,11 +19,12 @@ tested-with:         GHC == 8.4.4
                    , GHC == 9.8.4
                    , GHC == 9.10.3
                    , GHC == 9.12.2
+                   , GHC == 9.14.1
 data-files:          images/Haskell.jpg
                      images/House.jpg
 
 executable wiki-suite
-    build-depends:    base              >= 4.11 && < 4.22,
+    build-depends:    base              >= 4.11 && < 4.23,
                       base-compat       >= 0.11 && < 0.15,
                       blank-canvas,
                       containers        >= 0.5  && < 0.9,
@@ -34,7 +35,7 @@ executable wiki-suite
                       shake             >= 0.17 && < 0.20,
                       streams           >= 0.1,
                       text              >= 1.1  && < 2.2,
-                      time              >= 1.4  && < 1.15,
+                      time              >= 1.4  && < 1.16,
                       unix              >= 2.7  && < 2.9,
                       vector            >= 0.10 && < 0.14
 
