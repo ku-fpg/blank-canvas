@@ -26,6 +26,7 @@ tested-with:         GHC == 8.0.2
                    , GHC == 9.8.4
                    , GHC == 9.10.3
                    , GHC == 9.12.2
+                   , GHC == 9.14.1
 data-files:
     static/data/dataURL.txt
     images/cursor.png
@@ -48,7 +49,7 @@ executable blank-canvas-example-trivial
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas
   hs-source-dirs:      trivial
   default-language:    Haskell2010
@@ -61,7 +62,7 @@ executable blank-canvas-example-html5canvastutorial
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base                  >= 4.9   && < 4.22,
+  build-depends:       base                  >= 4.9   && < 4.23,
                        base-compat-batteries >= 0.10  && < 0.15,
                        blank-canvas,
                        text                  >= 1.1   && < 2.2
@@ -75,7 +76,7 @@ executable blank-canvas-example-keyread
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base                  >= 4.9  && < 4.22,
+  build-depends:       base                  >= 4.9  && < 4.23,
                        base-compat-batteries >= 0.10 && < 0.15,
                        blank-canvas,
                        text                  >= 1.1  && < 2.2
@@ -89,7 +90,7 @@ executable blank-canvas-example-rotate-square
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas
   hs-source-dirs:      rotate-square
   default-language:    Haskell2010
@@ -101,7 +102,7 @@ executable blank-canvas-example-splat
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas
   hs-source-dirs:      splat
   default-language:    Haskell2010
@@ -113,7 +114,7 @@ executable blank-canvas-example-square
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas
   hs-source-dirs:      square
   default-language:    Haskell2010
@@ -138,7 +139,7 @@ executable blank-canvas-example-tictactoe
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas,
                        containers   >= 0.5 && < 0.9,
                        text         >= 1.1 && < 2.2
@@ -153,7 +154,7 @@ executable blank-canvas-example-bounce
   else
     buildable:         False
   main-is:             Main.hs
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas,
                        streams      >= 0.1,
                        text         >= 1.1 && < 2.2
@@ -168,7 +169,7 @@ executable blank-canvas-example-audio
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base         >= 4.9 && < 4.22,
+  build-depends:       base         >= 4.9 && < 4.23,
                        blank-canvas
   hs-source-dirs:      audio
   default-language:    Haskell2010
@@ -181,7 +182,7 @@ executable blank-canvas-example-cursor
     buildable:         False
   main-is:             Main.hs
   other-modules:       Paths_blank_canvas_examples
-  build-depends:       base                  >= 4.9  && < 4.22,
+  build-depends:       base                  >= 4.9  && < 4.23,
                        base-compat-batteries >= 0.10 && < 0.15,
                        blank-canvas,
                        keys                  >= 3.10,
