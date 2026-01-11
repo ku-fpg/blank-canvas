@@ -2,6 +2,7 @@
 * Allow building with GHC 9.14.
 * Allow building with `scotty-0.30.*`.
 * Remove unused `fail`, `semigroups`, and `transformers` dependencies.
+* Fix broken cursor image links in Haddocks.
 
 ### 0.7.4 [2023.10.05]
 * Support building with `scotty-0.20`.
