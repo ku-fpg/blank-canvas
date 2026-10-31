@@ -1,5 +1,6 @@
 ## next
-TODO
+* Document when `blankCanvas` runs its action and when it returns
+  ([#79](https://github.com/ku-fpg/blank-canvas/issues/79)).
 
 ### 0.7.5 [2026.01.10]
 * Allow building with GHC 9.14.

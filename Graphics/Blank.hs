@@ -265,6 +265,53 @@ import           Data.String
 -- >                strokeStyle "red"
 -- >                stroke()
 -- >
+-- ==== When 'blankCanvas' returns
+--
+-- 'blankCanvas' starts the server described by 'Options' and blocks in
+-- that server's accept loop. It returns when the server stops. Connecting,
+-- disconnecting, or reloading a browser leaves that loop running, as does
+-- the action returning or throwing.
+--
+-- ==== When the action runs
+--
+-- Calling 'blankCanvas' does not call the action. The page at @\/@ opens
+-- one WebSocket from its DOM-ready handler. The server accepts that
+-- socket, asks the page for its size, then runs the action on that
+-- connection's thread with a fresh 'DeviceContext'. 'width', 'height',
+-- and 'devicePixelRatio' are taken from that handshake, so a new run is
+-- how a resized window is observed.
+--
+-- Every accepted WebSocket is a separate run. Opening a second window
+-- starts a second run with its own 'DeviceContext' while the first run
+-- is still alive. Reloading does the same: the new page starts a new run,
+-- and the previous run keeps going. Animation loops therefore accumulate
+-- across reloads.
+--
+-- ==== When a run ends
+--
+-- Closing or reloading a page leaves that page's run running. Disconnect
+-- is not delivered to 'wait'. The run ends when the action returns or
+-- throws:
+--
+-- * When the action returns, that WebSocket is closed. 'blankCanvas'
+--   keeps serving.
+-- * 'send' throws if writing to the socket fails. When the exception
+--   escapes the action, 'blankCanvas' prints it and rethrows it, which
+--   ends that run only.
+-- * A query 'send' that has already written its request and is waiting
+--   for the reply (such as 'measureText' or 'toDataURL'), and a run
+--   blocked in 'wait', are not woken by the disconnect.
+-- * While the socket is open, traffic on it — including pings from the
+--   bridge, about every 10 seconds — refreshes this server's idle
+--   timeout, which 'blankCanvas' sets to 100 seconds. After the browser
+--   is gone and that traffic stops, the timeout throws
+--   @Thread killed by timeout manager@ on the connection thread. If that
+--   exception escapes the action, it is printed and rethrown the same
+--   way. Until then the old run is still executing, including after a
+--   reload has already started the next one.
+--
+-- Threads forked by the action keep running after the action returns,
+-- the page closes, or this timeout fires.
 
 blankCanvas :: Options -> (DeviceContext -> IO ()) -> IO ()
 blankCanvas opts actions = do
