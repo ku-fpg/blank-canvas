@@ -265,6 +265,19 @@ import           Data.String
 -- >                strokeStyle "red"
 -- >                stroke()
 -- >
+-- 'blankCanvas' blocks serving until the server stops. The action runs
+-- once per browser WebSocket. The page at @\/@ opens that socket from
+-- its DOM-ready handler, and each connection gets its own
+-- 'DeviceContext' and the canvas size read at connect time. A second
+-- window or a reload is a new run. Closing or reloading does not stop
+-- the old one.
+--
+-- A run ends when the action returns or throws. Returning closes that
+-- socket. 'send' throws if the write fails, and after the browser is
+-- gone and traffic stops, the 100-second idle timeout throws
+-- @Thread killed by timeout manager@ on the connection thread. If the
+-- exception escapes the action it is printed and rethrown, ending that
+-- run only. Threads the action forks are not cleaned up.
 
 blankCanvas :: Options -> (DeviceContext -> IO ()) -> IO ()
 blankCanvas opts actions = do
